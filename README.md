@@ -20,8 +20,8 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 ## Hardware required
 
-* A Raspberry Pi (Zero W, 1, 2 were tested, but I am sure all will work)
-* [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B/W will work out-of-the-box, the rest will with small modifications)
+* A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
+* [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest will with small modifications)
 * Raspberry Pi power supply (as display is usually powered from RasPi HAT then 3A 5V is preferred)
 * Photo frame (for 7.5 inch screen I used 13x18cm /5''x7''/ with printed parts)
 
@@ -29,12 +29,13 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 ## Advantages
 
 * Create a low energy consuming and cheap ($75) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
-* Autonomic device once configured can be left headless
-* Use e-paper display to have an unique look and don't need to worry about ambient light control, light sensors or turn off screen light functions as it would be with LCDs
-* Have photo displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh
-* Have powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on-fly and adjust them to the display
+* Autonomic device, once configured can be left headless
+* e-paper display gives an unique look and You don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
+* Supports all image formats including RAW
+* Photo is displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh
+* Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on-fly and adjust them to the display
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
-* Have a simple script in Python to control everything, having everything configurable (within one config file) and in one place
+* Simple script in Python to automate frame update, everything is configurable (within one config file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
 * Simple yet powerful
 
