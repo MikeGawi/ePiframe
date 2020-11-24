@@ -143,6 +143,8 @@ Use *install.sh* script:
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh --unistall
 ```
+Move to [next steps](#next-steps1)
+
 
 ### Manual
 
@@ -150,8 +152,10 @@ wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 sudo systemctl stop ePiframe.service
 sudo systemctl disable ePiframe.service
 ```
+Move to [next steps](#next-steps1)
 
-### 
+
+### Next steps
 
 * Whole ePiframe code is in the directory where it was installed so delete it if not needed
 * All dependecies installed for ePiframe are [here](#manual)
