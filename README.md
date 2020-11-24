@@ -162,7 +162,7 @@ Use *install.sh* script:
 
 ```
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
-./install.sh --unistall
+./install.sh --uninstall
 ```
 Move to [next steps](#next-steps-1)
 
