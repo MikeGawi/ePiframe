@@ -36,12 +36,12 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Even for Raspberry Pi Zero W + Raspberry Pi OS Lite
 * Low energy consumption
 
-<div class="row">
-  <div class="column">
-    <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie.gif" alt="Different color presets">
+<div>
+  <div style="flex: 50%">
+    <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie.gif" alt="Different color presets" width="300" height="180">
   </div>
-  <div class="column">
-    <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie2.gif" alt="Different backgrounds" >
+  <div style="flex: 50%">
+    <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie2.gif" alt="Different backgrounds" width="300" height="180">
   </div>
 </div>
 
