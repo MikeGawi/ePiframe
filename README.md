@@ -37,10 +37,10 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Low energy consumption
 
 <div>
-  <div style="flex: 50%">
+  <div style="float: left; width: 33.33%; padding: 5px;">
     <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie.gif" alt="Different color presets" width="300" height="180">
   </div>
-  <div style="flex: 50%">
+  <div style="float: left; width: 33.33%; padding: 5px;">
     <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie2.gif" alt="Different backgrounds" width="300" height="180">
   </div>
 </div>
