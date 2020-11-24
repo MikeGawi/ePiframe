@@ -59,7 +59,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 ## Installation
 
-* [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formely known as Raspbian. LITE version is supported
+* [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formerly known as Raspbian. LITE version is supported
 * [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
 * [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/README.md) - chapter *3. Enable SSH on a headless Raspberry Pi (add file to SD card on another machine)*
 * [Assemble Raspberry Pi and power it](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
@@ -123,7 +123,7 @@ sudo modprobe spi-bcm2708
 
 ```
 #replace paths
-sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org >> ePiframe.service
+sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org > ePiframe.service
 #enable service
 sudo systemctl enable `pwd`/ePiframe.service
 ```
