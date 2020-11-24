@@ -1,3 +1,5 @@
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/main/assets/logo.png">
+
 # ePiframe
 
 Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
@@ -34,6 +36,14 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Even for Raspberry Pi Zero W + Raspberry Pi OS Lite
 * Low energy consumption
 
+<div class="row">
+  <div class="column">
+    <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie.gif" alt="Different color presets">
+  </div>
+  <div class="column">
+    <img src="https://github.com/MikeGawi/ePiframe/blob/main/assets/movie2.gif" alt="Different backgrounds" >
+  </div>
+</div>
 
 ## Hardware required
 
@@ -55,7 +65,6 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Simple script in Python to automate frame update, everything is configurable (within one config file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
 * Simple yet powerful
-
 
 ## Installation
 
