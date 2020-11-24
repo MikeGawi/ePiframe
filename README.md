@@ -42,7 +42,12 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 ## Installation
 
-Install 
+* [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formely known as Raspbian. LITE version is supported
+* [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
+* [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/README.md) - chapter *3. Enable SSH on a headless Raspberry Pi (add file to SD card on another machine)*
+* [Assemble Raspberry Pi and power it](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
+* [Find Raspberry Pi IP address](https://www.raspberrypi.org/documentation/remote-access/access-over-Internet/README.md)
+* Log in with SSH
 
 ### Automatic
 
@@ -53,7 +58,7 @@ wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh
 ```
 
-Move to [Next steps](#next-steps)
+Move to [next steps](#next-steps)
 
 
 ### Manual
@@ -106,17 +111,47 @@ sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org >> ePifram
 sudo systemctl enable `pwd`/ePiframe.service
 ```
 
-Move to [Next steps](#next-steps)
+Move to [next steps](#next-steps)
 
 
 ## Next steps
 
-* Add account support to Google Photos API on [Google Console](https://console.cloud.google.com/)
-* Get credentials JSON file for the API from the previous step
-* Generate token pickle file with getToken.py script to use with Google Photos
-* Copy credentials JSON and token pickle file to ePiframe device
-* Configure ePiframe with config.cfg file
-* Check configuration with ./ePiframe.py --check-config
-* Do a test with ./ePiframe.py --test without sending photo to display
-* Reboot ePiframe device or "sudo modprobe spi-bcm2708" to start enabled SPI support
+* Connect display to Raspberry Pi
+* Add Your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started)
+  * Name it *ePiframe*
+  * *Use TV and Limited Input* as application type
+* Download credentials JSON file for the API from the previous step
+  *  Download icon in [Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs 
+* Generate token pickle file with *getToken.py* script to use with Google Photos:
+  * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
+  * Run it on internet browser accessible machine as Google authentication is needed. I does'n need to be ePiframe device.
+  * Script will produce *token.pickle* file
+* Copy credentials JSON and token pickle file to ePiframe device inside installation path
+* Configure ePiframe with *config.cfg* file inside installation path
+* Check configuration with ```./ePiframe.py --check-config```
+* Do a test with ```./ePiframe.py --test``` without sending photo to display
+* Reboot ePiframe device or ```sudo modprobe spi-bcm2708``` to start enabled SPI support and automatically run frame
 * Enjoy Your ePiframe!
+
+
+## Uninstalling
+### Automatic
+
+Use *install.sh* script:
+
+```
+wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
+./install.sh --unistall
+```
+
+### Manual
+
+```
+sudo systemctl stop ePiframe.service
+sudo systemctl disable ePiframe.service
+```
+
+### 
+
+* Whole ePiframe code is in the directory where it was installed so delete it if not needed
+* All dependecies installed for ePiframe are [here](#manual)
