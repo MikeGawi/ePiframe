@@ -53,7 +53,7 @@ wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh
 ```
 
-Move to [Next steps](#Next steps)
+Move to [Next steps](#next-steps)
 
 
 ### Manual
@@ -105,6 +105,9 @@ sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org >> ePifram
 #enable service
 sudo systemctl enable `pwd`/ePiframe.service
 ```
+
+Move to [Next steps](#next-steps)
+
 
 ## Next steps
 
