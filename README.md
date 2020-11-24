@@ -2,8 +2,25 @@
 
 Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
+## Table of Contents
+<!--ts-->
+   * [Main features](#main-features)
+   * [Hardware required](#hardware-required)
+   * [Advantages](#advantages)
+   * [Installation](#installation)
+      * [Automatic](#automatic)
+      * [Manual](#manual)
+      * [Next steps](#next-steps)
+   * [Uninstalling](#uninstalling)
+      * [Automatic](#automatic-1)
+      * [Manual](#manual-1)
+      * [Next steps](#next-steps-1)
+   * [Configuration](#configuration)
+   * [Service control](#service-control)
+   * [This is not what I'm looking for](#this-is-not-what-im-looking-for)
+<!--te-->
 
-## Main Features
+## Main features
 
 * Pulls photos from one or more albums in Google Photos and automatically prepares them for attached e-paper display
 * Non-HDMI e-Paper Waveshare SPI displays supported
@@ -143,7 +160,7 @@ Use *install.sh* script:
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh --unistall
 ```
-Move to [next steps](#next-steps1)
+Move to [next steps](#next-steps-1)
 
 
 ### Manual
@@ -152,10 +169,36 @@ Move to [next steps](#next-steps1)
 sudo systemctl stop ePiframe.service
 sudo systemctl disable ePiframe.service
 ```
-Move to [next steps](#next-steps1)
+Move to [next steps](#next-steps-1)
 
 
 ### Next steps
 
 * Whole ePiframe code is in the directory where it was installed so delete it if not needed
 * All dependecies installed for ePiframe are [here](#manual)
+
+
+## Configuration
+
+* Configure ePiframe with *config.cfg* file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
+* ALWAYS check configuration with ```./ePiframe.py --check-config```
+
+## Service control
+
+ePiframe comes with a system service that is fully autonomic, automatic and self-recovering. It can be left completely unsupervised but it is possible to control it if needed, the same way as every service in Linux:
+```
+#stop
+sudo systemctl stop ePiframe.service
+#start
+sudo systemctl start ePiframe.service
+#restart
+sudo systemctl restart ePiframe.service
+```
+
+## This is not what I'm looking for
+
+If You're looking for a LCD frame with Google Photos [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is a great choice: color LCD support, ambient light sensor, off hours and many many more. 
+
+I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. MM is a great software but my Raspberry Pi Zero was too slow for me with it.
+
+Also a very nice e-paper Waveshare display with Raspberry Pi idea is [Inky Calendar](https://github.com/aceisace/Inky-Calendar)
