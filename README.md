@@ -1,6 +1,6 @@
 # ePiframe
 
-Python3 e-Paper Raspberry Pi Photo Frame with Google Photos
+Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 
 ## Main Features
