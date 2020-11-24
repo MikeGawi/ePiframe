@@ -63,7 +63,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
 * [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/README.md) - chapter *3. Enable SSH on a headless Raspberry Pi (add file to SD card on another machine)*
 * [Assemble Raspberry Pi and power it](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
-* [Find Raspberry Pi IP address](https://www.raspberrypi.org/documentation/remote-access/access-over-Internet/README.md)
+* [Find Raspberry Pi IP address](https://www.raspberrypi.org/documentation/remote-access/ip-address.md)
 * Log in with SSH
 
 ### Automatic
@@ -141,7 +141,7 @@ Move to [next steps](#next-steps)
   *  Download icon in [Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs 
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
   * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
-  * Run it on internet browser accessible machine as Google authentication is needed. I does'n need to be ePiframe device.
+  * Run it on internet browser accessible machine as Google authentication is needed. I doesn't need to be ePiframe device.
   * Script will produce *token.pickle* file
 * Copy credentials JSON and token pickle file to ePiframe device inside installation path
 * Configure ePiframe with *config.cfg* file inside installation path
