@@ -18,10 +18,12 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
       * [Manual](#manual-1)
       * [Next steps](#next-steps-1)
    * [Configuration](#configuration)
+   * [Debugging](#debugging)
    * [Performance](#performance) 
    * [Service control](#service-control)
    * [This is not what I'm looking for](#this-is-not-what-im-looking-for)
 <!--te-->
+
 
 ## Main features
 
@@ -41,10 +43,11 @@ Color presets              |  Different backgrounds
 :-------------------------:|:-------------------------:
 ![](https://github.com/MikeGawi/ePiframe/blob/main/assets/movie.gif)  |  ![](https://github.com/MikeGawi/ePiframe/blob/main/assets/movie2.gif)
 
+
 ## Hardware required
 
 * A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
-* microSD card for Raspberry Pi OS, 4GB minimum
+* [microSD card for Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/sd-cards.md), 4GB minimum
 * [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest will with small modifications)
 * Raspberry Pi power supply (as display is usually powered from RasPi HAT then 3A 5V is preferred)
 * Photo frame (for 7.5 inch screen I used 13x18cm /5''x7''/ with printed parts)
@@ -64,14 +67,16 @@ Color presets              |  Different backgrounds
 * Fully customizable: from photos and how they are displayed, to display size and frame (buy one, print it or create/decorate it Yourself) - a great gift idea
 * Simple yet powerful
 
+
 ## Installation
 
-* [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formerly known as Raspbian. LITE version is supported
+* [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formerly known as Raspbian. Lite version is supported
 * [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
 * [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) - chapter *3. Enable SSH on a headless Raspberry Pi (add file to SD card on another machine)*
 * [Assemble Raspberry Pi and power it](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
 * [Find Raspberry Pi IP address](https://www.raspberrypi.org/documentation/remote-access/ip-address.md)
 * [Log in with SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) - chapter *4. Set up your client*
+
 
 ### Automatic
 
@@ -81,7 +86,6 @@ Use *install.sh* script:
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh
 ```
-
 Move to [next steps](#next-steps)
 
 
@@ -184,9 +188,23 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with *config.cfg* file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * ALWAYS check configuration with ```./ePiframe.py --check-config```
 
+
+## Debugging
+
+When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with display, check power supply, check internet connection to Raspberry Pi and try to reboot the device. If that doesn't help:
+* [Check configuration](#configuration)
+* Do a test with ```./ePiframe.py --test``` without sending photo to display and get detailed log on what is happening
+* Make sure that configured photo filtering is not narrowing too much, i.e. only one or no photos at all are filtered (test that in the step above)
+* Check ePiframe service status: ```sudo systemctl status ePiframe.service``` and [restart](#service-control) if not running
+* Sometimes changing a color preset can fix black screen problem as some photos react strange to image processing
+
+If problem still occurs, please create an issue here.
+
+
 ## Performance
 
 Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took around 2-3 minutes average to pull the UHD photo, process it and put it on display. Here's a graph of loads during ePiframe tests:
+
 
 ## Service control
 
@@ -199,6 +217,7 @@ sudo systemctl start ePiframe.service
 #restart
 sudo systemctl restart ePiframe.service
 ```
+
 
 ## This is not what I'm looking for
 
