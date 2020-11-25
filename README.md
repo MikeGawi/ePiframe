@@ -221,7 +221,7 @@ sudo systemctl restart ePiframe.service
 
 ## This is not what I'm looking for
 
-If You're looking for an LCD frame with Google Photos [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is a great choice: color LCD support, ambient light sensor, off hours and many many more. 
+If You're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is a great choice: color LCD support, ambient light sensor, off hours and many, many more. 
 
 I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. MM is a great software but my Raspberry Pi Zero was too slow for me with it.
 
