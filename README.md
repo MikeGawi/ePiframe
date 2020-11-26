@@ -142,7 +142,7 @@ Move to [next steps](#next-steps)
 * Connect display to Raspberry Pi
 * Add Your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started)
   * Name it *ePiframe*
-  * *Use TV and Limited Input* as application type
+  * Use *TV and Limited Input* as application type
 * Download credentials JSON file for the API from the previous step
   *  Download icon in [Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs 
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
@@ -191,7 +191,7 @@ Move to [next steps](#next-steps-1)
 
 ## Debugging
 
-When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with display, check power supply, check internet connection to Raspberry Pi and try to reboot the device. If that doesn't help:
+When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with display, check power supply, check internet connection and try to reboot the device. If that doesn't help:
 * [Check configuration](#configuration)
 * Do a test with ```./ePiframe.py --test``` without sending photo to display and get detailed log on what is happening
 * Make sure that configured photo filtering is not narrowing too much, i.e. only one or no photos at all are filtered (test that in the step above)
@@ -203,7 +203,9 @@ If problem still occurs, please create an issue here.
 
 ## Performance
 
-Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took around 2-3 minutes average to pull the UHD photo, process it and put it on display. Here's a graph of loads during ePiframe tests:
+Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took around 2-3 minutes in average to pull the UHD photo, process it and put it on display. Here's a graph of loads during ePiframe tests:
+
+And CPU temperature:
 
 
 ## Service control
@@ -221,8 +223,8 @@ sudo systemctl restart ePiframe.service
 
 ## This is not what I'm looking for
 
-If You're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is a great choice: color LCD support, ambient light sensor, off hours and many, many more. 
+If You're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is the best choice: color LCD support, ambient light sensor, off hours and many, many more. 
 
-I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. MM is a great software but my Raspberry Pi Zero was too slow for me with it.
+I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself to not get crazy during the lockdown.
 
 Also a very nice e-paper Waveshare display with Raspberry Pi idea is [Inky Calendar](https://github.com/aceisace/Inky-Calendar)
