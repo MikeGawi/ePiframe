@@ -54,9 +54,9 @@ Color presets              |  Different backgrounds
 * Photo frame (for 7.5 inch screen I used 13x18cm /5''x7''/ with printed parts)
 
 ### Frame
-You can use any frame for Your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame Your display and cover all unwanted elements. 
+You can use any photo frame for Your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame Your display and cover all unwanted elements. 
 
-Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought outer-frame like I did here: 
+Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here: 
 
 ## Advantages
 
