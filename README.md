@@ -158,7 +158,7 @@ Move to [next steps](#next-steps)
 * Configure ePiframe with *config.cfg* file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
-* Reboot ePiframe device or ```sudo modprobe spi-bcm2708``` to start enabled SPI support and automatically run frame
+* Reboot ePiframe device to start enabled SPI support and automatically run frame
 * Enjoy Your ePiframe!
 
 
