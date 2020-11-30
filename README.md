@@ -125,7 +125,7 @@ rm -r e-Paper-master/ waveshare.zip
 ```
 sudo raspi-config
 ```
-Go to *Advanced Options > SPI* and choose “Yes” for both questions then select *Finish* to exit *raspi-config*.
+Go to *Advanced Options -> SPI* and choose “Yes” for both questions then select *Finish* to exit *raspi-config*.
 
 Either reboot your Pi or run this command to load the kernel module
 ```
@@ -149,7 +149,7 @@ Move to [next steps](#next-steps)
   * Name it *ePiframe*
   * Use *TV and Limited Input* as application type
 * Download credentials JSON file for the API from the previous step
-  *  Download icon in [Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs 
+  *  Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
   * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
   * Run it on internet browser accessible machine as Google authentication is needed. I doesn't need to be ePiframe device.
@@ -160,6 +160,11 @@ Move to [next steps](#next-steps)
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
 * Reboot ePiframe device to start enabled SPI support and automatically run frame
 * Enjoy Your ePiframe!
+
+Additionaly You can:
+* [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
+go to *Advanced Options -> Memory Split* and set this value to the minimum (16)
+* [Disable HDMI](https://raspberrypi.stackexchange.com/questions/79728/keep-hdmi-off-on-boot) to preserve 25mA of power
 
 
 ## Uninstalling
