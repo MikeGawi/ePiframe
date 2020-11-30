@@ -165,6 +165,8 @@ Additionaly You can:
 * [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
 go to *Advanced Options -> Memory Split* and set this value to the minimum (16)
 * [Disable HDMI](https://raspberrypi.stackexchange.com/questions/79728/keep-hdmi-off-on-boot) to preserve 25mA of power
+* [Disable Bluetooth](https://di-marco.net/blog/it/2020-04-18-tips-disabling_bluetooth_on_raspberry_pi/)
+* [Disable on-board LEDs](https://learn.pi-supply.com/make/how-to-save-power-on-your-raspberry-pi/#disable-on-board-leds) to preserve around 30mA of power
 
 
 ## Uninstalling
