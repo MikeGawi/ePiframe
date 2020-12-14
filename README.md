@@ -31,7 +31,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Pulls photos (videos are ignored) from one or more albums in Google Photos and automatically prepares them for attached e-paper display
 * Non-HDMI e-Paper Waveshare SPI displays supported
 * No additional storage or 3rd party software is required as only one and current photo is downloaded and processed per frame update
-* Updating after time interval with option to change time per photo
+* Updating after time interval with option to change time per photo (by hot word in photo description)
 * Off hours per different days
 * Photo filtering (by creation date, number of images)
 * Showing randomly, descendingly or ascendingly by creation date
@@ -165,7 +165,7 @@ Move to [next steps](#next-steps)
 * Reboot ePiframe device to start enabled SPI support and automatically run frame
 * Enjoy Your ePiframe!
 
-Additionaly You can:
+Additionaly You can (do it on Your own risk):
 * [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
 go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
 * [Disable HDMI](https://raspberrypi.stackexchange.com/questions/79728/keep-hdmi-off-on-boot) to preserve 25mA of power
@@ -203,6 +203,8 @@ Move to [next steps](#next-steps-1)
 
 * Configure ePiframe with *config.cfg* file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * ALWAYS check configuration with ```./ePiframe.py --check-config```
+
+**_NOTE_** - interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator) in the **photo description** field. AFAIK You can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
 
 
 ## Debugging
