@@ -73,7 +73,7 @@ Or You can 3D print a nice standing frame back with case for Your Raspberry Pi a
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
 * Simple script in Python to automate frame update, everything is configurable (within one config file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
-* Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change ImageMagick conversion), to display size and frame (buy one, print it or create/decorate it Yourself) - a great gift idea
+* Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick](https://imagemagick.org/) conversion), to display size and frame (buy one, print it or create/decorate it Yourself) - a great gift idea
 * Simple yet powerful
 
 
@@ -243,4 +243,4 @@ If You're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](ht
 
 I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself to not get crazy during the lockdown.
 
-Also a very nice e-paper Waveshare display with Raspberry Pi idea is [Inky Calendar](https://github.com/aceisace/Inky-Calendar)
+Also a very nice e-paper Waveshare display with Raspberry Pi idea is [inkycal](https://github.com/aceisace/Inky-Calendar)
