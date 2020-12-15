@@ -223,8 +223,6 @@ If problem still occurs, please create an issue here.
 
 Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took around 2-3 minutes in average to pull the UHD photo, process it and put it on display. Here's a graph of loads during ePiframe tests:
 
-And temperatures:
-
 
 ## Service control
 
