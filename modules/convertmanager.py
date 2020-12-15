@@ -14,7 +14,7 @@ class convertmanager:
 	__PHOTO_BACK_CODE = '( -clone 0 -gravity center ' + __SCALE_HORIZON + ' -resize 4000% -crop {}x{}+0+0 +repage ) ( -clone 0 -resize {}x{} ) -delete 0 -gravity center -compose over -composite'
 	
 	#options for ImageMagick converter
-	#https://www.imagemagick.org/Usage/quantize/
+	#https://legacy.imagemagick.org/Usage/quantize/
 	#1st {} is for convert binary path, 2nd - source file, 3rd rotation, 4th - photo background code (optional),  {}x{} - size, 7th - invert colors, 8th - back color, 9th&10th frame size, last {} - target file
 	__CONVERT_OPTIONS = {
 		'1'	:	'{} {} {}{}-brightness-contrast 0,20 -resize {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
