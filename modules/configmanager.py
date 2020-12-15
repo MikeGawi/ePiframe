@@ -132,8 +132,6 @@ class configmanager:
 		self.getint('horizontal')
 		if not self.get('background_color'):
 			raise Exception('Configuration background_color entry is missing!')
-		if not self.get('album_names'):
-			raise Exception('Configuration album_names entry is missing!')
 		if not self.get('randomize'):
 			raise Exception('Configuration randomize entry is missing!')
 		self.getint('randomize')

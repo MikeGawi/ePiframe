@@ -14,8 +14,8 @@ class randommanager:
 		olddata = pd.DataFrame()
 		
 		try:
-		if os.path.exists(path):
-			olddata = pd.read_csv(self.__path)	
+			if os.path.exists(path):
+				olddata = pd.read_csv(self.__path)	
 		except Exception:
 			pass
 		
