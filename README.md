@@ -52,6 +52,8 @@ Color presets              |  Different backgrounds
 
 ## Hardware required
 
+<a href="http://www.raspberrypi.org"><img width="100" align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/RPi-Logo.png"></a>
+
 * A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
 * [microSD card for Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/sd-cards.md), 4GB minimum
 * [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest will with small modifications)
@@ -166,7 +168,7 @@ Move to [next steps](#next-steps)
   *  Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
   * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
-  * Run it on internet browser accessible machine as Google authentication is needed. I doesn't need to be ePiframe device.
+  * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device.
   * Script will produce *token.pickle* file
 * Copy credentials JSON and token pickle file to ePiframe device inside installation path
 * Configure ePiframe with *config.cfg* file inside installation path
