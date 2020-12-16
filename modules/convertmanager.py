@@ -9,20 +9,22 @@ class convertmanager:
 	__SCALE_HORIZON = '-scale 2.51%'
 	__SCALE_VERTIC = '-scale 4%'
 	
+	__GET_PHOTO_SIZE_CODE = '{} {} -format "%w,%h" info:'
+	
 	#Don't use blur! Blur will kill Raspberry Pi Zero.
 	#Resizing to huge and then scaling to small will add some blur and it's 10x faster than blur operation.
-	__PHOTO_BACK_CODE = '( -clone 0 -gravity center ' + __SCALE_HORIZON + ' -resize 4000% -crop {}x{}+0+0 +repage ) ( -clone 0 -resize {}x{} ) -delete 0 -gravity center -compose over -composite'
+	__PHOTO_BACK_CODE = '( -clone 0 -gravity center ' + __SCALE_HORIZON + ' -resize 4000% -crop {}x{}+0+0 +repage ) ( -clone 0 -sample {}x{} ) -delete 0 -gravity center -compose over -composite'
 	
 	#options for ImageMagick converter
 	#https://legacy.imagemagick.org/Usage/quantize/
 	#1st {} is for convert binary path, 2nd - source file, 3rd rotation, 4th - photo background code (optional),  {}x{} - size, 7th - invert colors, 8th - back color, 9th&10th frame size, last {} - target file
 	__CONVERT_OPTIONS = {
-		'1'	:	'{} {} {}{}-brightness-contrast 0,20 -resize {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'2'	:	'{} {} {}{}-resize {}x{} -dither FloydSteinberg {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'3'	:	'{} {} {}{}-resize {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'4'	:	'{} {} {}{}-resize {}x{} -dither FloydSteinberg -ordered-dither o4x4 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'5'	:	'{} {} {}{}-resize {}x{} {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'6'	:	'{} {} {}{}-resize {}x{} -colors 2 +dither {}-background {} -gravity center -extent {}x{} -type bilevel {}'
+		'1'	:	'{} {} -limit thread 1 {}{}-brightness-contrast 0,10 -sample {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
+		'2'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -dither FloydSteinberg {}-background {} -gravity center -extent {}x{} -type bilevel {}',
+		'3'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
+		'4'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -dither FloydSteinberg -ordered-dither o4x4 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
+		'5'	:	'{} {} -limit thread 1 {}{}-sample {}x{} {}-background {} -gravity center -extent {}x{} -type bilevel {}',
+		'6'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -colors 2 +dither {}-background {} -gravity center -extent {}x{} -type bilevel {}'
 	}
 		
 	def __convert_option (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str):
@@ -61,3 +63,13 @@ class convertmanager:
 		process.wait()
 		out, err = process.communicate()
 		return err
+	
+	def get_image_size (self, bin:str, srcfile:str):
+		args = (self.__GET_PHOTO_SIZE_CODE.format(bin, srcfile)).split()
+		process = subprocess.Popen(args, stdout=subprocess.PIPE)
+		process.wait()
+		out, err = process.communicate()
+		wh = str(out.decode()).replace('"','').split(',')
+		width = wh[0]
+		height = wh[1]
+		return err, width, height

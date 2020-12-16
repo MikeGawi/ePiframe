@@ -1,8 +1,10 @@
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/logo.png">
 
+
 # ePiframe
 
 Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
+
 
 ## Table of Contents
 <!--ts-->
@@ -19,6 +21,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
       * [Manual](#manual-1)
       * [Next steps](#next-steps-1)
    * [Configuration](#configuration)
+   * [Command line](#command-line)
    * [Debugging](#debugging)
    * [Performance](#performance) 
    * [Service control](#service-control)
@@ -52,26 +55,33 @@ Color presets              |  Different backgrounds
 * A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
 * [microSD card for Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/sd-cards.md), 4GB minimum
 * [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest will with small modifications)
-* Raspberry Pi power supply (as display is usually powered from RasPi HAT then 3A 5V is preferred)
-* Photo frame (for 7.5 inch screen I used 13x18cm /5''x7''/ with printed parts)
+* Raspberry Pi power supply (as display is usually powered from RasPi HAT then 5V/3A is preferred)
+* Photo frame (for 7.5" screen I used 13x18cm /5"x7"/ with printed parts)
+
 
 ### Frame
+
 You can use any photo frame for Your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame Your display and cover all unwanted elements. 
 
-Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here: 
+Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
+
+13x18cm (5"x7") frame for 7.5" screen
+
+[Thing files](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg)
 
 <img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500">
+
 
 ## Advantages
 
 * Low energy consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
 * Autonomic device, once configured can be left headless
 * e-paper display gives an unique look and You don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
-* Supports all image formats including RAW
-* Photo is displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh
+* Photo is displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh and doesn't have back light
 * Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on-fly and adjust them to the display
+* Supports all image formats including RAW
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
-* Simple script in Python to automate frame update, everything is configurable (within one config file) and in one place
+* Simple script in Python to automate frame update, everything is configurable (within one [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
 * Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it Yourself) - a great gift idea
 * Simple yet powerful
@@ -166,6 +176,7 @@ Move to [next steps](#next-steps)
 * Enjoy Your ePiframe!
 
 Additionaly You can (do it on Your own risk):
+* [Install ZRAM](https://haydenjames.io/raspberry-pi-performance-add-zram-kernel-parameters/) to "get" more RAM and boost RasPI
 * [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
 go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
 * [Disable HDMI](https://raspberrypi.stackexchange.com/questions/79728/keep-hdmi-off-on-boot) to preserve 25mA of power
@@ -207,6 +218,18 @@ Move to [next steps](#next-steps-1)
 **_NOTE_** - interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator) in the **photo description** field. AFAIK You can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
 
 
+### Command line
+
+Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debuggung:
+* ```--check-config```- checks configuration file syntax
+* ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc.
+* ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used.
+* ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used.
+* ```--help``` - show help
+
+To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
+
+
 ## Debugging
 
 When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with display, check power supply, check internet connection and try to reboot the device. If that doesn't help:
@@ -218,10 +241,12 @@ When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with d
 
 If problem still occurs, please create an issue here.
 
+**_NOTE_** - I've experienced some display issues like shadowing or distorted images when used bad or too weak power supplies so make sure You provide stable 5V/3A.
+
 
 ## Performance
 
-Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took around 2-3 minutes in average to pull the UHD photo, process it and put it on display. Here's a graph of loads during ePiframe tests:
+Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took up to 2 minutes in average to pull the UHD photo, process it and put it on display. The conversion has been optimized: filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
 
 
 ## Service control
@@ -241,6 +266,8 @@ sudo systemctl restart ePiframe.service
 
 If You're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is the best choice: color LCD support, ambient light sensor, off hours and many, many more. 
 
+
 I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself to not get crazy during the lockdown.
+
 
 Also a very nice e-paper Waveshare display with Raspberry Pi idea is [inkycal](https://github.com/aceisace/Inky-Calendar)
