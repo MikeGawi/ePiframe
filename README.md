@@ -25,6 +25,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
    * [Debugging](#debugging)
    * [Performance](#performance) 
    * [Service control](#service-control)
+   * [Resources](#resources)
    * [This is not what I'm looking for](#this-is-not-what-im-looking-for)
 <!--te-->
 
@@ -263,6 +264,19 @@ sudo systemctl start ePiframe.service
 sudo systemctl restart ePiframe.service
 ```
 
+
+## Resources
+	
+This project uses:
+* [Google Photos API](https://developers.google.com/photos/library/guides/overview)
+* [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper)
+* [Pandas Dataframe](https://pandas.pydata.org/)
+
+Helpful links:
+* [Najeem Muhammed: Analyzing my Google Photos library with Python and Pandas](https://medium.com/@najeem/analyzing-my-google-photos-library-with-python-and-pandas-bcb746c2d0f2)
+* [Jie Jenn: Google Photos API Python tutorial](https://learndataanalysis.org/category/python-tutorial/google-photos-api/)
+* [Leon Miller-Out: Auto-recovery of crashed services with systemd](https://singlebrook.com/2017/10/23/auto-restart-crashed-service-systemd/)
+	
 
 ## This is not what I'm looking for
 
