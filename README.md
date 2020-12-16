@@ -68,9 +68,9 @@ You can use any photo frame for Your ePiframe and cut the back to make place for
 
 Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
 
-| <img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500"/> | 
+|<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500"/>| 
 |:--:| 
-| *Printed back (black) of 13x18cm (5"x7") frame for 7.5" screen with passe-partout (white)* |
+|*Printed back (black) of 13x18cm (5"x7") frame for 7.5" screen with passe-partout (white)*|
 
 [Thing files](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg)
 
@@ -125,10 +125,11 @@ sudo -H pip3 install --upgrade google-api-python-client google-auth-httplib2 goo
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
 ```bash
 cd <path>
-sudo wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip
+wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip
 unzip -q ePiframe.zip
 cp -r ePiframe/* .
 rm -r ePiframe/ ePiframe.zip
+chmod +x *.py
 ```
 * Download Waveshare ZIP file (or use [git](https://github.com/waveshare/e-Paper)) and extract all RasPi Waveshare display libraries to *lib* inside *path*:
 ```bash
@@ -180,7 +181,7 @@ Move to [next steps](#next-steps)
 * Reboot ePiframe device to start enabled SPI support and automatically run frame
 * Enjoy Your ePiframe!
 
-Additionaly You can (do it on Your own risk):
+Additionaly You can (on Your own risk):
 * [Install ZRAM](https://haydenjames.io/raspberry-pi-performance-add-zram-kernel-parameters/) to "get" more RAM and boost RasPI
 * [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
 go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
@@ -226,7 +227,7 @@ Move to [next steps](#next-steps-1)
 ### Command line
 
 Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
-* ```--check-config```- checks configuration file syntax
+* ```--check-config``` - checks configuration file syntax
 * ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc.
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used.
 * ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used.

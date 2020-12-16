@@ -285,6 +285,7 @@ fi
 install_service $path
 
 sudo chown -R pi $path
+sudo chmod +x $path/*.py
 
 show_next_steps
 echo -e "\n\033[0;30mEnded `date`\033[0m"
