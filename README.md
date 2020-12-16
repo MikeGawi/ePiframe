@@ -68,11 +68,12 @@ You can use any photo frame for Your ePiframe and cut the back to make place for
 
 Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
 
-13x18cm (5"x7") frame for 7.5" screen
+<figure>
+  <img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500"/>
+  <figcaption>Printed back (black) of 13x18cm (5"x7") frame for 7.5" screen with passe-partout (white)</figcaption>
+</figure>
 
 [Thing files](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg)
-
-<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500">
 
 
 ## Advantages
@@ -130,7 +131,7 @@ unzip -q ePiframe.zip
 cp -r ePiframe/* .
 rm -r ePiframe/ ePiframe.zip
 ```
-* Download Waveshare ZIP file (or use git) and extract all RasPi Waveshare display libraries to lib inside *path*:
+* Download Waveshare ZIP file (or use [git](https://github.com/waveshare/e-Paper)) and extract all RasPi Waveshare display libraries to *lib* inside *path*:
 ```
 cd <path>
 wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip
@@ -139,20 +140,22 @@ cp -r e-Paper-master/RaspberryPi&JetsonNano/python/lib .
 rm -r e-Paper-master/ waveshare.zip
 ```
 * Enable SPI support:
-```
+```bash
 sudo raspi-config
 ```
-Go to *Advanced Options -> SPI* and choose *Yes* for both questions then select *Finish* to exit *raspi-config*.
+Go to *Advanced Options -> SPI* and choose *Yes* for both questions then select *Finish* to exit *raspi-config*
 
-Either reboot your Pi or run this command to load the kernel module
-```
+Either reboot your Pi or run this command to load the kernel module:
+```bash
 sudo modprobe spi-bcm2708
 ```
 * Install ePiframe service
-```
-#replace paths
+  * replace paths
+```bash
 sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org > ePiframe.service
-#enable service
+```
+  * enable service
+```bash
 sudo systemctl enable `pwd`/ePiframe.service
 ```
 
@@ -172,7 +175,7 @@ Move to [next steps](#next-steps)
   * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device.
   * Script will produce *token.pickle* file
 * Copy credentials JSON and token pickle file to ePiframe device inside installation path
-* Configure ePiframe with *config.cfg* file inside installation path
+* Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
 * Reboot ePiframe device to start enabled SPI support and automatically run frame
@@ -216,7 +219,7 @@ Move to [next steps](#next-steps-1)
 ## Configuration
 
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
-* ALWAYS check configuration with ```./ePiframe.py --check-config```
+* **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
 **_NOTE_** - interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. AFAIK You can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
 
