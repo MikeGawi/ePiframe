@@ -129,6 +129,7 @@ wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip
 unzip -q ePiframe.zip
 cp -r ePiframe/* .
 rm -r ePiframe/ ePiframe.zip
+sudo chown -R pi ..
 chmod +x *.py
 ```
 * Download Waveshare ZIP file (or use [git](https://github.com/waveshare/e-Paper)) and extract all RasPi Waveshare display libraries to *lib* inside *path*:
