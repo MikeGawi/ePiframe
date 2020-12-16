@@ -78,7 +78,7 @@ Or You can 3D print a nice standing frame back with case for Your Raspberry Pi a
 * Autonomic device, once configured can be left headless
 * e-paper display gives an unique look and You don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
 * Photo is displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh and doesn't have back light
-* Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on-fly and adjust them to the display
+* Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display
 * Supports all image formats including RAW
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
 * Simple script in Python to automate frame update, everything is configurable (within one [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file) and in one place
@@ -215,12 +215,12 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * ALWAYS check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator) in the **photo description** field. AFAIK You can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
+**_NOTE_** - interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. AFAIK You can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
 
 
 ### Command line
 
-Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debuggung:
+Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
 * ```--check-config```- checks configuration file syntax
 * ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc.
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used.
@@ -246,7 +246,7 @@ If problem still occurs, please create an issue here.
 
 ## Performance
 
-Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took up to 2 minutes in average to pull the UHD photo, process it and put it on display. The conversion has been optimized: filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
+Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took maximum up to 2 minutes to pull the UHD photo, process it and put it on display. The conversion has been [optimized](https://stackoverflow.com/questions/28704984/how-to-speed-up-a-complex-image-processing): filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
 
 
 ## Service control
