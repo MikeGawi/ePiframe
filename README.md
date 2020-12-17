@@ -64,9 +64,9 @@ Color presets              |  Different backgrounds
 
 ### Frame
 
-You can use any photo frame for Your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame Your display and cover all unwanted elements. 
+you can use any photo frame for your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame your display and cover all unwanted elements. 
 
-Or You can 3D print a nice standing frame back with case for Your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
+Or you can 3D print a nice standing frame back with case for your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
 
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500"/>| 
 |:--:| 
@@ -79,15 +79,17 @@ Or You can 3D print a nice standing frame back with case for Your Raspberry Pi a
 
 * Low energy consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
 * Autonomic device, once configured can be left headless
-* e-paper display gives an unique look and You don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
+* e-paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
 * Photo is displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh and doesn't have back light
 * Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display
 * Supports all image formats including RAW
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
 * Simple script in Python to automate frame update, everything is configurable (within one [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
-* Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it Yourself) - a great gift idea
+* Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it yourself)
 * Simple yet powerful
+
+ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the display before handing it (using [command line](#command-line)) and many more. 
 
 
 ## Installation
@@ -129,7 +131,6 @@ wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip
 unzip -q ePiframe.zip
 cp -r ePiframe/* .
 rm -r ePiframe/ ePiframe.zip
-sudo chown -R pi ..
 chmod +x *.py
 ```
 * Download Waveshare ZIP file (or use [git](https://github.com/waveshare/e-Paper)) and extract all RasPi Waveshare display libraries to *lib* inside *path*:
@@ -139,6 +140,7 @@ wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip
 unzip -q waveshare.zip
 cp -r e-Paper-master/RaspberryPi&JetsonNano/python/lib .
 rm -r e-Paper-master/ waveshare.zip
+sudo chown -R pi ..
 ```
 * Enable SPI support:
 ```bash
@@ -166,7 +168,7 @@ Move to [next steps](#next-steps)
 ## Next steps
 
 * Connect display to Raspberry Pi
-* Add Your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started)
+* Add your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started)
   * Name it *ePiframe*
   * Use *TV and Limited Input* as application type
 * Download credentials JSON file for the API from the previous step
@@ -180,9 +182,9 @@ Move to [next steps](#next-steps)
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
 * Reboot ePiframe device to start enabled SPI support and automatically run frame
-* Enjoy Your ePiframe!
+* Enjoy your ePiframe!
 
-Additionaly You can (on Your own risk):
+Additionaly you can (on your own risk):
 * [Install ZRAM](https://haydenjames.io/raspberry-pi-performance-add-zram-kernel-parameters/) to "get" more RAM and boost RasPI
 * [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
 go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
@@ -222,7 +224,7 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. AFAIK You can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
+**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. AFAIK you can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
 
 
 ### Command line
@@ -230,16 +232,16 @@ Move to [next steps](#next-steps-1)
 Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
 * ```--check-config``` - checks configuration file syntax
 * ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
-* ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used
+* ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
 * ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
 * ```--help``` - show help
 
-To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
+**_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
 
 
 ## Debugging
 
-When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with display, check power supply, check internet connection and try to reboot the device. If that doesn't help:
+When ePiframe is not refreshing, it's a tragedy indeed. Check your wiring with display, check power supply, check internet connection and try to reboot the device. If that doesn't help:
 * [Check configuration](#configuration)
 * Do a test with ```./ePiframe.py --test``` without sending photo to display and get detailed log on what is happening
 * Make sure that configured photo filtering is not narrowing too much, i.e. only one or no photos at all are filtered (test that in the step above)
@@ -248,7 +250,7 @@ When ePiframe is not refreshing, it's a tragedy indeed. Check Your wiring with d
 
 If problem still occurs, please create an issue here.
 
-**_NOTE_** - I've experienced some display issues like shadowing or distorted images when used bad or too weak power supplies so make sure You provide stable 5V/3A.
+**_NOTE_** - I've experienced some display issues like shadowing or distorted images when used bad or too weak power supplies so make sure you provide stable 5V/3A.
 
 
 ## Performance
@@ -275,16 +277,18 @@ This project uses:
 * [Google Photos API](https://developers.google.com/photos/library/guides/overview)
 * [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper)
 * [Pandas Dataframe](https://pandas.pydata.org/)
+* [ImageMagick](https://imagemagick.org/)
 
 Helpful links:
 * [Najeem Muhammed: Analyzing my Google Photos library with Python and Pandas](https://medium.com/@najeem/analyzing-my-google-photos-library-with-python-and-pandas-bcb746c2d0f2)
 * [Jie Jenn: Google Photos API Python tutorial](https://learndataanalysis.org/category/python-tutorial/google-photos-api/)
 * [Leon Miller-Out: Auto-recovery of crashed services with systemd](https://singlebrook.com/2017/10/23/auto-restart-crashed-service-systemd/)
+* [Sander Marechal: A simple unix/linux daemon in Python](https://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/)
 	
 
 ## This is not what I'm looking for
 
-If You're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is the best choice: color LCD support, ambient light sensor, off hours and many, many more. 
+If you're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is the best choice: color LCD support, ambient light sensor, off hours and many, many more. 
 
 
 I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself to not get crazy during the lockdown.
