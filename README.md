@@ -227,7 +227,7 @@ Move to [next steps](#next-steps-1)
 **_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. AFAIK you can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as are stored in different database :(
 
 
-### Command line
+## Command line
 
 Main ePiframe script *ePiframe.py* is written in Python and can work from CLI, the ePiframe service daemon *ePiframe_service.py* just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
 
