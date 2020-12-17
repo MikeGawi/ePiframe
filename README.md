@@ -229,7 +229,9 @@ Move to [next steps](#next-steps-1)
 
 ### Command line
 
-Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
+Main ePiframe script *ePiframe.py* is written in Python and can work from CLI, the ePiframe service daemon *ePiframe_service.py* just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
+
+Syntax: ```ePiframe.py [option]```
 * ```--check-config``` - checks configuration file syntax
 * ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
