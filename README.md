@@ -172,7 +172,7 @@ Move to [next steps](#next-steps)
   *  Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
   * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
-  * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device.
+  * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device
   * Script will produce *token.pickle* file
 * Copy credentials JSON and token pickle file to ePiframe device inside installation path
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
@@ -228,9 +228,9 @@ Move to [next steps](#next-steps-1)
 
 Main ePiframe script is written in Python and can work from CLI, the ePiframe service just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
 * ```--check-config``` - checks configuration file syntax
-* ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc.
-* ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used.
-* ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used.
+* ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
+* ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used
+* ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
 * ```--help``` - show help
 
 To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
