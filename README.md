@@ -154,13 +154,13 @@ sudo modprobe spi-bcm2708
 ```
 * Install ePiframe service
   * replace paths
-```bash
-sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org > ePiframe.service
-```
+	```bash
+	sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org > ePiframe.service
+	```
   * enable service
-```bash
-sudo systemctl enable `pwd`/ePiframe.service
-```
+	```bash
+	sudo systemctl enable `pwd`/ePiframe.service
+	```
 
 Move to [next steps](#next-steps)
 
