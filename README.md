@@ -32,24 +32,24 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 ## Main features
 
-* Pulls photos (videos are ignored) from one or more albums in Google Photos and automatically prepares them for attached e-paper display
+* Pulls photos (videos are ignored) from one or more albums in Google Photos and automatically prepares them for attached e-Paper display
 * Non-HDMI e-Paper Waveshare SPI displays supported
 * No additional storage or 3rd party software is required as only one and current photo is downloaded and processed per frame update
 * Updating after time interval with option to change time per photo (by hot word in photo description)
 * Off hours per different days
 * Photo filtering (by creation date, number of images)
 * Showing randomly, descendingly or ascendingly by creation date
-* Automatic conversion to black and white with 6 different presets, color inversion and various background colors 
+* Automatic conversion to black-and-white with 6 different presets, color inversion and various background colors 
 * For vertical or horizontal frame position
 * Even for Raspberry Pi Zero W + Raspberry Pi OS Lite
 * Low energy consumption
 
 ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif)
 
-| Color presets              | Different backgrounds|
+| Color presets             | Different backgrounds     |
 |:-------------------------:|:-------------------------:|
 | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie.gif) | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie2.gif) |
-|<ul align="left"><li>Floyd-Steinberg dither + enhanced contrast</li><li>Floyd-Steinberg dither + high remap</li><li>GIMP-like result</li><li>Floyd-Steinberg ordered dither</li><li>direct conversion to black&white</li><li>simple conversion to black&white + basic dither</li><li>inverted colors (all presets above will work with this function)</li></ul> |<ul align="left"><li>white</li><li>black</li><li>blurred and enlarged source photo to cover empty areas</li></ul> |
+|<ul align="left"><li>Floyd-Steinberg dither + enhanced contrast</li><li>Floyd-Steinberg dither + high remap</li><li>GIMP-like result</li><li>Floyd-Steinberg ordered dither</li><li>direct conversion to black-and-white</li><li>simple conversion to black-and-white + basic dither</li><li>inverted colors (all presets above will work with this function)</li></ul> |<ul align="left"><li>white</li><li>black</li><li>blurred and enlarged source photo to cover empty areas</li></ul> |
 
 
 ## Hardware required
@@ -80,8 +80,8 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 
 * Low energy consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
 * Autonomic device, once configured can be left headless
-* e-paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
-* Photo is displayed even if power (or network) is down to avoid blank frame - e-paper takes power only during refresh and doesn't have back light
+* e-Paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
+* Photo is displayed even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
 * Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display
 * Supports all image formats including RAW
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
@@ -267,7 +267,7 @@ Image processing is the most resources consuming process but ePiframe is meant t
 |||
 |--|--|
 |Highest load peak during runtime |*0.67* |
-|Average maximum load peak during runtime |*0.43* |
+|Average of maximum load peaks during runtime |*0.43* |
 |Average load during runtime (except off hours) |*0.105* |
 
 
