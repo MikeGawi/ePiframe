@@ -107,7 +107,7 @@ ePiframe is a very nice handmade gift idea: create an album that whole family ca
 
 Use *install.sh* script:
 
-```bash
+```
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh
 ```
@@ -117,16 +117,16 @@ Move to [next steps](#next-steps)
 ### Manual
 
 * Install APTs:
-```bash
+```
 sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev python3 python3-pip
 ```
 * Install PIPs:
-```bash
+```
 sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image
 sudo -H pip3 install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
-```bash
+```
 cd <path>
 wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip
 unzip -q ePiframe.zip
@@ -135,7 +135,7 @@ rm -r ePiframe/ ePiframe.zip
 chmod +x *.py
 ```
 * Download Waveshare ZIP file (or use [git](https://github.com/waveshare/e-Paper)) and extract all RasPi Waveshare display libraries to *lib* inside *path*:
-```bash
+```
 cd <path>
 wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip
 unzip -q waveshare.zip
@@ -144,22 +144,22 @@ rm -r e-Paper-master/ waveshare.zip
 sudo chown -R pi ..
 ```
 * Enable SPI support:
-```bash
+```
 sudo raspi-config
 ```
 Go to *Advanced Options -> SPI* and choose *Yes* for both questions then select *Finish* to exit *raspi-config*
 
 Either reboot your Pi or run this command to load the kernel module:
-```bash
+```
 sudo modprobe spi-bcm2708
 ```
 * Install ePiframe service
   * replace paths
-	```bash
+	```
 	sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org > ePiframe.service
 	```
   * enable service
-	```bash
+	```
 	sudo systemctl enable `pwd`/ePiframe.service
 	```
 
@@ -198,7 +198,7 @@ go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
 ### Automatic
 
 Use *install.sh* script:
-```bash
+```
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
 ./install.sh --uninstall
 ```
@@ -207,7 +207,7 @@ Move to [next steps](#next-steps-1)
 
 ### Manual
 
-```bash
+```
 sudo systemctl stop ePiframe.service
 sudo systemctl disable ePiframe.service
 ```
@@ -274,7 +274,7 @@ Image processing is the most resources consuming process but ePiframe is meant t
 ## Service control
 
 ePiframe comes with a system service that is fully autonomic, automatic and self-recovering. It can be left completely unsupervised but it is possible to control it if needed, the same way as every service in Linux:
-```bash
+```
 #stop
 sudo systemctl stop ePiframe.service
 #start
