@@ -46,16 +46,10 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif)
 
-|Color presets              |Different backgrounds|
+| Color presets              | Different backgrounds|
 |:-------------------------:|:-------------------------:|
-|![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie.gif) | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie2.gif)|
-|* Floyd-Steinberg dither + enhanced contrast|* white |
-|* Floyd-Steinberg dither + high remap |* black|
-|* GIMP-like result|* blurred and enlarged source photo to cover empty areas|
-|* Floyd-Steinberg ordered dither| |
-|* direct conversion to black&white| |
-|* simple conversion to black&white + basic dither| |
-|* inverted colors (all presets above will work with this function)| |
+| ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie.gif) | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie2.gif) |
+|<ul align="left"><li>Floyd-Steinberg dither + enhanced contrast</li><li>Floyd-Steinberg dither + high remap</li><li>GIMP-like result</li><li>Floyd-Steinberg ordered dither</li><li>direct conversion to black&white</li><li>simple conversion to black&white + basic dither</li><li>simple conversion to black&white + basic dither</li><li>inverted colors (all presets above will work with this function)</li></ul> |<ul align="left"><li>white</li><li>black</li><li>blurred and enlarged source photo to cover empty areas</li></ul> |
 
 
 ## Hardware required
@@ -266,13 +260,15 @@ If problem still occurs, please create an issue here.
 
 Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took maximum up to 2 minutes to pull the UHD photo, process it and put it on display. The conversion has been [optimized](https://stackoverflow.com/questions/28704984/how-to-speed-up-a-complex-image-processing): filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
 
-|<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/graph.png" width="500"/>| 
+|<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/graph.png" width="720"/>| 
 |:--:| 
 |*Graph of loads (1, 5, 15 minutes) for ePiframe run. Off hours from 23:30-5:30, frame refresh interval was 10 minutes, various photo types and quality (4K photos too) with Floyd-Steinberg dither + enhanced contrast filtering and photo background (so the heaviest conversion possible)*|
 
-|Highest load peak during runtime|*0.67*|
-|Average maximum load peak during runtime|*0.43*|
-|Average load during runtime (except off hours)|*0.105*|
+|||
+|--|--|
+|Highest load peak during runtime |*0.67* |
+|Average maximum load peak during runtime |*0.43* |
+|Average load during runtime (except off hours) |*0.105* |
 
 
 ## Service control
