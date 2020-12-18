@@ -49,7 +49,6 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 |Color presets              |Different backgrounds|
 |:-------------------------:|:-------------------------:|
 |![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie.gif) | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie2.gif)|
-|:-------------------------:|:-------------------------:|
 |* Floyd-Steinberg dither + enhanced contrast|* white |
 |* Floyd-Steinberg dither + high remap |* black|
 |* GIMP-like result|* blurred and enlarged source photo to cover empty areas|
@@ -272,9 +271,7 @@ Image processing is the most resources consuming process but ePiframe is meant t
 |*Graph of loads (1, 5, 15 minutes) for ePiframe run. Off hours from 23:30-5:30, frame refresh interval was 10 minutes, various photo types and quality (4K photos too) with Floyd-Steinberg dither + enhanced contrast filtering and photo background (so the heaviest conversion possible)*|
 
 |Highest load peak during runtime|*0.67*|
-|:--:|:--:|
 |Average maximum load peak during runtime|*0.43*|
-|:--:|:--:|
 |Average load during runtime (except off hours)|*0.105*|
 
 
