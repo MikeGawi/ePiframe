@@ -49,7 +49,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 | Color presets              | Different backgrounds|
 |:-------------------------:|:-------------------------:|
 | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie.gif) | ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/movie2.gif) |
-|<ul align="left"><li>Floyd-Steinberg dither + enhanced contrast</li><li>Floyd-Steinberg dither + high remap</li><li>GIMP-like result</li><li>Floyd-Steinberg ordered dither</li><li>direct conversion to black&white</li><li>simple conversion to black&white + basic dither</li><li>simple conversion to black&white + basic dither</li><li>inverted colors (all presets above will work with this function)</li></ul> |<ul align="left"><li>white</li><li>black</li><li>blurred and enlarged source photo to cover empty areas</li></ul> |
+|<ul align="left"><li>Floyd-Steinberg dither + enhanced contrast</li><li>Floyd-Steinberg dither + high remap</li><li>GIMP-like result</li><li>Floyd-Steinberg ordered dither</li><li>direct conversion to black&white</li><li>simple conversion to black&white + basic dither</li><li>inverted colors (all presets above will work with this function)</li></ul> |<ul align="left"><li>white</li><li>black</li><li>blurred and enlarged source photo to cover empty areas</li></ul> |
 
 
 ## Hardware required
