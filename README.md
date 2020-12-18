@@ -262,7 +262,7 @@ Image processing is the most resources consuming process but ePiframe is meant t
 
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/graph.png" width="720"/>| 
 |:--:| 
-|*Graph of loads (1, 5, 15 minutes) for ePiframe run. Off hours from 23:30-5:30, frame refresh interval was 10 minutes, various photo types and quality (4K photos too) with Floyd-Steinberg dither + enhanced contrast filtering and photo background (so the heaviest conversion possible)*|
+|*Graph of loads (1, 5, 15 minutes) for ePiframe run. Off hours from 23:30-5:30, frame refresh interval was 10 minutes, various photo types and quality (4K photos too) with Floyd-Steinberg dither + enhanced contrast preset and photo background (so the heaviest conversion possible)*|
 
 |||
 |--|--|
