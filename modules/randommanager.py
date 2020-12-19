@@ -20,13 +20,15 @@ class randommanager:
 			pass
 		
 		if not olddata.empty:
-			self.__data.loc[self.__data.id.isin(olddata.id), [self.__COLUMN_NAME]] = olddata[self.__COLUMN_NAME]		
+			self.__data.loc[self.__data.id.isin(olddata.id), [self.__COLUMN_NAME]] = olddata[self.__COLUMN_NAME]
 			
+		self.__data[self.__COLUMN_NAME].fillna(0, inplace=True)
+		
 	def __save (self):
 		self.__data.to_csv(self.__path)
 	
 	def get_random (self, lastid:str):
-		randoms = self.__data.loc[self.__data[self.__COLUMN_NAME] == 0]
+		randoms = self.__data.copy().loc[self.__data[self.__COLUMN_NAME] != 1]
 		
 		if randoms.empty:
 			self.__data[self.__COLUMN_NAME] = 0
