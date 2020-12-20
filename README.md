@@ -289,7 +289,7 @@ sudo systemctl restart ePiframe.service
  
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/flow.png" width="600"/>| 
 |:--:| 
-|*flow diagram of ```ePiframe.py``` - main script. If any step fails or has no result then script will exit*|
+|*Flow diagram of ```ePiframe.py``` - main script. If any step fails or has no result then script will exit*|
 
 
 ## Resources
