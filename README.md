@@ -82,7 +82,7 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 * Autonomic device, once configured can be left headless
 * e-Paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
 * Photo is displayed even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
-* Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display
+* Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display. No matter what quality and what size they are
 * Supports all image formats including RAW
 * Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
 * Simple script in Python to automate frame update, everything is configurable (within one [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file) and in one place
