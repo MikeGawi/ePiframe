@@ -25,6 +25,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
    * [Debugging](#debugging)
    * [Performance](#performance) 
    * [Service control](#service-control)
+   * [Flow](#flow)
    * [Resources](#resources)
    * [This is not what I'm looking for](#this-is-not-what-im-looking-for)
 <!--te-->
@@ -282,6 +283,13 @@ sudo systemctl start ePiframe.service
 #restart
 sudo systemctl restart ePiframe.service
 ```
+
+
+## Flow
+ 
+|<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/flow.png" width="600"/>| 
+|:--:| 
+|*flow diagram of ```ePiframe.py``` - main script. If any step fails or has no result then script will exit*|
 
 
 ## Resources
