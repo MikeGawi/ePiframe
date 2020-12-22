@@ -66,10 +66,10 @@ else:
 		pidman = pidmanager(config.get('pid_file'))
 		
 		lastPid = pidman.read()
-		
 		if int(lastPid) > 0:
 			try:
-				os.kill(int(lastPid), signal.SIGKILL)
+				if os.path.basename(__file__) in get_pid_name(lastPid):
+					os.kill(int(lastPid), signal.SIGKILL)
 			except Exception: 
 				pass
 			pidman.remove()

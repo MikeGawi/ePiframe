@@ -1,4 +1,5 @@
 import sys,os
+import subprocess
 
 class pidmanager:
 	
@@ -34,3 +35,10 @@ class pidmanager:
 	
 	def get_pid (self):
 		return self.__pid
+	
+	def get_pid_name (self, pid):
+		p = subprocess.Popen(["ps -o cmd= {}".format(pid)], stdout=subprocess.PIPE, shell=True)	
+		p.wait()		
+		out, err = p.communicate()
+
+		return out
