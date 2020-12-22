@@ -150,10 +150,8 @@ sudo raspi-config
 ```
 Go to *Advanced Options -> SPI* and choose *Yes* for both questions then select *Finish* to exit *raspi-config*
 
-Either reboot your Pi or run this command to load the kernel module:
-```
-sudo modprobe spi-bcm2708
-```
+Reboot your Pi.
+
 * Install ePiframe service
   * replace paths
 	```
