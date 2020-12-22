@@ -192,7 +192,6 @@ Additionaly you can (on your own risk):
 go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
 * [Disable HDMI](https://raspberrypi.stackexchange.com/questions/79728/keep-hdmi-off-on-boot) to preserve 25mA of power
 * [Disable Bluetooth](https://di-marco.net/blog/it/2020-04-18-tips-disabling_bluetooth_on_raspberry_pi/)
-* [Disable on-board LEDs](https://learn.pi-supply.com/make/how-to-save-power-on-your-raspberry-pi/#disable-on-board-leds) to preserve around 30mA of power
 
 
 ## Uninstalling
