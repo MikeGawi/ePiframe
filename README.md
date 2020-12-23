@@ -102,6 +102,8 @@ ePiframe is a very nice handmade gift idea: create an album that whole family ca
 * [Assemble Raspberry Pi and power it](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
 * [Find Raspberry Pi IP address](https://www.raspberrypi.org/documentation/remote-access/ip-address.md)
 * [Log in with SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) - chapter *4. Set up your client*
+* [Configure Raspberry Pi](https://www.raspberrypi.org/documentation/configuration/raspi-config.md)
+* [Update Raspberry Pi](https://www.raspberrypi.org/documentation/raspbian/updating.md)
 
 
 ### Automatic
@@ -140,7 +142,7 @@ chmod +x *.py
 cd <path>
 wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip
 unzip -q waveshare.zip
-cp -r e-Paper-master/RaspberryPi&JetsonNano/python/lib .
+cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .
 rm -r e-Paper-master/ waveshare.zip
 sudo chown -R pi ..
 ```
@@ -149,8 +151,6 @@ sudo chown -R pi ..
 sudo raspi-config
 ```
 Go to *Advanced Options -> SPI* and choose *Yes* for both questions then select *Finish* to exit *raspi-config*
-
-Reboot your Pi.
 
 * Install ePiframe service
   * replace paths
@@ -256,7 +256,7 @@ If problem still occurs, please create an issue here.
 
 ## Performance
 
-Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took maximum up to 2 minutes to pull the UHD photo, process it and put it on display. The conversion has been [optimized](https://stackoverflow.com/questions/28704984/how-to-speed-up-a-complex-image-processing): filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
+Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took maximum up to 2 minutes (avg. 60 seconds) to pull the UHD photo, process it and put it on display. The conversion has been [optimized](https://stackoverflow.com/questions/28704984/how-to-speed-up-a-complex-image-processing): filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
 
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/graph.png" width="720"/>| 
 |:--:| 

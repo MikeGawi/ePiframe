@@ -318,7 +318,7 @@ else:
 												raise
 	elif '--test-display' == sys.argv[1].lower():
 		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))	
-		if sys.argv[2]:
+		if len(sys.argv) > 2 and sys.argv[2]:
 			targetFilename = sys.argv[2]
 
 		if not os.path.exists(targetFilename):
@@ -335,7 +335,7 @@ else:
 	elif '--test-convert' == sys.argv[1].lower():
 		filename = os.path.join(config.get('photo_convert_path'), config.get('photo_download_name'))
 		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))
-		if sys.argv[2]:
+		if len(sys.argv) > 2 and sys.argv[2]:
 			filename = sys.argv[2]
 
 		if not os.path.exists(filename):
