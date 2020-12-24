@@ -17,6 +17,7 @@ class configmanager:
 		'photo_download_name' 		: 'Files and paths',
 		'photo_convert_filename' 	: 'Files and paths',
 		'convert_bin_path' 			: 'Files and paths',
+		'log_files' 				: 'Files and paths',
 		'photo_index_file' 			: 'Files and paths',
 		'photo_list_file' 			: 'Files and paths',
 		'pid_file' 					: 'Files and paths',
@@ -114,6 +115,8 @@ class configmanager:
 			raise Exception('Configuration display entry is missing!')
 		if not self.get('slide_interval'):
 			raise Exception('Configuration slide_interval entry is missing!')
+		if self.getint('slide_interval') < 180:
+			raise Exception('Configuration slide_interval entry should be >= than 180 seconds')
 		self.getint('convert_option')
 		if not self.get('convert_option'):
 			raise Exception('Configuration convert_option entry is missing!')

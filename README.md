@@ -146,6 +146,15 @@ cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .
 rm -r e-Paper-master/ waveshare.zip
 sudo chown -R pi ..
 ```
+
+Also consider changing Waveshare scripts according to those two pull requests:
+
+  * [https://github.com/waveshare/e-Paper/pull/71](Fix display resume from sleep issue)
+  * [https://github.com/waveshare/e-Paper/pull/104](Significantly increase speed of displaying images)
+
+I hope those improvements will be adapted to the master branch in the future.
+
+
 * Enable SPI support:
 ```
 sudo raspi-config
@@ -183,13 +192,6 @@ Move to [next steps](#next-steps)
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
 * Reboot ePiframe device to start enabled SPI support and automatically run frame
 * Enjoy your ePiframe!
-
-Additionaly you can (on your own risk):
-* [Install ZRAM](https://haydenjames.io/raspberry-pi-performance-add-zram-kernel-parameters/) to "get" more RAM and boost RasPI
-* [Assign the lowest RAM amount (16) to GPU](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md) or in ```sudo raspi-config```
-go to *Performance Options -> GPU Memory* and set this value to the minimum (16)
-* [Disable HDMI](https://raspberrypi.stackexchange.com/questions/79728/keep-hdmi-off-on-boot) to preserve 25mA of power
-* [Disable Bluetooth](https://di-marco.net/blog/it/2020-04-18-tips-disabling_bluetooth_on_raspberry_pi/)
 
 
 ## Uninstalling
@@ -243,6 +245,7 @@ Syntax: ```ePiframe.py [option]```
 ## Debugging
 
 When ePiframe is not refreshing, it's a tragedy indeed. Check your wiring with display, check power supply, check internet connection and try to reboot the device. If that doesn't help:
+* Check logs for service and ePiframe script that are stored in configured ```log_files``` location
 * [Check configuration](#configuration)
 * Do a test with ```./ePiframe.py --test``` without sending photo to display and get detailed log on what is happening
 * Make sure that configured photo filtering is not narrowing too much, i.e. only one or no photos at all are filtered (test that in the step above)
