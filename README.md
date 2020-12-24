@@ -259,11 +259,11 @@ If problem still occurs, please create an issue here.
 
 ## Performance
 
-Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took maximum up to 2 minutes (avg. 60 seconds) to pull the UHD photo, process it and put it on display. The conversion has been [optimized](https://stackoverflow.com/questions/28704984/how-to-speed-up-a-complex-image-processing): filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
+Image processing is the most resources consuming process but ePiframe is meant to work on Raspberry Pi Zero. Script does one thing at a time and moves to another task, there are no parallel jobs (even image conversion has been stripped to one thread) and the peak of load is only during frame update. On Raspberry Pi Zero W v1.1 it took maximum up to 2 minutes (avg. 60 seconds) to pull the 4K photo, process it and put it on display. The conversion has been [optimized](https://stackoverflow.com/questions/28704984/how-to-speed-up-a-complex-image-processing): filters are not used, scale + resize instead of blur but with the same results, resampling instead of resizing, etc. Here's a graph of loads during ePiframe tests:
 
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/graph.png" width="720"/>| 
 |:--:| 
-|*Graph of loads for ePiframe run on Raspberry Pi Zero W v1.1 and Raspberry Pi OS 10 Buster (5.4.79+). Off hours from 23:30 to 5:30, frame refresh interval was 10 minutes, various photo types and quality (4K photos too) with Floyd-Steinberg dither + enhanced contrast preset and photo background (so the heaviest conversion possible)*|
+|*Graph of loads for ePiframe run on Raspberry Pi Zero W v1.1 and Raspberry Pi OS 10 Buster (5.4.79+). Off hours from 23:30 to 5:30, frame refresh interval was 10 minutes, various photo types and quality (4K UHD photos too) with Floyd-Steinberg dither + enhanced contrast preset and photo background (so the heaviest conversion possible)*|
 
 |||
 |--|--|
