@@ -149,8 +149,8 @@ sudo chown -R pi ..
 
 Also consider changing Waveshare scripts according to those two pull requests:
 
-  * [https://github.com/waveshare/e-Paper/pull/71](Fix display resume from sleep issue)
-  * [https://github.com/waveshare/e-Paper/pull/104](Significantly increase speed of displaying images)
+  * [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)
+  * [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)
 
 I hope those improvements will be adapted to the master branch in the future.
 
