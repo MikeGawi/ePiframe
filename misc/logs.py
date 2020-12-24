@@ -19,10 +19,7 @@ class logs:
 			self.__logger = logging.getLogger("ePiframe")
 			self.__logger.setLevel(logging.INFO)
 
-			handler = TimedRotatingFileHandler(path,
-											   when="midnight",
-											   interval=1,
-											   backupCount=6)
+			handler = TimedRotatingFileHandler(path, when="midnight", interval=1, backupCount=6)
 
 			def namer(name):
 				return name + ".gz"
