@@ -58,19 +58,17 @@ class daemon:
 
 	def start(self):
 		# Check for a pidfile to see if the daemon already runs
-		try:
-			with open(self.pidfile,'r') as pf:
+		#try:
+		#		pf = file(self.pidfile,'r')
+		#		pid = int(pf.read().strip())
+		#		pf.close()
+		#except IOError:
+		#		pid = None
 
-				pid = int(pf.read().strip())
-		except IOError:
-			pid = None
-	
-		#if pid:		
-			#self.stop()
-			#message = "pidfile {0} already exist. " + \
-			#		"Daemon already running?\n"
-			#sys.stderr.write(message.format(self.pidfile))
-			#sys.exit(1)
+		#if pid:
+		#		message = "pidfile %s already exist. Daemon already running?\n"
+		#		sys.stderr.write(message % self.pidfile)
+		#		sys.exit(1)
 		
 		# Start the daemon
 		self.daemonize()
