@@ -16,13 +16,17 @@ class connection:
 
 	@classmethod
 	def download_file (cls, url:str, destination_folder:str, file_name:str, code:int):
-		response = requests.get(url)
+		session = requests.Session()
+		response = session.get(url, stream = True)
+		response.raise_for_status()
 		
 		if response.status_code == code:
 			filename = os.path.join(destination_folder, file_name)
 			
 			with open(filename, 'wb') as f:	
-				f.write(response.content)
+				for chunk in response.iter_content(chunk_size = 1024):
+					if chunk:
+						f.write(chunk)
 				f.close()
 				
 		return response.status_code
