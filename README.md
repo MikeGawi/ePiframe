@@ -37,7 +37,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Pulls photos (videos are ignored) from one or more albums in Google Photos and automatically prepares them for attached e-Paper display
 * Non-HDMI e-Paper Waveshare SPI displays supported
 * No additional storage or 3rd party software is required as only one and current photo is downloaded and processed per frame update
-* Updating after time interval with option to change time per photo (by hot word in photo description)
+* Updating after time interval with option to change time per photo (by *hot word* in photo description)
 * Off hours per different days
 * Photo filtering (by creation date, number of images)
 * Showing randomly, descendingly or ascendingly by creation date
@@ -60,7 +60,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 * A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
 * [microSD card for Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/sd-cards.md), 4GB minimum
-* [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest will with small modifications)
+* [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest as well but with small modifications)
 * Raspberry Pi power supply (as display is usually powered from RasPi HAT then 5V/3A is preferred)
 * Photo frame (for 7.5" screen I used 13x18cm /5"x7"/ with printed parts)
 
@@ -82,11 +82,11 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 
 * Low energy consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
 * Autonomic device, once configured can be left headless
-* e-Paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions as it would be with LCDs
+* e-Paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions (as with LCDs)
 * Photo is displayed even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
 * Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display. No matter what quality and what size they are
 * Supports all image formats including RAW
-* Currently displayed photo can be removed from the album but ePiframe will remember where it should continue
+* Currently displayed photo can be removed from the album but ePiframe will remember where to continue
 * Simple script in Python to automate frame update, everything is configurable (within one [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
 * Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it yourself)
@@ -226,7 +226,7 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) :(
+**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) :(
 
 
 ## Command line
@@ -328,7 +328,7 @@ Helpful links:
 If you're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](https://github.com/mrworf/photoframe/) is the best choice: color LCD support, ambient light sensor, off hours and many, many more. 
 
 
-I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself to not get crazy during the lockdown.
+I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself (not to get crazy during the lockdown).
 
 
 Also a very nice e-paper Waveshare display with Raspberry Pi idea is [inkycal](https://github.com/aceisace/Inky-Calendar)
