@@ -27,7 +27,7 @@ class randommanager:
 	def __save (self):
 		self.__data.to_csv(self.__path)
 	
-	def get_random (self, lastid:str):
+	def get_random (self, lastid:str, nosave=False):
 		randoms = self.__data.copy().loc[self.__data[self.__COLUMN_NAME] != 1]
 		
 		if randoms.empty:
@@ -42,8 +42,10 @@ class randommanager:
 		sample = randoms.sample()
 		
 		index = sample.index.values[0]
-			
+		
 		self.__data.at[index, self.__COLUMN_NAME] = 1
-		self.__save()
+		
+		if not nosave:
+			self.__save()
 		
 		return index

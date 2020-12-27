@@ -55,7 +55,7 @@ class service(daemon):
 			if inter > 0:
 				inter -= 1
 				interval.save(inter)
-				self.__logging.log("Interval multipicated for current photo", silent=True)
+				self.__logging.log("Interval multipicated for current photo", silent=True)			
 			else:
 				interval.remove()
 				inter = -1

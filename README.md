@@ -26,6 +26,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
    * [Performance](#performance) 
    * [Service control](#service-control)
    * [Flow](#flow)
+   * [Future plans](#future-plans)
    * [Resources](#resources)
    * [This is not what I'm looking for](#this-is-not-what-im-looking-for)
 <!--te-->
@@ -225,7 +226,7 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. AFAIK you can access this attribute from the Google Photos web interface **only**. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) :(
+**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses hot word (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) :(
 
 
 ## Command line
@@ -237,6 +238,7 @@ Syntax: ```ePiframe.py [option]```
 * ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
 * ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
+* ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
 * ```--help``` - show help
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
@@ -290,6 +292,20 @@ sudo systemctl restart ePiframe.service
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/flow.png" width="600"/>| 
 |:--:| 
 |*Flow diagram of ```ePiframe.py``` - main script. If any step fails or has no result then script will exit*|
+
+	
+## Future plans
+	
+ePiframe to-do list (for 2021):
+* Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/)
+* Configuration, service and frame control from the web interface
+* Ability to send photo directly to frame from the web interface
+* View of current photo - displayed and original one
+* Easier token generation from the web interface (is this even possible?)
+* Weather and temperature displayed on the photo (isn't this too much for me?)
+* Frame lasers, robot arms and making lunch functionality...
+
+Stay tuned!
 
 
 ## Resources

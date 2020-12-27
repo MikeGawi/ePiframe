@@ -15,9 +15,9 @@ class connection:
 		return ret
 
 	@classmethod
-	def download_file (cls, url:str, destination_folder:str, file_name:str, code:int):
+	def download_file (cls, url:str, destination_folder:str, file_name:str, code:int, timeout:int):
 		session = requests.Session()
-		response = session.get(url, stream = True)
+		response = session.get(url, stream = True, timeout=timeout)
 		response.raise_for_status()
 		
 		if response.status_code == code:

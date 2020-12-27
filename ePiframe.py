@@ -32,6 +32,7 @@ if '--help' in [x.lower() for x in sys.argv]:
 	print ("			with current ePiframe configuration")
 	print ("--test-convert [file]	converts the photo file to configured")
 	print ("			photo_convert_filename current ePiframe configuration")
+	print ("--no-skip		like --test but is not skipping to another photo")
 	print ("--help			this help")
 else: 	
 	startTime = logs.start_time()
@@ -55,7 +56,7 @@ else:
 
 	if '--check-config' in [x.lower() for x in sys.argv]: exit ()
 
-	if not '--test' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv]:
+	if not '--test' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv]:
 		try:
 			if not config.check_system():
 				raise Exception("SPI is disabled on system!")
@@ -250,7 +251,7 @@ else:
 								else:
 									#get random photo
 									randomman = randommanager(config.get('photo_list_file'), photos, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER)
-									indmanager.set_index(randomman.get_random(indmanager.get_id()))
+									indmanager.set_index(randomman.get_random(indmanager.get_id(), '--no-skip' in [x.lower() for x in sys.argv]))
 
 								#get filename + extension, download url and download file
 								photo = photoman.get_photo_by_index(photos, indmanager.get_index())
@@ -263,10 +264,12 @@ else:
 								if config.getint('interval_mult') == 1:
 									#if photo comment contains hotword then multiply interval by it's value and photo will be displayed longer
 									intervalman = intervalmanager(config.get('interval_mult_file'))
-									intervalman.remove()
+									if not '--no-skip' in [x.lower() for x in sys.argv]:
+										intervalman.remove()
 									try:
-										comment = str(photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER))
-										intervalman.save_interval(comment, config.get('interval_mult_hotword'), config.getint('interval_max_mult'))
+										if not '--no-skip' in [x.lower() for x in sys.argv]:
+											comment = str(photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER))
+											intervalman.save_interval(comment, config.get('interval_mult_hotword'), config.getint('interval_max_mult'))
 									except Exception:
 										pass
 
@@ -278,9 +281,12 @@ else:
 								logging.log ("Downloading next photo...")	
 
 								try:
-									ret = connection.download_file(downloadUrl, config.get('photo_convert_path') , filename, constants.OK_STATUS_ERRORCODE)
+									ret = connection.download_file(downloadUrl, config.get('photo_convert_path') , filename, constants.OK_STATUS_ERRORCODE, constants.CHECK_CONNECTION_TIMEOUT)
 								except Exception as exc:
 									ret = str(exc)
+									
+								if not os.path.exists(filename):
+									ret = "File was not downloaded!"
 
 								if ret != constants.OK_STATUS_ERRORCODE:
 									logging.log ("Fail! Server error: {}".format(str(ret)))
@@ -289,7 +295,8 @@ else:
 
 									#save index of current photo for next run
 									try:
-										indmanager.save()
+										if not '--no-skip' in [x.lower() for x in sys.argv]:
+											indmanager.save()
 									except IOError as e:
 										logging.log ("Error saving file {}: {}".format(config.get('photo_index_file'), e))
 										raise
@@ -307,7 +314,7 @@ else:
 									else:
 										logging.log ("Success!")
 
-										if not '--test' in [x.lower() for x in sys.argv]:
+										if not '--test' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv]:
 											logging.log ("Sending to display...")
 
 											displayman = displaymanager(config.get('display'))

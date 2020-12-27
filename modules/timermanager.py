@@ -26,6 +26,8 @@ class timermanager:
 			ret = True
 		elif now.time() > self.get_time_from_string(startTab).time() and not self.__endTimes[dow].strip() == self.__NO_TIME_MARK:
 			ret = now.time() > self.get_time_from_string(startTab).time() and now.time() < self.get_time_from_string(endTab).time()
+		elif now.time() > self.get_time_from_string(startTab).time() and self.__endTimes[dow].strip() == self.__NO_TIME_MARK:
+			ret = True
 		
 		return ret
 
