@@ -339,4 +339,7 @@ If you're looking for an LCD frame with Google Photos, [mrworf's Photo Frame](ht
 I also wanted to use [Magic Mirror](https://github.com/MichMich/MagicMirror) to create frame with [MMM-GooglePhotos](https://github.com/ChrisAcrobat/MMM-GooglePhotos) and doing a screen shot of the page for e-paper display like [rpi-magicmirror-eink](https://github.com/BenRoe/rpi-magicmirror-eink) does. Magic Mirror is a great software but I decided to do it by myself (not to get crazy during the lockdown).
 
 
+Or you can just use Arduino or ESP controller (even with attached card controller) and display photos from the storage. There are some projects like that in the Web but you lose Google Photos synchronisation.
+	
+	
 Also a very nice e-paper Waveshare display with Raspberry Pi idea is [inkycal](https://github.com/aceisace/Inky-Calendar)
