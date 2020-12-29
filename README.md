@@ -162,6 +162,8 @@ sudo raspi-config
 ```
 Go to *Advanced Options -> SPI* and choose *Yes* for both questions then select *Finish* to exit *raspi-config*
 
+Reboot ePiframe device to start enabled SPI support.
+
 * Install ePiframe service
   * replace paths
 	```
@@ -178,20 +180,26 @@ Move to [next steps](#next-steps)
 ## Next steps
 
 * Connect display to Raspberry Pi
-* Add your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started)
+* Add your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started) - *Enable the Google Photos Library API*
   * Name it *ePiframe*
-  * Use *TV and Limited Input* as application type
-* Download credentials JSON file for the API from the previous step
-  *  Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
+  * Use *TVs and Limited Input* as application type
+  Or through the Google API Console:
+  * Go to the [Google API Console](https://console.developers.google.com/apis/library)
+  * From the menu bar, select a project or create a new project
+  * To open the Google API Library, from the Navigation menu, select *APIs & Services > Library*
+  * Search for *Google Photos Library API*. Select the correct result and click *Enable*
+* Download credentials JSON file for the API from the previous step - *Download client configuration* button
+  *  Or Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
   * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
   * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device
   * Script will produce *token.pickle* file
-* Copy credentials JSON and token pickle file to ePiframe device inside installation path
+* Copy credentials JSON and token pickle file to ePiframe device inside installation path (using [*rsync*](https://ss64.com/bash/rsync.html) or [*scp*](https://ss64.com/bash/scp.html))
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
-* Reboot ePiframe device to start enabled SPI support and automatically run frame
+* Do a test with ```./ePiframe.py --test-display``` to test display
+* Reboot ePiframe device to automatically run frame
 * Enjoy your ePiframe!
 
 
