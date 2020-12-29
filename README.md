@@ -147,15 +147,6 @@ cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .
 rm -r e-Paper-master/ waveshare.zip
 sudo chown -R pi ..
 ```
-
-Also consider changing Waveshare scripts according to those two pull requests:
-
-  * [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)
-  * [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)
-
-I hope those improvements will be adapted to the master branch in the future.
-
-
 * Enable SPI support:
 ```
 sudo raspi-config
@@ -201,6 +192,14 @@ Move to [next steps](#next-steps)
 * Do a test with ```./ePiframe.py --test-display``` to test display
 * Reboot ePiframe device to automatically run frame
 * Enjoy your ePiframe!
+
+
+Also consider changing Waveshare scripts in *lib* inside *path* according to those two pull requests:
+
+  * [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)
+  * [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)
+
+I hope those improvements will be adapted to the master branch in the future.
 
 
 ## Uninstalling
@@ -308,7 +307,7 @@ ePiframe to-do list (for 2021):
 * Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/)
 * Configuration, service and frame control from the web interface
 * Ability to send photo directly to frame from the web interface
-* View of current photo - displayed and original one
+* View from web interface of current photo - displayed and original one
 * Easier token generation from the web interface (is this even possible?)
 * Weather and temperature displayed on the photo (isn't this too much for me?)
 * Frame lasers, robot arms and making lunch functionality...
