@@ -183,7 +183,9 @@ Move to [next steps](#next-steps)
 * Add your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started) - *Enable the Google Photos Library API*
   * Name it *ePiframe*
   * Use *TVs and Limited Input* as application type
+  
   Or through the Google API Console:
+  
   * Go to the [Google API Console](https://console.developers.google.com/apis/library)
   * From the menu bar, select a project or create a new project
   * To open the Google API Library, from the Navigation menu, select *APIs & Services > Library*
