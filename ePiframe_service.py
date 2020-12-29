@@ -55,7 +55,7 @@ class service(daemon):
 			if inter > 0:
 				inter -= 1
 				interval.save(inter)
-				self.__logging.log("Interval multipicated for current photo", silent=True)			
+				self.__logging.log("Interval multipicated for current photo", silent=True)
 			else:
 				interval.remove()
 				inter = -1
@@ -67,8 +67,8 @@ class service(daemon):
 			else:
 				self.__logging.log("--------ePiframe Service: Off hours - sleeping", silent=True)
 
-		frameTime = config.get('slide_interval')			
-		self.__sched.enter(int(frameTime), 1, self.task, (scheduler,))	
+		frameTime = config.get('slide_interval')
+		self.__sched.enter(int(frameTime), 1, self.task, (scheduler,))
 			
 if __name__ == "__main__":
 	daemon = service('/tmp/ePiframe-service.pid', os.path.dirname(os.path.realpath(__file__)))
