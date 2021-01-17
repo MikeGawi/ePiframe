@@ -134,8 +134,8 @@ sudo -H pip3 install --upgrade google-api-python-client google-auth-httplib2 goo
 cd <path>
 wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip
 unzip -q ePiframe.zip
-cp -r ePiframe/* .
-rm -r ePiframe/ ePiframe.zip
+cp -r ePiframe-master/* .
+rm -r ePiframe-master/ ePiframe.zip
 chmod +x *.py
 ```
 * Download Waveshare ZIP file (or use [git](https://github.com/waveshare/e-Paper)) and extract all RasPi Waveshare display libraries to *lib* inside *path*:
