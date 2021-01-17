@@ -123,8 +123,8 @@ function epi_code {
 	declare -A cmds
 	cmds["Downloading"]='sudo wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q ePiframe.zip'
-	cmds["Copying"]='sudo cp -r ePiframe/* .'
-	cmds["Cleanup"]='sudo rm -r ePiframe/ ePiframe.zip'
+	cmds["Copying"]='sudo cp -r ePiframe-master/* .'
+	cmds["Cleanup"]='sudo rm -r ePiframe-master/ ePiframe.zip'
 	
 	declare -a order;
 	order+=( "Downloading" )
