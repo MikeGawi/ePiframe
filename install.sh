@@ -27,7 +27,7 @@ echo -e '
 function install_apts {
 	echo -e '\n\033[0;30mInstalling system components\033[0m'
 	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch"\
-				  ["LibAtlas"]="libatlas-base-dev" ["Python 3"]="python3" ["Pip 3"]="python3-pip")
+				  ["LibAtlas"]="libatlas-base-dev" ["WiringPi"]="wiringpi" ["Python 3"]="python3" ["Pip 3"]="python3-pip")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"
 		out=`sudo apt-get install -y -qq ${apts[$apt]} 2>&1 > /dev/null`

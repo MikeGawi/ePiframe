@@ -122,7 +122,7 @@ Move to [next steps](#next-steps)
 
 * Install APTs:
 ```
-sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev python3 python3-pip
+sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev wiringpi python3 python3-pip
 ```
 * Install PIPs:
 ```
@@ -171,13 +171,13 @@ Move to [next steps](#next-steps)
 ## Next steps
 
 * Connect display to Raspberry Pi
-* Add your Google account support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started) - *Enable the Google Photos Library API*
+* Add your Google account (the one used to pull photos from) support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started) - *Enable the Google Photos Library API*
   * Name it *ePiframe*
   * Use *TVs and Limited Input* as application type
   * Or through the Google API Console:  
     * Go to the [Google API Console](https://console.developers.google.com/apis/library)
     * From the menu bar, select a project or create a new project
-    * To open the Google API Library, from the Navigation menu, select *APIs & Services > Library*
+    * To open the Google API Library, from the Navigation menu, select *APIs & Services -> Library*
     * Search for *Google Photos Library API*. Select the correct result and click *Enable*
 * Download credentials JSON file for the API from the previous step - *Download client configuration* button
   *  Or Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
