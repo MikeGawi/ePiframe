@@ -35,5 +35,5 @@ class displaymanager:
 			self.__epd.display(self.__epd.getbuffer(image))
 			self.power_off()
 		except KeyboardInterrupt: 
-			epd7in5.epdconfig.module_exit()
+			self.__epd.Dev_exit()
 			raise
