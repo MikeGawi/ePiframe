@@ -75,7 +75,7 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 |:--:| 
 |*Printed back (black) of 13x18cm (5"x7") frame for 7.5" screen with passe-partout (white)*|
 
-[Thing files](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg)
+[Thing files](https://www.thingiverse.com/thing:4727060)
 
 
 ## Advantages
