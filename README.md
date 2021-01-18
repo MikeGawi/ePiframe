@@ -44,7 +44,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Automatic conversion to black-and-white with 6 different presets, color inversion and various background colors 
 * For vertical or horizontal frame position
 * Even for Raspberry Pi Zero W + Raspberry Pi OS Lite
-* Low energy consumption
+* Low power consumption
 
 ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif)
 
@@ -67,7 +67,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 
 ### Frame
 
-you can use any photo frame for your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame your display and cover all unwanted elements. 
+You can use any photo frame for your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi with HAT on to it. Also a good passe-partout piece should frame your display and cover all unwanted elements. 
 
 Or you can 3D print a nice standing frame back with case for your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
 
@@ -80,7 +80,7 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 
 ## Advantages
 
-* Low energy consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
+* Low power consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
 * Autonomic device, once configured can be left headless
 * e-Paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions (as with LCDs)
 * Photo is displayed even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
