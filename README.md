@@ -194,12 +194,12 @@ Move to [next steps](#next-steps)
 * Enjoy your ePiframe!
 
 
-Also consider changing Waveshare scripts in *lib* inside *path* according to those two pull requests:
+~~Also consider changing Waveshare scripts in *lib* inside *path* according to those two pull requests:~~
 
-  * [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)
-  * [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)
+  ~~* [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)~~
+  ~~* [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)~~
 
-I hope those improvements will be adapted to the master branch in the future.
+~~I hope those improvements will be adapted to the master branch in the future.~~
 
 
 ## Uninstalling
