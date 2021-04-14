@@ -44,7 +44,7 @@ function install_apts {
 function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
 	declare -A pips=( ["Requests"]="requests" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser"\
-				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
+				  ["Google components"]="-I --upgrade google-api-python-client==1.12.5 google-auth-httplib2==0.0.4 google-auth-oauthlib==0.4.2"\
 				  ["RPi.GPIO"]="RPi.GPIO" ["SPI Libs"]="spidev" ["Image"]="image" ["Pandas"]="pandas")
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
