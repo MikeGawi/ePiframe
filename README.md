@@ -92,10 +92,10 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 * Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it yourself)
 * Simple yet powerful
 
-ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the display before handing it (using [command line](#command-line)) and many more. 
+	ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the display before handing it (using [command line](#command-line)) and many more. 
 
 
-## Installation
+	## Installation
 
 * [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formerly known as Raspbian. Lite version is supported
 * [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
@@ -113,6 +113,7 @@ Use *install.sh* script:
 
 ```
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
+chmod +x install.sh
 ./install.sh
 ```
 Move to [next steps](#next-steps)
@@ -127,7 +128,7 @@ sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev wiringpi pyt
 * Install PIPs:
 ```
 sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image
-sudo -H pip3 install -I --upgrade google-api-python-client==1.12.5 google-auth-httplib2==0.0.4 google-auth-oauthlib==0.4.2
+sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
 ```
@@ -173,7 +174,7 @@ Move to [next steps](#next-steps)
 * Connect display to Raspberry Pi
 * Add your Google account (the one used to pull photos from) support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started) - *Enable the Google Photos Library API*
   * Name it *ePiframe*
-  * Use *TVs and Limited Input* as application type
+  * Use *TVs and Limited Input* as application type (sometimes works only with *Desktop Application* but You can change it later)
   * Or through the Google API Console:  
     * Go to the [Google API Console](https://console.developers.google.com/apis/library)
     * From the menu bar, select a project or create a new project
@@ -182,7 +183,7 @@ Move to [next steps](#next-steps)
 * Download credentials JSON file for the API from the previous step - *Download client configuration* button
   *  Or Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
 * Generate token pickle file with *getToken.py* script to use with Google Photos:
-  * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && ./getToken.py```
+  * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && chmod +x getToken.py && ./getToken.py```
   * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device
   * Script will produce *token.pickle* file
 * Copy credentials JSON and token pickle file to ePiframe device inside installation path (using [*rsync*](https://ss64.com/bash/rsync.html) or [*scp*](https://ss64.com/bash/scp.html))

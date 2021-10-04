@@ -27,7 +27,7 @@ class oauthmanager:
 				pickle.dump(self.__creds, token)
 				
 	def build_service (self, name:str, ver:str):
-		self.__service = build(name, ver, credentials=self.__creds)
+		self.__service = build(name, ver, credentials=self.__creds, static_discovery=False)
 	
 	def get (self, pagesize:int, exclude:bool, nextpagetokenheader:str, resp_for:str):	
 		items = []
