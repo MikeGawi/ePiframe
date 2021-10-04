@@ -92,10 +92,10 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 * Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it yourself)
 * Simple yet powerful
 
-	ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the display before handing it (using [command line](#command-line)) and many more. 
+ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the display before handing it (using [command line](#command-line)) and many more. 
 
 
-	## Installation
+## Installation
 
 * [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formerly known as Raspbian. Lite version is supported
 * [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
