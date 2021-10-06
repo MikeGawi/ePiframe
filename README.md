@@ -9,7 +9,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 ## Table of Contents
 <!--ts-->
    * [Main features](#main-features)
-      * [New features](#new-features)
+      * [New features](#new-features-)
    * [Hardware required](#hardware-required)
       * [Frame](#frame)
    * [Advantages](#advantages)
