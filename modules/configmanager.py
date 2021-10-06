@@ -3,12 +3,14 @@ import configparser
 import subprocess
 from modules.filteringmanager import filteringmanager
 from modules.timermanager import timermanager
+from modules.weathermanager import weathermanager
+from modules.weatherstampmanager import weatherstampmanager
 
 class configmanager:
 	
 	__SPI_CHECK1 = 'ls -l /dev/spidev*'
 	__SPI_CHECK2 = 'lsmod | grep spi_'
-		
+	
 	__CONFIG_STRING = {
 		'cred_file' 				: 'Credentials',
 		'pickle_file' 				: 'Credentials',
@@ -43,7 +45,16 @@ class configmanager:
 		'photos_from' 				: 'Album settings',
 		'photos_to' 				: 'Album settings',
 		'no_photos' 				: 'Album settings',
-		'sort_desc' 				: 'Album settings'
+		'sort_desc' 				: 'Album settings',
+		
+		'show_weather'				: 'Weather',
+		'apikey'					: 'Weather',
+		'lat'						: 'Weather',
+		'lon'						: 'Weather',
+		'units'						: 'Weather',
+		'position'					: 'Weather',
+		'font_color'				: 'Weather',
+		'font'						: 'Weather'
 	}
 	
 	def __init__ (self, path:str):
@@ -168,5 +179,23 @@ class configmanager:
 			
 		if not len(self.get('stop_times').split(',')) == 7:
 			raise Exception('Configuration stop_times is missing all values!')
+			
+		if self.getint('show_weather') == 1:
+			if not self.get('apikey'):
+				raise Exception('Configuration apikey entry is missing!')
+			if not self.get('lon'):
+				raise Exception('Configuration lon entry is missing!')			
+			if not self.get('lat'):
+				raise Exception('Configuration lat entry is missing!')
+			if not self.get('units'):
+				raise Exception('Configuration units entry is missing!')
+			weathermanager.verify_units(self.get('units'))
+			if not self.get('position'):
+				raise Exception('Configuration position entry is missing!')
+			weatherstampmanager.verify_position(self.getint('position'))
+			if not self.get('font_color'):
+				raise Exception('Configuration font_color entry is missing!')
+			weatherstampmanager.verify_color(self.get('font_color'))				
+			self.getint('font')
 		
 		timermanager.verify (self.get('start_times').split(','), self.get('stop_times').split(','))

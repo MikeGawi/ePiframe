@@ -4,7 +4,7 @@ import subprocess
 class convertmanager:
 	
 	__INVERT_FLAG = "-negate"
-	__ROTATE_CODE = '-rotate "90"'
+	__ROTATE_CODE = '-rotate 90'
 	__BACK_COLORS = ["white", "black", "photo"]
 	__SCALE_HORIZON = '-scale 2.51%'
 	__SCALE_VERTIC = '-scale 4%'

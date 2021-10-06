@@ -10,6 +10,8 @@ from modules.configmanager import configmanager
 from modules.pidmanager import pidmanager
 from modules.oauthmanager import oauthmanager
 from modules.albummanager import albummanager
+from modules.weathermanager import weathermanager
+from modules.weatherstampmanager import weatherstampmanager
 from modules.indexmanager import indexmanager
 from modules.randommanager import randommanager
 from modules.convertmanager import convertmanager
@@ -313,7 +315,26 @@ else:
 										logging.log ("Fail! {}".format(str(err)))
 									else:
 										logging.log ("Success!")
-
+										
+										if config.getint('show_weather') == 1:
+											logging.log ("Getting weather data...")
+											weatherman = weathermanager(config.get('apikey'), config.get('units'), config.get('lat'), config.get('lon'))
+											
+											try:
+												weatherman.send_request(constants.WEATHER_BASE_URL, constants.CHECK_CONNECTION_TIMEOUT)
+												logging.log ("Success!")
+												logging.log ("Putting weather stamp...")
+												weatherstampman = weatherstampmanager(targetFilename, config.getint('image_width'), config.getint('image_height'),\
+																					  config.getint('horizontal') == 1, config.getint('font'),\
+																					  config.get('font_color'), config.getint('position'))
+												weatherstampman.compose(weatherman.get_temperature(constants.WEATHER_TEMP_MAINTAG, constants.WEATHER_TEMP_TAG),\
+																		config.get('units'), weatherman.get_weathericon(constants.WEATHER_ICON_MAINTAG,\
+																														constants.WEATHER_ICON_POSITION,\
+																														constants.WEATHER_ICON_TAG))
+												logging.log ("Success!")
+											except Exception as exc:
+												logging.log ("Fail! {}".format(str(exc)))										
+										
 										if not '--test' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv]:
 											logging.log ("Sending to display...")
 

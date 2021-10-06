@@ -43,6 +43,15 @@ class constants:
 	OK_STATUS_ERRORCODE = 200
 	
 	
+	WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&appid={}"
+	WEATHER_ICON_MAINTAG = 'weather'
+	WEATHER_ICON_POSITION = 0
+	WEATHER_ICON_TAG = 'icon'
+	
+	WEATHER_TEMP_MAINTAG = 'main'
+	WEATHER_TEMP_TAG = 'temp'
+
+	
 	IMAGE_MIMETYPE_STARTING_STRING = 'image'
 	
 	#image mime type to extension dictionary
