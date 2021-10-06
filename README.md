@@ -9,6 +9,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 ## Table of Contents
 <!--ts-->
    * [Main features](#main-features)
+      * [New features](#new-features)
    * [Hardware required](#hardware-required)
       * [Frame](#frame)
    * [Advantages](#advantages)
@@ -47,6 +48,10 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 * Low power consumption
 
 ![](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif)
+
+### New features 🎉
+
+* (06.10.2021 since [ePiframe v0.9.3 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.3-beta)) Weather stamp (optional) - subtly showing current weather icon and temperature in defined display corner, size and color. Taken from free API of [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 
 | Color presets             | Different backgrounds     |
 |:-------------------------:|:-------------------------:|
@@ -127,7 +132,7 @@ sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev wiringpi pyt
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image
+sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image pillow
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
@@ -305,12 +310,10 @@ sudo systemctl restart ePiframe.service
 ## Future plans
 	
 ePiframe to-do list (for 2021):
-* Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/)
-* Configuration, service and frame control from the web interface
-* Ability to send photo directly to frame from the web interface
-* View from web interface of current photo - displayed and original one
+* Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) for configuration, control and photos upload
+* Add Telegram bot service to control frame and upload photos
 * Easier token generation from the web interface (is this even possible?)
-* Weather and temperature displayed on the photo (isn't this too much for me?)
+* ✔️ Weather and temperature displayed on the photo - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * Frame lasers, robot arms and making lunch functionality...
 
 Stay tuned!
