@@ -310,11 +310,11 @@ sudo systemctl restart ePiframe.service
 ## Future plans
 	
 ePiframe to-do list (for 2021):
-* Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) for configuration, control and photos upload
-* Add Telegram bot service to control frame and upload photos
-* Easier token generation from the web interface (is this even possible?)
-* ✔️ Weather and temperature displayed on the photo - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
-* Frame lasers, robot arms and making lunch functionality...
+* [ ] Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) for configuration, control and photos upload
+* [ ] Add Telegram bot service to control frame and upload photos
+* [ ] Easier token generation from the web interface (is this even possible?)
+* [x] Weather and temperature displayed on the photo - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
+* [ ] Frame lasers, robot arms and making lunch functionality...
 
 Stay tuned!
 
