@@ -29,15 +29,15 @@ print ("ePiframe - e-Paper Raspberry Pi Photo Frame - get token tool\nThis tool 
 print ("(pickle file) for ePiframe. Run it on internet browser\nSaccessible machine to authenticate with Google account!")
 
 if not '--help' in [x.lower() for x in sys.argv]:
-	user_input = input("Enter the path of token pickle file [Leave empty for {}]: ".format(PICKLE_FILE)) or PICKLE_FILE
-	print ('Token pickle file = ' + str(user_input))
+	PICKLE_FILE = input("Enter the path of token pickle file [Leave empty for {}]: ".format(PICKLE_FILE)) or PICKLE_FILE
+	print ('Token pickle file = ' + str(PICKLE_FILE))
 	
 	while True:
-		user_input = input("Enter the path of credentials JSON file [Leave empty for {}]: ".format(CREDS_FILE)) or CREDS_FILE
-		if os.path.exists(user_input): break
-		print ("I did not find the file at, " + str(user_input))	
+		CREDS_FILE = input("Enter the path of credentials JSON file [Leave empty for {}]: ".format(CREDS_FILE)) or CREDS_FILE
+		if os.path.exists(CREDS_FILE): break
+		print ("I did not find the file at, " + str(CREDS_FILE))	
 	
-	print ('Credentials JSON file = ' + str(user_input))
+	print ('Credentials JSON file = ' + str(CREDS_FILE))
 	valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
 	
 	try:		
