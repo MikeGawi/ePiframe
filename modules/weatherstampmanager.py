@@ -4,8 +4,7 @@ from modules.weathermanager import weathermanager
 
 class weatherstampmanager:
 	
-	__POSITION_VALUES = [0,1,2,3]
-	__COLOR_VALUES = ['white', 'black']
+	__POSITION_VALUES = [0, 1, 2, 3]
 
 	__FONTS = {
 		'WEATHER_FONT' : 	'fonts/weathericons-regular-webfont.ttf',
@@ -59,8 +58,8 @@ class weatherstampmanager:
 			
 	@classmethod		
 	def verify_color (self, val):
-		if not val in self.__COLOR_VALUES:
-			raise Exception('Configuration color should be one of {}'.format(self.__COLOR_VALUES))
+		if not val in [k.lower() for k in self.__COLORS.keys()]:
+			raise Exception('Configuration color should be one of {}'.format([k.lower() for k in self.__COLORS.keys()]))
 
 	def compose(self, temp, units, icon):
 		image = Image.open(self.__outputfile).convert('1')
@@ -88,7 +87,7 @@ class weatherstampmanager:
 			y = self.__height - self.__MARGIN - self.__font
 
 		fillcolor = self.__COLORS[self.__color.upper()]
-		strokecolor = self.__COLORS['WHITE'] if self.__COLORS[self.__color.upper()] == self.__COLORS['BLACK'] else self.__COLORS['BLACK']
+		strokecolor = (self.__COLORS['WHITE'] + self.__COLORS['BLACK']) - fillcolor
 		
 		draw.text((x, y), textw, font = wfont, fill = fillcolor, stroke_width=2, stroke_fill=strokecolor)
 		draw.text((x + sizew + self.__SPACE, y), textt, font = fontt, fill = fillcolor, stroke_width=2, stroke_fill=strokecolor)

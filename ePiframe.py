@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, signal
+import sys, os, signal, glob
 import atexit
 
 from misc.constants import constants
@@ -237,7 +237,7 @@ else:
 							if filterNum == 0:
 								logging.log ("No photos after filtering!")
 							else:
-								if config.getint('randomize') == 0:
+								if not bool(config.getint('randomize')):
 									#find previous photo	
 									dbid = next(iter(photos[photoman.get_photos_attribute(photos, constants.GOOGLE_PHOTOS_ALBUMS_ID_HEADER) == indmanager.get_id()].index), \
 												constants.NOMATCH_INDICATOR_STRING)
@@ -263,7 +263,7 @@ else:
 								downloadUrl = photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_BASEURL_HEADER) + \
 																			constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_GET_DETAILS
 
-								if config.getint('interval_mult') == 1:
+								if bool(config.getint('interval_mult')):
 									#if photo comment contains hotword then multiply interval by it's value and photo will be displayed longer
 									intervalman = intervalmanager(config.get('interval_mult_file'))
 									if not '--no-skip' in [x.lower() for x in sys.argv]:
@@ -316,16 +316,17 @@ else:
 									else:
 										logging.log ("Success!")
 										
-										if config.getint('show_weather') == 1:
+										if bool(config.getint('show_weather')):
 											logging.log ("Getting weather data...")
 											weatherman = weathermanager(config.get('apikey'), config.get('units'), config.get('lat'), config.get('lon'))
 											
 											try:
 												weatherman.send_request(constants.WEATHER_BASE_URL, constants.CHECK_CONNECTION_TIMEOUT)
+												if not weatherman.get_data(): raise Exception("Couldn't retrieve weather data!")
 												logging.log ("Success!")
 												logging.log ("Putting weather stamp...")
 												weatherstampman = weatherstampmanager(targetFilename, config.getint('image_width'), config.getint('image_height'),\
-																					  config.getint('horizontal') == 1, config.getint('font'),\
+																					  bool(config.getint('horizontal')), config.getint('font'),\
 																					  config.get('font_color'), config.getint('position'))
 												weatherstampman.compose(weatherman.get_temperature(constants.WEATHER_TEMP_MAINTAG, constants.WEATHER_TEMP_TAG),\
 																		config.get('units'), weatherman.get_weathericon(constants.WEATHER_ICON_MAINTAG,\
@@ -345,28 +346,20 @@ else:
 											except Exception as exc:
 												logging.log ("Error sending photo to display: {}".format(exc))
 												raise
-	elif '--test-display' == sys.argv[1].lower():
-		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))	
-		if len(sys.argv) > 2 and sys.argv[2]:
-			targetFilename = sys.argv[2]
-
-		if not os.path.exists(targetFilename):
-			raise Exception("No file: {}!".format(targetFilename))
-			
-		logging.log ("Sending to display...")
-		displayman = displaymanager(config.get('display'))
-
-		try:
-			displayman.show_image(targetFilename)
-		except Exception as exc:
-			logging.log ("Error sending photo to display: {}".format(exc))
-			raise																			
-	elif '--test-convert' == sys.argv[1].lower():
-		filename = os.path.join(config.get('photo_convert_path'), config.get('photo_download_name'))
+	if '--test-convert' in [x.lower() for x in sys.argv]:
+		filename = os.path.join(config.get('photo_convert_path'), config.get('photo_download_name'))	
 		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))
-		if len(sys.argv) > 2 and sys.argv[2]:
-			filename = sys.argv[2]
 
+		fil = next((x for x in [y.lower() for y in sys.argv[1:]] if not '--' in x), '')
+
+		if fil:
+			filename = fil
+		else:
+			files = glob.glob('{}.*'.format(filename))
+			if not files: raise Exception("No file: {}.*!".format(filename))
+			fil = max(files, key=os.path.getctime)
+			filename = fil
+			
 		if not os.path.exists(filename):
 			raise Exception("No file: {}!".format(filename))
 		
@@ -382,6 +375,26 @@ else:
 				logging.log ("Fail! {}".format(str(err)))
 			else:
 				logging.log ("Success!")
+	if '--test-display' in [x.lower() for x in sys.argv]:
+		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))	
+		
+		fil = next((x for x in [y.lower() for y in sys.argv[1:]] if not '--' in x), '')
+
+		if fil:
+			filename = fil
+	
+		if not os.path.exists(targetFilename):
+			raise Exception("No file: {}!".format(targetFilename))
+			
+		logging.log ("Sending to display...")
+		displayman = displaymanager(config.get('display'))
+
+		try:
+			displayman.show_image(targetFilename)
+		except Exception as exc:
+			logging.log ("Error sending photo to display: {}".format(exc))
+			raise																			
+
 		
 	endTime = logs.end_time()
 	logging.log ("Done in{}".format(logs.execution_time(startTime,endTime)))

@@ -11,9 +11,13 @@ class weathermanager:
 		self.__lon = lon
 
 	def get_response_json (self, url:str, timeout:int):
-		ret = requests.get(url, timeout=timeout)
-		ret.raise_for_status()
-		return ret.json()
+		try:
+			ret = requests.get(url, timeout=timeout)
+			ret.raise_for_status()		
+		except requests.ConnectionError as exc:
+			ret = None
+		
+		return ret.json() if ret else None
 		
 	def send_request (self, baseurl, timeout):
 		url = baseurl.format(self.__lat, self.__lon, self.__units, self.__apikey)
