@@ -24,6 +24,7 @@ class service(daemon):
 	
 	__SERVICE_LOG_IND = "--------ePiframe Service: "
 	__SERVICE_LOG_STARTED = __SERVICE_LOG_IND + "STARTED"
+	__SERVICE_TBOT_TRIGGER = __SERVICE_LOG_IND + "Activity triggered from Telegram Bot"
 	__SERVICE_LOG_STARTING = __SERVICE_LOG_IND + "Starting ePiframe script"
 	__SERVICE_LOG_SLEEPING = __SERVICE_LOG_IND + "Off hours - sleeping"
 	__SERVICE_LOG_MULT = __SERVICE_LOG_IND + "Interval multipicated for current photo"
@@ -74,6 +75,7 @@ class service(daemon):
 		return config
 	
 	def restart(self, params=None):
+		self.__logging.log(self.__SERVICE_TBOT_TRIGGER, silent=True)
 		if self.__sched and self.__event:
 			self.__sched.cancel(self.__event)
 		self.task(params)
