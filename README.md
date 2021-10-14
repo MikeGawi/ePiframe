@@ -17,6 +17,8 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
       * [Automatic](#automatic)
       * [Manual](#manual)
       * [Next steps](#next-steps)
+      	* [Weather Stamp](#weather-stamp)
+      	* [Telegram Bot](#telegram-bot)
    * [Uninstalling](#uninstalling)
       * [Automatic](#automatic-1)
       * [Manual](#manual-1)
@@ -52,6 +54,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
 ### New features 🎉
 
 * (06.10.2021 since [ePiframe v0.9.3 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.3-beta)) Weather stamp (optional) - subtly showing current weather icon and temperature in defined display corner, size and color. Taken from free API of [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
+* (14.10.2021 since [ePiframe v0.9.4 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.4-beta)) Telegram Bot (optional) - control the ePiframe with few commands from Telegram IM - [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 
 | Color presets             | Different backgrounds     |
 |:-------------------------:|:-------------------------:|
@@ -200,12 +203,57 @@ Move to [next steps](#next-steps)
 * Enjoy your ePiframe!
 
 
-~~Also consider changing Waveshare scripts in *lib* inside *path* according to those two pull requests:~~
+Also consider (if not already merged to master) changing Waveshare scripts in *lib* inside *path* according to those two pull requests:
+* [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)
+* [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)
 
-  ~~* [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)~~
-  ~~* [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)~~
 
-~~I hope those improvements will be adapted to the master branch in the future.~~
+### Weather Stamp
+
+ePiframe can show  weather stamp (icon + temperature) in defined frame corner, color and size. The weather information is taken from [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
+
+To get the needed values:
+* Create an account in [Open Weather Map API](https://home.openweathermap.org/users/sign_up)
+* Sign in to OpenWeather account
+* Go to _Profile->My API Keys_, copy the generated API key and put it in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file under ```[Weather]->apikey``` value
+* Now go to [Maps.ie](https://www.maps.ie/coordinates.html)
+* Find desired GPS coordinates for the weather information by location, ZIP code or simply click it on the map
+* Copy Longtitude and Lattitude values and put them in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file under ```[Weather]->lon``` and ```[Weather]->lat``` values
+* Enable ```[Weather]->show_weather=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file and set other weather stamp parameters like size, position and color
+* Now the weather stamp will appear on the photo after next frame update
+
+**_NOTE_** - To troubleshoot OpenWeather API key issues and connectivity check the [tools/testWeatherAPI.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testWeatherAPI.py) tool.
+
+### Telegram Bot
+
+ePiframe can optionally be controlled by a Telegram Bot and expose some basic commands to control the frame. Implementation uses [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) and is a persistent thread running when ePiframe is online. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
+
+To get the needed values:
+* Create a [Telegram](https://telegram.org/) account on any device
+* Talk to [Bot Father](https://telegram.me/BotFather) - father of all bots
+* Create a new bot with ```/newbot``` command, set name ```ePiframeBot``` and username ```ePiframeBot``` (add some numbers at the end to make it unique or use other username)
+* BotFather will present _HTTP API token_, copy it and put in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file under ```[Telegram bot]->token```
+* You can set other bot options with _BotFather_ (i.e. description, image, if bot can be in group, etc.) but set up the possible commands by ```/mybots``` command, choose the _ePiframeBot_, then click _Edit Bot->Edit Commands_ and paste:
+	```
+	start - Show help
+	help - Show help
+	ping - Ping frame
+	echo - Say # text
+	status - Show frame status
+	reboot - Reboot frame
+	when - Show next update time
+	next - Trigger frame update
+	current - Show current photo
+	original - Show current original photo
+	longer - Display current photo # times longer	
+	```
+	Now the commands will be visible in the Telegram App as a list.
+* Enable ```[Telegram bot]->use_telebot=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file
+* [Restart](#service-control) ePiframe service and from now on sending commands to ePiframe bot (search in Telegram App for username set in _BotFather_) will control the frame
+
+**_NOTE_** - To troubleshoot Telegram bot token key issues and connectivity check the [tools/testTelegramBot.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testTelegramBot.py) tool.
+
+**_❗ IMPORTANT ❗_** - You can limit number of users/groups that can control the ePiframe bot (all bots are public and accessible by others!) by setting ```[Telegram bot]->chat_id``` list in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) - that will allow only the defined chat ids to control bot. To get chat id use the tool above.
 
 
 ## Uninstalling
@@ -239,7 +287,7 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) :(
+**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) 😟
 
 
 ## Command line
@@ -299,6 +347,8 @@ sudo systemctl start ePiframe.service
 sudo systemctl restart ePiframe.service
 ```
 
+**_NOTE_** - Telegram Bot thread is started together and controlled by the service. 
+
 
 ## Flow
  
@@ -311,7 +361,7 @@ sudo systemctl restart ePiframe.service
 	
 ePiframe to-do list (for 2021):
 * [ ] Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) for configuration, control and photos upload
-* [ ] Add Telegram bot service to control frame and upload photos
+* [x] Add Telegram bot service to control frame and upload photos [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 * [ ] Easier token generation from the web interface (is this even possible?)
 * [x] Weather and temperature displayed on the photo - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * [ ] Frame lasers, robot arms and making lunch functionality...
@@ -326,6 +376,7 @@ This project uses:
 * [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper)
 * [Pandas Dataframe](https://pandas.pydata.org/)
 * [ImageMagick](https://imagemagick.org/)
+* [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI)
 
 Helpful links:
 * [Najeem Muhammed: Analyzing my Google Photos library with Python and Pandas](https://medium.com/@najeem/analyzing-my-google-photos-library-with-python-and-pandas-bcb746c2d0f2)
