@@ -135,7 +135,7 @@ sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev wiringpi pyt
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image pillow
+sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image pillow pyTelegramBotAPI
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
