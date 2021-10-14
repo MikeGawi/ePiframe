@@ -3,7 +3,7 @@
 
 # ePiframe
 
-Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos
+Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather information and Telegram Bot.
 
 
 ## Table of Contents
