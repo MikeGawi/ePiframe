@@ -5,6 +5,7 @@ from modules.filteringmanager import filteringmanager
 from modules.timermanager import timermanager
 from modules.weathermanager import weathermanager
 from modules.weatherstampmanager import weatherstampmanager
+from modules.telebotmanager import telebotmanager
 
 class configmanager:
 	
@@ -54,7 +55,11 @@ class configmanager:
 		'units'						: 'Weather',
 		'position'					: 'Weather',
 		'font_color'				: 'Weather',
-		'font'						: 'Weather'
+		'font'						: 'Weather',
+		
+		'use_telebot'				: 'Telegram bot',
+		'token'						: 'Telegram bot',
+		'chat_id'					: 'Telegram bot'
 	}
 	
 	def __init__ (self, path:str):
@@ -154,7 +159,7 @@ class configmanager:
 		if self.get('sort_desc'):
 			self.getint('sort_desc')
 		
-		if self.getint('interval_mult') == 1:
+		if bool(self.getint('interval_mult')):
 			if not self.get('interval_mult_hotword'):
 				raise Exception('Configuration interval_mult_hotword entry is missing!')
 			self.getint('interval_max_mult')
@@ -180,7 +185,7 @@ class configmanager:
 		if not len(self.get('stop_times').split(',')) == 7:
 			raise Exception('Configuration stop_times is missing all values!')
 			
-		if self.getint('show_weather') == 1:
+		if bool(self.getint('show_weather')):
 			if not self.get('apikey'):
 				raise Exception('Configuration apikey entry is missing!')
 			if not self.get('lon'):
@@ -198,4 +203,16 @@ class configmanager:
 			weatherstampmanager.verify_color(self.get('font_color'))				
 			self.getint('font')
 		
+		if bool(self.getint('use_telebot')):
+			if not self.get('token'):
+				raise Exception('Configuration token entry is missing!')
+			try:
+				if self.get('chat_id'): [int(x) for x in self.get('chat_id').split(',')]
+			except Exception as e:
+				raise Exception("Configuration chat_id error! {}".format(e))	
+			try:
+				telebotmanager.check_token(self.get('token'))
+			except Exception as e:
+				raise Exception("Error when configuring Telegram Bot! {}".format(e))				
+				
 		timermanager.verify (self.get('start_times').split(','), self.get('stop_times').split(','))

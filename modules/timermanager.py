@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from itertools import cycle, islice
 
 class timermanager:
 
@@ -28,6 +29,23 @@ class timermanager:
 			ret = now.time() > self.get_time_from_string(startTab).time() and now.time() < self.get_time_from_string(endTab).time()
 		elif now.time() > self.get_time_from_string(startTab).time() and self.__endTimes[dow].strip() == self.__NO_TIME_MARK:
 			ret = True
+		
+		return ret
+	
+	def when_i_work_next(self):
+		now = datetime.now()
+		dow = now.weekday()
+		
+		ret = datetime.now(datetime.now().astimezone().tzinfo)	
+		nowTab = islice(cycle(self.__startTimes), dow, None)
+		
+		while True:
+			val = next(nowTab)
+			if  val == self.__NO_TIME_MARK:
+				ret += timedelta(1)
+			else:				
+				ret = ret.replace(hour=self.get_time_from_string(val).hour, minute=self.get_time_from_string(val).minute, second=0)
+				break					
 		
 		return ret
 
