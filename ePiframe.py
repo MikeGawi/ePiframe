@@ -50,6 +50,9 @@ else:
 
 	try:
 		config.verify()
+	except Warning as e:
+		logging.log("Warning verifying configuration file! {}".format(e))
+		pass
 	except Exception as e:
 		logging.log("Error verifying configuration file! {}".format(e))
 		raise
@@ -311,7 +314,10 @@ else:
 									#convert image
 									if convertmanager().convert_image(origwidth, origheight, int(config.get('convert_option')), config.get('convert_bin_path'), \
 																filename, config.getint('image_width'), config.getint('image_height'), config.getint('invert_colors'),\
-																config.getint('horizontal'), config.get('background_color'), targetFilename)  != None:
+																config.getint('horizontal'), config.get('background_color'), targetFilename,\
+																os.path.join(config.get('photo_convert_path'), \
+															    config.get('thumb_photo_download_name')), os.path.join(config.get('photo_convert_path'), \
+															  	config.get('thumb_photo_convert_filename'))	)  != None:
 										logging.log ("Fail! {}".format(str(err)))
 									else:
 										logging.log ("Success!")
@@ -346,6 +352,7 @@ else:
 											except Exception as exc:
 												logging.log ("Error sending photo to display: {}".format(exc))
 												raise
+												
 	if '--test-convert' in [x.lower() for x in sys.argv]:
 		filename = os.path.join(config.get('photo_convert_path'), config.get('photo_download_name'))	
 		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))
@@ -364,17 +371,41 @@ else:
 			raise Exception("No file: {}!".format(filename))
 		
 		convertman = convertmanager()
-		err, width, height = convertman.get_image_size(config.get('convert_bin_path'),filename)
+		err, width, height = convertman.get_image_size(config.get('convert_bin_path'), filename)
 		
 		if err != None:
 			logging.log ("Fail! {}".format(str(err)))
 		else:
 			if convertman.convert_image(width, height, int(config.get('convert_option')), config.get('convert_bin_path'), \
 							filename, config.getint('image_width'), config.getint('image_height'), config.getint('invert_colors'),\
-							config.getint('horizontal'), config.get('background_color'), targetFilename)  != None:
+							config.getint('horizontal'), config.get('background_color'), targetFilename,\
+							os.path.join(config.get('photo_convert_path'), \
+							config.get('thumb_photo_download_name')), os.path.join(config.get('photo_convert_path'), \
+							config.get('thumb_photo_convert_filename'))	)  != None:
 				logging.log ("Fail! {}".format(str(err)))
 			else:
 				logging.log ("Success!")
+		
+				if bool(config.getint('show_weather')):
+					logging.log ("Getting weather data...")
+					weatherman = weathermanager(config.get('apikey'), config.get('units'), config.get('lat'), config.get('lon'))
+
+					try:
+						weatherman.send_request(constants.WEATHER_BASE_URL, constants.CHECK_CONNECTION_TIMEOUT)
+						if not weatherman.get_data(): raise Exception("Couldn't retrieve weather data!")
+						logging.log ("Success!")
+						logging.log ("Putting weather stamp...")
+						weatherstampman = weatherstampmanager(targetFilename, config.getint('image_width'), config.getint('image_height'),\
+															  bool(config.getint('horizontal')), config.getint('font'),\
+															  config.get('font_color'), config.getint('position'))
+						weatherstampman.compose(weatherman.get_temperature(constants.WEATHER_TEMP_MAINTAG, constants.WEATHER_TEMP_TAG),\
+												config.get('units'), weatherman.get_weathericon(constants.WEATHER_ICON_MAINTAG,\
+																								constants.WEATHER_ICON_POSITION,\
+																								constants.WEATHER_ICON_TAG))
+						logging.log ("Success!")
+					except Exception as exc:
+						logging.log ("Fail! {}".format(str(exc)))
+			
 	if '--test-display' in [x.lower() for x in sys.argv]:
 		targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))	
 		
@@ -394,7 +425,6 @@ else:
 		except Exception as exc:
 			logging.log ("Error sending photo to display: {}".format(exc))
 			raise																			
-
 		
 	endTime = logs.end_time()
 	logging.log ("Done in{}".format(logs.execution_time(startTime,endTime)))
