@@ -25,8 +25,7 @@ class displaymanager:
 		
 	def power_off (self):
 		self.__epd.sleep()
-		self.__epd.Dev_exit()
-		
+			
 	def show_image (self, photo_path:str):
 		try:
 			#uncomment if experiencing image shadowing
@@ -35,5 +34,5 @@ class displaymanager:
 			self.__epd.display(self.__epd.getbuffer(image))
 			self.power_off()
 		except KeyboardInterrupt: 
-			self.__epd.Dev_exit()
+			self.__epd.epdconfig.module_exit()
 			raise
