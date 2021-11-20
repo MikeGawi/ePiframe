@@ -45,7 +45,7 @@ function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
 	declare -A pips=( ["Requests"]="requests" ["Pillow"]="pillow" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser"\
 				  ["Google components"]="-I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
-				  ["RPi.GPIO"]="RPi.GPIO" ["SPI Libs"]="spidev" ["Image"]="image" ["Pandas"]="pandas")
+				  ["RPi.GPIO"]="RPi.GPIO" ["SPI Libs"]="spidev" ["Image"]="image" ["Pandas"]="pandas" ["Flask"]="flask" ["Flask-WTF"]="flask-wtf")
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
 		out=`sudo -H pip3 -q install ${pips[$pip]} 2>&1 > /dev/null`
@@ -204,22 +204,11 @@ function show_help {
 	printf '\e[1;37m	none			- perform ePiframe installation\e[m\n'
 	printf '\e[1;37m	--help			- this help\e[m\n'
 	printf '\e[1;37m	--uninstall		- uninstalls ePiframe\e[m\n'
+	printf '\e[1;37m	--update		- update ePiframe\e[m\n'
 	printf '\e[1;37m	--next-steps 		- show next steps after installation\e[m\n'
 }
 
 ###############################################MAIN###############################################
-
-if [ "$1" = "--uninstall" ]; then
-	out=`sudo systemctl is-enabled ePiframe.service 2> /dev/null`
-
-	if [ ! -z "$out" ]; then
-			sudo systemctl stop ePiframe.service
-			sudo systemctl disable ePiframe.service
-	fi
-	
-	show_uninstall	
-	exit 0
-fi
 
 if [ "$1" = "--help" ]; then
 	show_help
@@ -242,6 +231,39 @@ fi
 clear
 show_logo
 
+if [ "$1" = "--update" ]; then
+	echo -e "\n\033[0;30mUpdating ePiframe!\033[0m"
+	
+	server_version=`wget --connect-timeout=3 -q -O - https://raw.githubusercontent.com/MikeGawi/ePiframe/master/misc/constants.py 2>/dev/null | grep EPIFRAME_VERSION`
+	local_version=`grep EPIFRAME_VERSION misc/constants.py`
+	
+	if [ "$server_version" = "$local_version" ]; then
+		echo -e '\n\033[0;31mYou already have the latest version of ePiframe.\033[0m'		
+		while true; do
+			read -p $'\n\e[1;37mContinue anyway to reinstall it? [y/N]\e[0m' -n 1 -r -e yn
+			case "${yn:-N}" in
+				[Nn]* ) echo -e '\n\033[0;31mThe update will continue'; break;;
+				[Yy]* ) echo -e '\n\033[0;31mThe update will stop'; exit 1; break;;
+				* ) echo "Please answer yes or no.";;
+			esac
+		done
+	fi
+fi
+
+if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ]; then
+	out=`sudo systemctl is-enabled ePiframe.service 2> /dev/null`
+
+	if [ ! -z "$out" ]; then
+			sudo systemctl stop ePiframe.service
+			sudo systemctl disable ePiframe.service
+	fi
+	
+	if [ "$1" = "--uninstall" ]; then
+		show_uninstall	
+		exit 0
+	fi
+fi
+
 echo -e "\n\033[0;30mStarted `date`\033[0m"
 check_pi
 printf '\e[1;37m%-30s\e[m' "Is root:"
@@ -258,13 +280,44 @@ install_pips
 
 check_spi
 
-read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
-if [ -z "$path" ]; then
-	path="/home/pi/ePiframe"
+if [ "$1" = "--update" ]; then
+	path=`pwd`
+	
+	mkdir -p backup
+	
+	if [ -f "config.cfg" ]; then
+		cp config.cfg backup/config.cfg.bak
+		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg) in backup folder\033[0m'
+	else	
+		while true; do
+			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'		
+			read -p $'\n\e[1;37mDo You want to continue? [Y/n]\e[0m' -n 1 -r -e yn
+			case "${yn:-Y}" in
+				[Yy]* ) echo -e '\n\033[0;31mThe update will continue'; break;;
+				[Nn]* ) echo -e '\n\033[0;31mThe update will stop'; exit 1; break;;
+				* ) echo "Please answer yes or no.";;
+			esac
+		done
+	fi
+	
+	if [ -f "credentials.json" ]; then
+		cp credentials.json backup/credentials.json.bak
+		echo -e '\n\033[0;30mSaved a copy of credentials file (credentials.json) in backup folder\033[0m'
+	fi
+	
+	if [ -f "token.pickle" ]; then
+		cp token.pickle backup/token.pickle.bak
+		echo -e '\n\033[0;30mSaved a copy of token file (token.pickle) in backup folder\033[0m'
+	fi
+else
+	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
+	if [ -z "$path" ]; then
+		path="/home/pi/ePiframe"
+	fi
+	sudo mkdir -p "$path"
+	cd $path
 fi
-sudo mkdir -p "$path"
 
-cd $path
 epi_code
 display_libs
 
@@ -287,5 +340,13 @@ install_service $path
 sudo chown -R pi $path
 sudo chmod +x $path/*.py
 
-show_next_steps
+if [ "$1" = "--update" ]; then
+	path=`pwd`
+	if [ -f "backup/config.cfg.bak" ]; then
+		cp backup/config.cfg.bak config.cfg
+	fi
+else
+	show_next_steps
+fi
+
 echo -e "\n\033[0;30mEnded `date`\033[0m"
