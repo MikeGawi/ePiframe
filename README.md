@@ -3,7 +3,7 @@
 
 # ePiframe
 
-Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather information and Telegram Bot.
+Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather information, Telegram Bot and Web User Interface.
 
 
 ## Table of Contents
@@ -19,6 +19,10 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
       * [Next steps](#next-steps)
       	* [Weather Stamp](#weather-stamp)
       	* [Telegram Bot](#telegram-bot)
+      	* [Web User Interface](#web-user-interface)
+   * [Update](#update)
+      * [Update Automatically](#update-automatically)
+      * [Update Manually](#update-manually)
    * [Uninstalling](#uninstalling)
       * [Automatic](#automatic-1)
       * [Manual](#manual-1)
@@ -55,6 +59,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 
 * (06.10.2021 since [ePiframe v0.9.3 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.3-beta)) Weather stamp (optional) - subtly showing current weather icon and temperature in defined display corner, size and color. Taken from free API of [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * (14.10.2021 since [ePiframe v0.9.4 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.4-beta)) Telegram Bot (optional) - control the ePiframe with few commands from Telegram IM - [#5](https://github.com/MikeGawi/ePiframe/issues/5)
+* (20.11.2021 since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta)) WebUI (optional) - control the ePiframe with web user interface - [#9](https://github.com/MikeGawi/ePiframe/issues/9)
 
 | Color presets             | Different backgrounds     |
 |:-------------------------:|:-------------------------:|
@@ -135,7 +140,7 @@ sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev wiringpi pyt
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image pillow pyTelegramBotAPI
+sudo -H pip3 install requests python-dateutil configparser pandas RPi.GPIO spidev image pillow pyTelegramBotAPI flask flask-wtf
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
@@ -203,11 +208,6 @@ Move to [next steps](#next-steps)
 * Enjoy your ePiframe!
 
 
-Also consider (if not already merged to master) changing Waveshare scripts in *lib* inside *path* according to those two pull requests:
-* [Fix display resume from sleep issue](https://github.com/waveshare/e-Paper/pull/71)
-* [Significantly increase speed of displaying images](https://github.com/waveshare/e-Paper/pull/104)
-
-
 ### Weather Stamp
 
 ePiframe can show  weather stamp (icon + temperature) in defined frame corner, color and size. The weather information is taken from [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
@@ -255,6 +255,45 @@ To get the needed values:
 
 **_❗ IMPORTANT ❗_** - You can limit number of users/groups that can control the ePiframe bot (all bots are public and accessible by others!) by setting ```[Telegram bot]->chat_id``` list in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) - that will allow only the defined chat ids to control bot. To get chat id use the tool above.
 
+### Web User Interface
+
+ePiframe can optionally be controlled by a web user interface under defined network port. Implementation uses [Flask](https://flask.palletsprojects.com/) and is a persistent thread running when ePiframe is online. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
+
+To configure:
+* Enable ```[Web interface]->use_web=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file
+* Set IP address in ```[Web interface]->web_host``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set ```0.0.0.0``` for hosting on all possible public IP addressess.
+* Set port in ```[Web interface]->web_port``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set port value between 1-65535 that You want to have WebUI hosted under. Sometimes it is needed to [have this port open in the Firewall](https://pimylifeup.com/raspberry-pi-ufw/).
+* [Restart](#service-control) ePiframe service and from now on under given IP address and port (*http://[ip]:[port]/*), You'll be able to control the frame.
+
+**_NOTE_** - To troubleshoot WebUI IP, port issues and connectivity check the [tools/testWebUI.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testWebUI.py) tool.
+
+**_NOTE_** - Keep in mind that any port number below 5000 needs root privilleges to be possible to assign.
+
+## Update
+### Update Automatically
+
+Since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta) [#10](https://github.com/MikeGawi/ePiframe/issues/10)
+
+Use *install.sh* script:
+
+```
+cd [Your ePiframe path]
+wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
+chmod +x install.sh
+./install.sh --update
+```
+
+**_NOTE_** - Since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta) [#8](https://github.com/MikeGawi/ePiframe/issues/8) ePiframe has a [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file backward compatibility. That means that any existing configuration file can be used in the newer version of ePiframe and non-existing configuration properties will be set to default values.
+
+### Update Manually
+
+* Save Your [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file in other location.
+* Save Your *credentials.json* file in other location. It may be under different name specified in the ```[Credentials]->cred_file``` entry in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file.
+* Save Your *token.pickle* file in other location. It may be under different name specified in the ```[Credentials]->pickle_file``` entry in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file.
+
+[Uninstall](#uninstalling), [install](#installation) ePiframe again and copy files from previous steps to it's path.
+
+**_NOTE_** - Since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta) [#8](https://github.com/MikeGawi/ePiframe/issues/8) ePiframe has a [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file backward compatibility. That means that any existing configuration file can be used in the newer version of ePiframe and non-existing configuration properties will be set to default values.
 
 ## Uninstalling
 ### Automatic
@@ -262,6 +301,7 @@ To get the needed values:
 Use *install.sh* script:
 ```
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
+chmod +x install.sh
 ./install.sh --uninstall
 ```
 Move to [next steps](#next-steps-1)
@@ -347,8 +387,22 @@ sudo systemctl start ePiframe.service
 sudo systemctl restart ePiframe.service
 ```
 
-**_NOTE_** - Telegram Bot thread is started together and controlled by the service. 
+It is possible to start (for test purposes) only WebUI or TelegramBot thread from the service:
+```
+cd <Your ePiframe path>
+#stop first if running
+sudo systemctl stop ePiframe.service
+#WebUI
+./ePiframe_service.py start web
+#or TelegramBot
+./ePiframe_service.py start telegram
+```
 
+**_❗ IMPORTANT ❗_** - These services must be enabled in the configuration file!
+
+**_NOTE_** - Service will not show any errors if the configuration is wrong or the thread cannot be started. Check [debugging section](#debugging).
+
+**_NOTE_** - Keep in mind that any port number below 5000 needs root privilleges to be possible to assign (use ```sudo ./ePiframe_service.py ...```)
 
 ## Flow
  
@@ -359,12 +413,16 @@ sudo systemctl restart ePiframe.service
 	
 ## Future plans
 	
-ePiframe to-do list (for 2021):
-* [ ] Add web interface based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) for configuration, control and photos upload
+ePiframe to-do list for 2021:
+* [x] Add web interface based on [Flask](https://flask.palletsprojects.com/) for configuration, control and photos upload [#9](https://github.com/MikeGawi/ePiframe/issues/9)
 * [x] Add Telegram bot service to control frame and upload photos [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 * [ ] Easier token generation from the web interface (is this even possible?)
 * [x] Weather and temperature displayed on the photo - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * [ ] Frame lasers, robot arms and making lunch functionality...
+
+Wait! There's more for 2021:
+* [x] Configuration backward compatibility - [#8](https://github.com/MikeGawi/ePiframe/issues/8)
+* [x] Update ePiframe version from script - [#10](https://github.com/MikeGawi/ePiframe/issues/10)
 
 Stay tuned!
 
@@ -376,7 +434,14 @@ This project uses:
 * [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper)
 * [Pandas Dataframe](https://pandas.pydata.org/)
 * [ImageMagick](https://imagemagick.org/)
+* [OpenWeather API](https://openweathermap.org/api)
 * [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI)
+* [Flask](https://flask.palletsprojects.com/)
+* [WTForms](https://wtforms.readthedocs.io/)
+* [FlaskWTF](https://flask-wtf.readthedocs.io/)
+* [Bootstrap](https://getbootstrap.com/)
+* [jQuery](https://jquery.com/)
+* [Dropzone.js](https://www.dropzone.dev/js/)
 
 Helpful links:
 * [Najeem Muhammed: Analyzing my Google Photos library with Python and Pandas](https://medium.com/@najeem/analyzing-my-google-photos-library-with-python-and-pandas-bcb746c2d0f2)
