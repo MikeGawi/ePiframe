@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Tools{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+	<div class="d-grid gap-2 col-8 mx-auto align-center">
+	  <div class="row py-3"></div>
+	  <button class="btn btn-primary" type="button" id="next"><i class="bi bi-skip-end px-2"></i>Next Photo</button>
+	  <button class="btn btn-primary" type="button" id="restart"><i class="bi bi-arrow-repeat px-2"></i>Restart Service</button>
+	  <button class="btn btn-primary" type="button" id="reboot"><i class="bi bi-arrow-counterclockwise px-2"></i>Reboot</button>
+	  <button class="btn btn-secondary" type="button" id="poweroff"><i class="bi bi-power px-2"></i>Power Off</button>
+	</div>
+	<script>		
+		$(".tools-menu").addClass("link-light");
+		
+		$(function() {
+          $('button').on('click', function(e) {
+            e.preventDefault()
+			if (confirm('Are you sure you want to perform \'' + this.id + '\' action?')) {
+				var xmlHttp = new XMLHttpRequest();
+    			xmlHttp.open( "GET", "{{ url_for('tools_functions') }}"+this.id, false );
+    			xmlHttp.send( null );
+			} 
+			return false;
+          });
+        });
+	</script>
+{% endblock %}

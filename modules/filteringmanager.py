@@ -43,6 +43,9 @@ class filteringmanager:
 		datetime.strptime(date, self.__DATE_MASK)
 		
 	@classmethod		
-	def verify_times (self, date1, date2):
-		if datetime.strptime(date1, self.__DATE_MASK) > datetime.strptime(date2, self.__DATE_MASK):
-			raise Exception('Configuration photos_from time is older than photos_to!')
+	def verify_times (self, dates):
+		date1 = dates[0]	
+		date2 = dates[1]	
+		if date1 and date2:
+			if datetime.strptime(date1, self.__DATE_MASK) > datetime.strptime(date2, self.__DATE_MASK):
+				raise Exception('Configuration photos_from time is older than photos_to!')

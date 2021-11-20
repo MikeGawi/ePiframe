@@ -32,22 +32,17 @@ class photomanager:
 	def get_photos (self):
 		return self.__photos
 	
-	@classmethod
 	def get_num_of_photos (self, photos):
 		return len(photos.axes[0])
 	
-	@classmethod
 	def reset_index (self, photos):
 		return photos.reset_index(drop = True)	
 	
-	@classmethod
 	def get_photos_attribute (self, photos, attribute:str):
 		return photos[attribute]
 	
-	@classmethod
 	def get_photo_attribute (self, photo, attribute:str):
 		return photo[attribute]
 	
-	@classmethod
 	def get_photo_by_index (self, photos, index:int):
 		return photos.iloc[index]

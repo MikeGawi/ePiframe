@@ -1,5 +1,8 @@
 class constants:
 
+	EPIFRAME_VERSION = 'v0.9.5 beta'
+	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
+	
 	#minimal needed python version
 	MINIMAL_PYTHON_VERSION = 3
 
@@ -85,6 +88,9 @@ class constants:
 		'image/icon' : 'ico',
 		'image/x-icon' : 'ico',
 		'image/vnd.microsoft.icon' : 'ico',
-		'image/bmp' : 'bmp'}	
+		'image/bmp' : 'bmp'}
+	
+	EXTENSION_TO_TYPE = dict((v.replace('[0]',''),k) for k,v in TYPE_TO_EXTENSION.items())	
+	EXTENSIONS = [ x.replace('[0]','') for x in list(TYPE_TO_EXTENSION.values()) ]
 	
 	NOMATCH_INDICATOR_STRING = 'no match'

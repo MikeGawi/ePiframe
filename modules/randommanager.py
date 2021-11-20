@@ -1,4 +1,4 @@
-import sys,os
+import os
 import pandas as pd
 
 class randommanager:

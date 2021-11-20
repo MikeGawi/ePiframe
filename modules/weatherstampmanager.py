@@ -42,6 +42,9 @@ class weatherstampmanager:
 	
 	__DEGREES = '\u00b0'
 	
+	__ERROR_VALUE_TEXT = 'Configuration position should be one of {}'
+	__ERROR_CVALUE_TEXT = 'Configuration font_color should be one of {}'
+	
 	def __init__ (self, outputfile, width, height, horizontal, font, color, position):
 		self.__outputfile = outputfile
 		self.__width = width
@@ -53,13 +56,21 @@ class weatherstampmanager:
 
 	@classmethod		
 	def verify_position (self, val):
-		if not val in self.__POSITION_VALUES:
-			raise Exception('Configuration position should be one of {}'.format(self.__POSITION_VALUES))
-			
+		if not int(val) in self.__POSITION_VALUES:
+			raise Exception(self.__ERROR_VALUE_TEXT.format(self.__POSITION_VALUES))
+
+	@classmethod		
+	def get_positions (self):
+		return self.__POSITION_VALUES
+	
 	@classmethod		
 	def verify_color (self, val):
 		if not val in [k.lower() for k in self.__COLORS.keys()]:
-			raise Exception('Configuration color should be one of {}'.format([k.lower() for k in self.__COLORS.keys()]))
+			raise Exception(self.__ERROR_CVALUE_TEXT.format([k.lower() for k in self.__COLORS.keys()]))
+			
+	@classmethod		
+	def get_colors (self):
+		return [k.lower() for k in self.__COLORS.keys()]
 
 	def compose(self, temp, units, icon):
 		image = Image.open(self.__outputfile).convert('1')

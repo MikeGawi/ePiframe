@@ -38,5 +38,9 @@ class weathermanager:
 			raise Exception('Configuration units should be one of {}'.format(self.__UNITS_VALUES))
 	
 	@classmethod		
+	def get_units (self):
+		return self.__UNITS_VALUES
+	
+	@classmethod		
 	def is_metric (self, val):
 		return val == self.__UNITS_VALUES[0]

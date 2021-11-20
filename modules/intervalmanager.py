@@ -1,4 +1,4 @@
-import sys,os
+import os
 
 class intervalmanager:
 	

@@ -3,6 +3,8 @@ import subprocess
 
 class convertmanager:
 	
+	__ERROR_VALUE_TEXT = 'Configuration background_color should be one of {}'
+	
 	__INVERT_FLAG = "-negate"
 	__ROTATE_CODE = '-rotate 90'
 	__BACK_COLORS = ["white", "black", "photo"]
@@ -17,17 +19,33 @@ class convertmanager:
 	
 	#options for ImageMagick converter
 	#https://legacy.imagemagick.org/Usage/quantize/
-	#1st {} is for convert binary path, 2nd - source file, 3rd rotation, 4th - photo background code (optional),  {}x{} - size, 7th - invert colors, 8th - back color, 9th&10th frame size, last {} - target file
 	__CONVERT_OPTIONS = {
-		'1'	:	'{} {} -limit thread 1 {}{}-brightness-contrast 0,10 -sample {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'2'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -dither FloydSteinberg {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'3'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'4'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -dither FloydSteinberg -ordered-dither o4x4 {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'5'	:	'{} {} -limit thread 1 {}{}-sample {}x{} {}-background {} -gravity center -extent {}x{} -type bilevel {}',
-		'6'	:	'{} {} -limit thread 1 {}{}-sample {}x{} -colors 2 +dither {}-background {} -gravity center -extent {}x{} -type bilevel {}'
+		'1'	:	'{} {} -limit thread 1 {} ( +clone {}{}-brightness-contrast 0,10 -sample {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
+		'2'	:	'{} {} -limit thread 1 {} ( +clone {}{}-sample {}x{} -dither FloydSteinberg {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
+		'3'	:	'{} {} -limit thread 1 {} ( +clone {}{}-sample {}x{} -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
+		'4'	:	'{} {} -limit thread 1 {} ( +clone {}{}-sample {}x{} -dither FloydSteinberg -ordered-dither o4x4 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
+		'5'	:	'{} {} -limit thread 1 {} ( +clone {}{}-sample {}x{} {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
+		'6'	:	'{} {} -limit thread 1 {} ( +clone {}{}-sample {}x{} -colors 2 +dither {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:'
 	}
+	
+	__THUMB_SIZE = '200x120'
+	__THUMB_1ST_PART = '( +clone -background white -gravity center -sample {}x{} -extent {}x{} -thumbnail ' + __THUMB_SIZE + ' -write {} +delete )'
+	__THUMB_2ND_PART = '( +clone -thumbnail ' + __THUMB_SIZE + ' -write {} )'
 		
-	def __convert_option (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str):
+	@classmethod		
+	def verify_background_color (self, val):
+		if not val.strip().lower() in self.__BACK_COLORS:
+			raise Exception(self.__ERROR_VALUE_TEXT.format(self.__BACK_COLORS))
+			
+	@classmethod		
+	def get_background_colors (self):
+		return self.__BACK_COLORS
+	
+	@classmethod		
+	def get_convert_options (self):
+		return list(self.__CONVERT_OPTIONS.keys())
+	
+	def __convert_option (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str, thumborgfile:str, thumbconvfile:str):
 		if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1: option = 1
 		
 		#space at the end as those flag are optional
@@ -53,12 +71,15 @@ class convertmanager:
 		else:
 			code = ''
 		
-		ret = self.__CONVERT_OPTIONS[str(option)].format(bin, srcfile, rotate, code, width, height, negate, back, width, height, target)
-		print (ret)
+		thumb1st = self.__THUMB_1ST_PART.format(width, height, width, height, thumborgfile)
+		thumb2nd = self.__THUMB_2ND_PART.format(thumbconvfile)
+		
+		ret = self.__CONVERT_OPTIONS[str(option)].format(bin, srcfile, thumb1st, rotate, code, width, height, negate, back, width, height, target, thumb2nd)
+		print (ret.replace('(','\(').replace(')','\)'))
 		return ret
 	
-	def convert_image (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str):
-		args = (self.__convert_option(origwidth, origheight, option, bin, srcfile, width, height, invert, horizontal, back, target)).split()
+	def convert_image (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str, thumborgfile:str, thumbconvfile:str):
+		args = (self.__convert_option(origwidth, origheight, option, bin, srcfile, width, height, invert, horizontal, back, target, thumborgfile, thumbconvfile)).split()
 		process = subprocess.Popen(args, stdout=subprocess.PIPE)
 		process.wait()
 		out, err = process.communicate()

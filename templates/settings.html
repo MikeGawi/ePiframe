@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+{% block title %}Settings{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  	<nav class="navbar navbar-expand-sm navbar-dark bg-secondary">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+	  	<div class="collapse navbar-collapse" id="navbarNav">
+			<ul class="navbar-nav mr-auto">
+		  	{% for lab in navlabels %}
+				<li class="nav-item">
+					<a class="nav-link small" href="{{ lab }}">{{ lab }}</a>
+				</li>
+		  	{% endfor %}
+			</ul>
+	  	</div>
+	</nav>
+
+    <form method="POST" action="" id="setform" class="p-2">
+		{{ form.hidden_tag() }}
+		{% for field in form if field.widget.input_type != 'hidden' %}
+			<div class="row g-2 p-1 align-items-center"> 
+				<div class="col-2 {{ field.render_kw['pad'] }} small d-none d-md-block"><strong> {{ field.label }} </strong></div>
+				<div class="col-2 {{ field.render_kw['pad'] }} small d-block d-md-none" style="min-width:100px"><strong> {{ field.label }} </strong></div>
+				<div class="col-auto px-0">
+				  <a href="#" data-bs-toggle="tooltip" title="{{ field.description }}" data-bs-placement="top"><i class="bi bi-question-circle"></i></a>
+				</div>
+				<div class="col-3 {{ field.render_kw['invalid'] }} {{ field.render_kw['fill'] }}"> {{ field }} </div>
+				<div class="col-auto ms-auto">
+					<button name='-<[{{ field.name }}]>-' class='btn-outline-secondary btn-sm btn {{ field.render_kw['classdep'] }}' {{ field.render_kw['disabled'] }}>Reset</button>
+				</div>
+			{% if field.errors %}
+				<div class="offset-md-2 invalid-feedback"> {{ field.errors }} </div>
+			{% endif %}
+			</div>
+		{% endfor %}
+		{% if reset_needed%}
+		    <div class="row g-2 p-1">
+				<div class="col-auto"><div class="text-left px-0 text-danger" style="font-size:12px"><strong>Service restart needed after changing these settings!</strong></div></div>
+			</div>
+		{% endif %}
+		<div class="row g-2 p-1">
+			<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>			
+			<div class="col-auto"><button class="btn btn-secondary" name='CANCEL' id='CANCEL' value='CANCEL'>Cancel</button></div>
+			<div class="col-4 flex-fill"></div>
+			<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset All To Defaults</button></div>
+		</div>
+    </form>
+
+	{% with messages = get_flashed_messages() %}
+	  {% if messages %}
+		<script>
+		  var messages = {{ messages | safe }};
+		  for (var i=0; i<messages.length; i++) {
+			alert(messages[i]);
+		  }
+		</script>
+	  {% endif %}
+	{% endwith %}
+	<script>
+		$(function () {
+		  $(".navbar-nav .nav-link").each(function () {
+			if (window.location.href == (this.href)) {
+			  $(this).closest("a").addClass("active");
+			  $(this).closest("a").parent().parent().addClass("active");
+			}
+		  });
+		});
+
+		$(".settings-menu").addClass("link-light");
+	</script>
+	<script>
+		 $('#DEFAULTS').on('click', function () {
+			if (confirm('Are you sure you want to reset all to default values?')) {        
+				return true;
+			} else {
+				return false;		
+			}
+		});
+		
+		 $('#SAVE').on('click', function () {
+			if (confirm('Are you sure you want to save all changes?')) {        
+				return true;
+			} else {
+				return false;		
+			}
+		});
+		
+		 $('#CANCEL').on('click', function () {
+			if (confirm('Are you sure you want to cancel all changes?')) {        
+				return true;
+			} else {
+				return false;		
+			}
+		});
+		
+		$('document').ready(function(){
+			$('[data-bs-toggle=tooltip]').tooltip();
+		});
+		
+		$('.checkbox').change(function(e) {
+		  if (!$(this).is(':checked')) {
+			$('.'+this.getAttribute('name')).attr('disabled', '');
+		  } else {
+			$('.'+this.getAttribute('name')).removeAttr('disabled');
+		  }
+		});
+	</script>
+{% endblock %}

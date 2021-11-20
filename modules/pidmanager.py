@@ -1,4 +1,4 @@
-import sys,os
+import os
 import subprocess
 
 class pidmanager:

@@ -5,6 +5,7 @@ class timermanager:
 
 	__DATE_MASK = '%H:%M'
 	__NO_TIME_MARK = '-'
+	__DELIM = ','
 
 	def __init__ (self, startTimes:str, endTimes:str):
 		self.__startTimes = startTimes
@@ -14,7 +15,7 @@ class timermanager:
 		now = datetime.now()
 		
 		dow = now.weekday()
-		yesterday = (datetime.now() - timedelta(1)).weekday()
+		yesterday = (datetime.now() - timedelta(1)).weekday() - 1
 		
 		ret = False
 		
@@ -39,6 +40,9 @@ class timermanager:
 		ret = datetime.now(datetime.now().astimezone().tzinfo)	
 		nowTab = islice(cycle(self.__startTimes), dow, None)
 		
+		if  self.__endTimes[dow].strip() == self.__NO_TIME_MARK or now.time() > self.get_time_from_string(self.__endTimes[dow].strip()).time():
+			ret += timedelta(1)
+		
 		while True:
 			val = next(nowTab)
 			if  val == self.__NO_TIME_MARK:
@@ -54,7 +58,10 @@ class timermanager:
 		return datetime.strptime(time, self.__DATE_MASK)
 
 	@classmethod		
-	def verify (self, times1, times2):
+	def verify (self, tim):
+		times1 = tim[0].split(self.__DELIM)
+		times2 = tim[1].split(self.__DELIM)
+		
 		for i in range(len(times1)):
 			if not times1[i].strip() == self.__NO_TIME_MARK:
 				self.get_time_from_string(times1[i].strip())

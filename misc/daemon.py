@@ -56,7 +56,7 @@ class daemon:
 	def delpid(self):
 		os.remove(self.pidfile)
 
-	def start(self):
+	def start(self, args):
 		# Check for a pidfile to see if the daemon already runs
 		#try:
 		#		pf = file(self.pidfile,'r')
@@ -72,7 +72,7 @@ class daemon:
 		
 		# Start the daemon
 		self.daemonize()
-		self.run()
+		self.run(args)
 
 	def stop(self):
 		# Get the pid from the pidfile

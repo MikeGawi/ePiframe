@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>	
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}"/>
+	{% block head %}
+    <title>{% block title %}{% endblock %} - ePiframe</title>
+    {% endblock %}
+</head>
+	<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+	<script>
+		original = 0;
+		converted = 0;
+		
+		function status() { $.getJSON("{{ url_for('get_status') }}", function(data) { 
+				$("#state").text(data.state);
+				$("#load").text(data.load);
+				$("#uptime").text(data.uptime);
+				$("#temp").text(data.temp);
+				$("#memory").text(data.mem);
+				$("#service").text(data.service);
+				$("#update").text(data.update);
+				
+				var timestamp = new Date().getTime();
+				
+				if (original !== data.original) {
+					original = data.original;
+					$(".original").prop("src", "{{ url_for('get_image') }}?original=1&thumb=1&t=" + timestamp);
+				}
+				
+				if (converted !== data.converted) {
+					converted = data.converted;
+					$(".converted").prop("src", "{{ url_for('get_image') }}?thumb=1&t=" + timestamp);
+				}
+			});
+			return false; 
+		}
+		status();
+		setInterval(status, 10000);
+	</script>
+<body>
+	<div class="container-fluid max-hh">
+		<div class="row flex-nowrap">
+			<div class="col-auto px-sm-4 px-0 bg-dark">
+				<div class="col-auto align-items-sm-start pt-2 min-vh-100">
+					<a href="/" class="p-2 col-auto align-items-center align-middle text-white text-decoration-none d-none d-md-block">
+						<svg fill="#171717" width="10vw" height="20vh" viewBox="0 0 24 17">
+							<path d="M 0.26425819,8.5884046 V 0.26425463 H 11.882127 23.499996 V 8.5884046 16.912545 H 11.882127 0.26425819 Z m 21.55893181,0 v -6.64734 H 11.882127 1.9410642 v 6.64734 6.6473304 h 9.9410628 9.941063 z m -3.787108,4.7418104 c -0.643246,-0.39223 -0.689412,-0.67991 -0.736944,-4.5921004 l -0.04329,-3.56321 h -1.668801 -1.668798 v 4.01236 4.0123504 h -0.778517 -0.778517 v -4.0123504 -4.01236 h -0.538974 -0.538973 v -0.77852 -0.77851 h 4.311786 4.311787 v 0.77851 0.77852 h -0.538974 -0.538973 v 3.26708 c 0,3.7345204 0.01445,3.7994604 0.845194,3.7994604 h 0.472296 v 0.58389 c 0,0.55813 -0.01651,0.58718 -0.374287,0.65874 -0.684096,0.13682 -1.357145,0.0772 -1.736015,-0.15386 z M 6.2312582,13.135995 c -0.71768,-0.22827 -1.805547,-1.21366 -2.231623,-2.02139 -0.286975,-0.54403 -0.321695,-0.73912 -0.321695,-1.8075704 0,-1.06441 0.03527,-1.26438 0.316879,-1.79658 0.700927,-1.32466 1.861358,-2.09274 3.164927,-2.09484 1.095366,-0.002 1.796385,0.28893 2.575364,1.0679 0.7169118,0.71692 1.0147048,1.36069 1.1459438,2.47733 0.0618,0.52581 0.03514,0.65337 -0.181889,0.87041 -0.24183,0.2418304 -0.368821,0.2543004 -2.5898508,0.2543004 -1.284553,0 -2.335551,0.0287 -2.335551,0.0637 0,0.0351 0.07432,0.24159 0.165144,0.45898 0.415251,0.99383 1.488867,1.1988 2.908234,0.55523 0.43585,-0.19762 0.88444,-0.35931 0.996868,-0.35931 0.6237468,0 0.8232338,1.12283 0.2876678,1.61918 -0.7359298,0.68203 -2.8069898,1.06043 -3.9004188,0.71263 z m 2.835965,-5.0566204 c -0.637157,-1.56262 -2.832742,-1.51661 -3.287458,0.0689 l -0.109052,0.38024 h 1.789824 1.789824 z"/>
+						</svg>
+					</a>
+					<div class="p-2 col-auto align-items-center d-block d-md-none align-middle" style="min-height:55px"></div>
+					<ul class="navbar-nav flex-column mb-sm-auto mb-0 align-items-sm-start" id="menu">
+						<li class="nav-item">
+							<a href="/" class="nav-link align-middle px-1 link-secondary home-menu d-none d-md-block">
+								<i class="fs-6 bi bi-house"></i> <span>Home</span>
+							</a>
+							<a href="/" class="nav-link align-middle px-1 link-secondary home-menu d-block d-md-none">
+								<i class="fs-3 bi bi-house"></i>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="/logs" class="nav-link align-middle px-1 link-secondary logs-menu d-none d-md-block">
+								<i class="fs-6 bi bi-activity"></i> <span>Logs</span>
+							</a>
+							<a href="/logs" class="nav-link align-middle px-1 link-secondary logs-menu d-block d-md-none">
+								<i class="fs-3 bi bi-activity"></i>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="/settings" class="nav-link align-middle px-1 link-secondary settings-menu d-none d-md-block">
+								<i class="fs-6 bi bi-gear"></i> <span>Settings</span>
+							</a>
+							<a href="/settings" class="nav-link align-middle px-1 link-secondary settings-menu d-block d-md-none">
+								<i class="fs-3 bi bi-gear"></i>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="/tools" class="nav-link align-middle px-1 link-secondary tools-menu d-none d-md-block">
+								<i class="fs-6 bi bi-tools"></i> <span>Tools</span>
+							</a>
+							<a href="/tools" class="nav-link align-middle px-1 link-secondary tools-menu d-block d-md-none">
+								<i class="fs-3 bi bi-tools"></i>
+							</a>
+						</li>
+						<div class="container-fluid px-1 border border-secondary rounded border-1 border-top my-3"></div>
+						<li class="nav-item">
+							<a href="https://github.com/MikeGawi/ePiframe" target="_blank" class="nav-link align-middle px-1 link-secondary">
+								<i class="fs-3 bi bi-github"></i>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="col w-75">
+				<div class="row bg-dark"> 
+					<div class="col-auto text-white fw-lighter fs-1 align-middle align-self-center px-0">ePiframe</div>
+					<div class="row col-auto ms-auto py-2">
+						<div class="col-auto text-white-50 font-monospace px-2" style="font-size:10px">
+							<strong>State:&nbsp;</strong><span id='state'></span><br/>
+							<strong>Service:&nbsp;</strong><span id='service'></span><br/>
+							<strong style="font-size:10px; margin: 0;">Next update:&nbsp;</strong><span style="white-space: pre; font-size:10px; margin: 0;" class="text-white-50 font-monospace" id='update'></span>
+						</div>
+						<div class="col-auto text-white-50 font-monospace px-2 d-none d-md-block" style="font-size:10px">
+							<strong>Load:</strong>&nbsp;<span id='load'></span><br/>
+							<strong>Memory usage:</strong>&nbsp;<span id='memory'></span><br/>
+							<strong>Uptime:</strong>&nbsp;<span id='uptime'></span><br/>
+							<strong>Temperature:</strong>&nbsp;<span id='temp'></span>
+						</div>
+					</div>
+					<div class="col-auto px-2"></div>
+				</div>   
+				<div class="row" id="content">{% block content %}{% endblock %}</div>
+			</div>
+		</div>
+	</div>
+    <div id="footer" class="row bg-transparent fixed-bottom">
+		<div class="col-auto ms-auto"><div class="text-dark text-right px-0 align-bottom" style="font-size:10px">{{ version }}</div></div>
+      	{% block footer %}
+      	{% endblock %}
+    </div>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+</html>

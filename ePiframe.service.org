@@ -4,7 +4,7 @@ Wants=network-online.target
 After=network.target network-online.target
 
 [Service]
-User=pi
+User=root
 ExecStart=EPIEPIEPIePiframe_service.py start
 ExecStop=EPIEPIEPIePiframe_service.py stop
 Type=forking

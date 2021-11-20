@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block head %}
+  {{ super() }}
+	<script src="{{ url_for('static', filename='js/dropzone.min.js') }}"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.min.css') }}" type="text/css" />
+	<style>
+		   .btn-file {
+				position: relative;
+				overflow: hidden;
+			}
+		
+			.btn-file input[type=file] {
+				position: absolute;
+				top: 0;
+				right: 0;
+				min-width: 100%;
+				min-height: 100%;
+				font-size: 100px;
+				text-align: right;
+				filter: alpha(opacity=0);
+				opacity: 0;
+				outline: none;   
+				cursor: inherit;
+				display: block;
+			}
+	</style>
+{% endblock %}
+{% block content %}
+	<div class="d-grid">
+		<div class="d-flex justify-content-center px-2 mt-4">
+			<div class="col-auto px-1">
+				<div class="row px-1 col-auto text-center"><strong>Original</strong></div>
+				<div class="row px-1 col-auto mx-auto border border-4 rounded-3" >
+					<a href="{{ url_for('get_image') }}?original=" target="_blank" data-bs-toggle="tooltip" title="Click to view original image" data-bs-placement="top" style="height: 120px; width: 210px;">
+						<img src="{{ url_for('get_image') }}?original=&thumb=" alt="No Photo!" width="200" height="120" class="original" style="margin-left:-7px"/>
+					</a>																				  
+				</div>				
+			</div>
+			<div class="col-auto px-1 d-none d-md-block">
+				<div class="row px-1 col-auto text-center"><strong>Displayed</strong></div>
+				<div class="row px-1 col-auto mx-auto border border-4 rounded-3">
+					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 210px;">
+						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted" style="margin-left:-7px"/>
+					</a>	
+				</div>	
+			</div>
+		</div>
+		<div class="d-flex justify-content-center px-2 mt-4 d-block d-md-none">
+			<div class="col-auto px-1">
+				<div class="row px-1 col-auto text-center"><strong>Displayed</strong></div>
+				<div class="row px-1 col-auto mx-auto border border-4 rounded-3">
+					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 210px;">
+						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted" style="margin-left:-7px"/>
+					</a>	
+				</div>	
+			</div>
+		</div>			
+		<div class="d-flex justify-content-center px-2 mt-4">
+			<div class="col-2 d-none d-md-block px-3" style="width: 230px;">
+				<form action="{{ url_for('upload_photo') }}" class="dropzone border border-5 rounded-3" id="dropzone">
+					<div class="dz-message">Drop photo here to upload!</div>
+				</form>
+			</div>
+			<div class="col-auto mt-2 px-3">
+				<div class="row px-1 col-auto mx-auto d-none d-md-block">Or</div>
+				<div class="row px-1 col-auto mx-auto">
+					<form action="{{ url_for('upload_photo') }}" class="px-0" method="POST" enctype="multipart/form-data">
+						<button class="btn btn-primary btn-file px-0 form-control" type="button" id="upload">
+							<input type="file" onchange="this.form.submit();" name="file"><i class="bi bi-upload px-2"></i>Upload Photo
+						</button>
+					</form>
+				</div>
+				<div class="row px-1 col-auto mx-auto">Or</div>
+				<div class="px-1 col-auto mx-auto">
+					<button class="btn btn-primary" type="button" id="next"><i class="bi bi-skip-end px-2"></i>Show Next Photo</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$('document').ready(function(){
+			$('[data-bs-toggle=tooltip]').tooltip();
+		});
+		
+		Dropzone.options.dropzone = { uploadMultiple:false, maxFiles:1, clickable:false,
+			init: function() {
+				this.on("maxfilesexceeded", function(file) {
+					this.removeAllFiles();
+					this.addFile(file);
+				})
+    		}
+		};
+				
+		$(".home-menu").addClass("link-light");
+		
+		$(function() {
+          $('button#next').on('click', function(e) {
+            e.preventDefault()
+			if (confirm('Are you sure you want to show next photo?')) {
+				var xmlHttp = new XMLHttpRequest();
+    			xmlHttp.open( "GET", "{{ url_for('tools_functions') }}next", false );
+    			xmlHttp.send( null )
+			} 
+			return false;
+          });
+        });
+	</script>
+{% endblock %}

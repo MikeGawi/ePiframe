@@ -1,30 +1,26 @@
 #!/usr/bin/env python3
 
-import sys, time, sched, os, signal
-import subprocess
+import sys, time, sched, os, signal, subprocess
 from threading import Thread
 from misc.daemon import daemon
-from datetime import datetime, timedelta
-from misc.logs import logs
-from misc.constants import constants
-from modules.configmanager import configmanager
-from modules.timermanager import timermanager
-from modules.intervalmanager import intervalmanager
+from modules.backendmanager import backendmanager
 from modules.telebotmanager import telebotmanager
+from modules.webuimanager import webuimanager
 
 class service(daemon):
 	
 	__config_path = os.path.dirname(os.path.realpath(__file__))
 	__script = [sys.executable, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ePiframe.py')]
-	__sched = sched.scheduler(time.time, time.sleep)
 	
 	__telebot = None
-	__thread = None
+	__webman = None
+	__tbthread = None
+	__webthread = None
 	__event = None
 	
 	__SERVICE_LOG_IND = "--------ePiframe Service: "
 	__SERVICE_LOG_STARTED = __SERVICE_LOG_IND + "STARTED"
-	__SERVICE_TBOT_TRIGGER = __SERVICE_LOG_IND + "Activity triggered from Telegram Bot"
+	__SERVICE_TRIGGER = __SERVICE_LOG_IND + "Activity triggered"
 	__SERVICE_LOG_STARTING = __SERVICE_LOG_IND + "Starting ePiframe script"
 	__SERVICE_LOG_SLEEPING = __SERVICE_LOG_IND + "Off hours - sleeping"
 	__SERVICE_LOG_MULT = __SERVICE_LOG_IND + "Interval multipicated for current photo"
@@ -35,93 +31,104 @@ class service(daemon):
 	
 	__EVENT_PRIORITY = 1
 	
-	__ERROR_CONF_FILE = "Error loading {} configuration file! {}"
 	__ERROR_TELE_BOT = "Error configuring Telegram Bot! {}"
+	__ERROR_WEB = "Error configuring WebUI! {}"
 	
-	def run(self):
-		config = self.__load_config()		
-		self.__logging = logs(config.get('log_files'))
-		self.__logging.log(self.__SERVICE_LOG_STARTED, silent=True)
-		interval = intervalmanager(config.get('interval_mult_file'))
-		interval.remove()
+	__WEB_ARG = 'web'
+	__TGBOT_ARG = 'telegram'
+	
+	def run(self, args=None):
+		self.__backend = backendmanager(self.restart, self.__config_path)
+		self.__backend.log(self.__SERVICE_LOG_STARTED, silent=True)
 		
-		self.__thread = Thread(target = self.thread)
-		self.__thread.start()
-		self.__event = self.__sched.enter(self.__INITIAL_EVENT_TIME, self.__EVENT_PRIORITY, self.task)
-		self.__sched.run()
+		self.__event = None
+		self.__sched = None
+		
+		if not args or (args and args == self.__TGBOT_ARG):
+			self.__tbthread = Thread(target = self.tbthread)
+			self.__tbthread.start()
+		
+		if not args or (args and args == self.__WEB_ARG):
+			self.__webthread = Thread(target = self.webthread)
+			self.__webthread.start()
+		
+		if not args:
+			self.__sched = sched.scheduler(time.time, time.sleep)
+			self.__event = self.__sched.enter(self.__INITIAL_EVENT_TIME, self.__EVENT_PRIORITY, self.task)
+			self.__sched.run()
 		
 		while True:		
 			time.sleep(self.__WAIT_EVENT_TIME)
 	
-	def thread(self):
+	def webthread(self):
 		while True:
-			if bool(self.__load_config().getint('use_telebot')):
+			self.__backend.refresh()
+			if self.__backend.is_web_enabled():
 				try:
-					self.__telebot = telebotmanager(self.restart, self.__config_path)
-					self.__telebot.start()
+					self.__webman = webuimanager(self.__backend)
+					self.__webman.start()
 				except Exception as e:
-					logs.show_log(self.__ERROR_TELE_BOT.format(e))
+					self.__backend.log(self.__ERROR_WEB.format(e))
 					raise
 			
 			time.sleep(self.__WAIT_EVENT_TIME)
 	
-	def __load_config(self):
-		config = None
-		try:
-			config = configmanager(os.path.join(self.__config_path, constants.CONFIG_FILE))
-		except Exception as e:
-			logs.show_log(self.__ERROR_CONF_FILE.format(constants.CONFIG_FILE, e))
-			raise
-		return config
+	def tbthread(self):
+		while True:
+			self.__backend.refresh()
+			if self.__backend.is_telebot_enabled():
+				try:
+					self.__telebot = telebotmanager(self.__backend)
+					self.__telebot.start()
+				except Exception as e:
+					self.__backend.log(self.__ERROR_TELE_BOT.format(e))
+					raise
+			
+			time.sleep(self.__WAIT_EVENT_TIME)
 	
 	def restart(self, params=None):
-		self.__logging.log(self.__SERVICE_TBOT_TRIGGER, silent=True)
+		self.__backend.log(self.__SERVICE_TRIGGER, silent=True)
 		if self.__sched and self.__event:
 			self.__sched.cancel(self.__event)
 		self.task(params)
 				
 	def task(self, params=None):
-		config = self.__load_config()
-			
-		timer = timermanager(config.get('start_times').split(','), config.get('stop_times').split(','))
+		self.__backend.refresh()
 		inter = -1
 		
-		if bool(config.getint('interval_mult')):
-			interval = intervalmanager(config.get('interval_mult_file'))
-			
+		if self.__backend.is_interval_mult_enabled():
 			try:
-				inter = interval.read()
+				inter = self.__backend.get_interval()
 			except Exception:
 				pass
 
 			if inter > 0:
 				inter -= 1
-				interval.save(inter)
-				self.__logging.log(self.__SERVICE_LOG_MULT, silent=True)			
+				self.__backend.save_interval(inter)
+				self.__backend.log(self.__SERVICE_LOG_MULT, silent=True)			
 			else:
-				interval.remove()
+				self.__backend.remove_interval()
 				inter = -1
 		
-		if inter < 0:
-			if timer.should_i_work_now():
-				self.__logging.log(self.__SERVICE_LOG_STARTING, silent=True)
-
-				args = self.__script + params.split() if params else self.__script
+		if inter < 0 or params:
+			if self.__backend.should_i_work_now() or (params and self.__backend.triggers_enabled()):
+				self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
+				
+				par = params if params != self.__backend.get_empty_params() else str()
+				args = (self.__script + par.split()) if par else self.__script
 				subprocess.Popen(args)
 			else:
-				self.__logging.log(self.__SERVICE_LOG_SLEEPING, silent=True)
+				self.__backend.log(self.__SERVICE_LOG_SLEEPING, silent=True)
 		
-		frameTime = config.getint('slide_interval')
-		if self.__telebot:
-			self.__telebot.update_time()
-		nextUpdate = datetime.now(datetime.now().astimezone().tzinfo) + timedelta(seconds=frameTime)
-		self.__logging.log(self.__SERVICE_LOG_NEXT.format(nextUpdate.isoformat().replace('T', ' at ').split('.')[0]), silent=True)
+		frameTime = self.__backend.get_slide_interval()
+		self.__backend.update_time()
+		self.__backend.log(self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()), silent=True)
 		self.__event = self.__sched.enter(frameTime, self.__EVENT_PRIORITY, self.task)	
 			
 if __name__ == "__main__":
 	daemon = service('/tmp/ePiframe-service.pid', os.path.dirname(os.path.realpath(__file__)))
 
-	if len(sys.argv) == 2:
+	if len(sys.argv) >= 2:
 		if 'start' == sys.argv[1]:
 			p = subprocess.Popen(['ps', '-efa'], stdout=subprocess.PIPE)	
 			p.wait()		
@@ -133,7 +140,7 @@ if __name__ == "__main__":
 						pid = int(line.split()[1])
 						if not pid == os.getpid():
 							os.kill(pid, signal.SIGKILL)
-			daemon.start()
+			daemon.start(sys.argv[2] if len(sys.argv) > 2 else str())
 		elif 'stop' == sys.argv[1]:
 			daemon.stop()
 		elif 'restart' == sys.argv[1]:
@@ -144,5 +151,8 @@ if __name__ == "__main__":
 		sys.exit(0)
 	else:
 		print ("ePiframe daemon service")
-		print ("usage: %s start|stop|restart" % sys.argv[0])
+		print ("usage: %s start|stop|restart [service]" % sys.argv[0])
+		print ("	service  	start only particular service (i.e. web or telegram)")
+		print ("			services must be enabled in configuration!")
+		print ("			for web: any port number below 5000 needs root privilleges to be possible to assign (use sudo ./ePiframe_service.py ...")
 		sys.exit(2)

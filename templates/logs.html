@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Logs{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+	<div class="overflow-auto p-0" style="height: 87.3vh; background-color: #000000;" id="outputframe">
+			<pre style="background-color: #000000; font-size:10px;" id="output" class="text-light font-monospace">No logs to show!</pre>
+	</div>
+	<script>
+		var scroll = 0;
+		
+		setInterval(function() {
+			$.get('{{ url_for('stream') }}', function(data) {	
+				var output = document.getElementById('output');
+				if (data && data.length !== 0) { output.textContent = data; }
+			});
+			
+		    var div = document.getElementById('outputframe');
+			var isScrolledToBottom = div.scrollHeight - div.clientHeight - 200 <= div.scrollTop;
+			
+		    if (isScrolledToBottom || ( scroll <= 10 && scroll >= 0) ){ 
+				$('#outputframe').animate({scrollTop: div.scrollHeight - div.clientHeight}, 500); 
+				if ( div.scrollTop > div.clientHeight) { scroll = -1; }
+			}
+		}, 1000);
+		setInterval(updateScroll,30);
+	</script>
+	<script>		
+		$(".logs-menu").addClass("link-light");
+	</script>
+{% endblock %}
