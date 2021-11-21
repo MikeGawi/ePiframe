@@ -242,8 +242,8 @@ if [ "$1" = "--update" ]; then
 		while true; do
 			read -p $'\n\e[1;37mContinue anyway to reinstall it? [y/N]\e[0m' -n 1 -r -e yn
 			case "${yn:-N}" in
-				[Nn]* ) echo -e '\n\033[0;31mThe update will continue'; break;;
-				[Yy]* ) echo -e '\n\033[0;31mThe update will stop'; exit 1; break;;
+				[Yy]* ) echo -e '\n\033[0;31mThe update will continue'; break;;
+				[Nn]* ) echo -e '\n\033[0;31mThe update will stop'; exit 1; break;;
 				* ) echo "Please answer yes or no.";;
 			esac
 		done
