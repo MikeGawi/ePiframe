@@ -261,7 +261,7 @@ ePiframe can optionally be controlled by a web user interface under defined netw
 
 To configure:
 * Enable ```[Web interface]->use_web=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file
-* Set IP address in ```[Web interface]->web_host``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set ```0.0.0.0``` for hosting on all possible public IP addressess.
+* Set IP address in ```[Web interface]->web_host``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set ```0.0.0.0``` for hosting on all possible public IP addresses.
 * Set port in ```[Web interface]->web_port``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set port value between 1-65535 that You want to have WebUI hosted under. Sometimes it is needed to [have this port open in the Firewall](https://pimylifeup.com/raspberry-pi-ufw/).
 * [Restart](#service-control) ePiframe service and from now on under given IP address and port (*http://[ip]:[port]/*), You'll be able to control the frame.
 
@@ -278,7 +278,7 @@ Use *install.sh* script:
 
 ```
 cd [Your ePiframe path]
-wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
+wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh -O install.sh
 chmod +x install.sh
 ./install.sh --update
 ```
@@ -300,8 +300,7 @@ chmod +x install.sh
 
 Use *install.sh* script:
 ```
-wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
-chmod +x install.sh
+cd [Your ePiframe path]
 ./install.sh --uninstall
 ```
 Move to [next steps](#next-steps-1)
