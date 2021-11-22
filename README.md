@@ -209,7 +209,9 @@ Move to [next steps](#next-steps)
 
 
 ### Weather Stamp
+
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/weather.gif" width="400">
+
 ePiframe can show  weather stamp (icon + temperature) in defined frame corner, color and size. The weather information is taken from [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
 
 To get the needed values:
@@ -225,7 +227,9 @@ To get the needed values:
 **_NOTE_** - To troubleshoot OpenWeather API key issues and connectivity check the [tools/testWeatherAPI.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testWeatherAPI.py) tool.
 
 ### Telegram Bot
+
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/tg.gif" width="200">
+
 ePiframe can optionally be controlled by a Telegram Bot and expose some basic commands to control the frame. Implementation uses [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) and is a persistent thread running when ePiframe is online. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
 
 To get the needed values:
@@ -256,7 +260,9 @@ To get the needed values:
 **_❗ IMPORTANT ❗_** - You can limit number of users/groups that can control the ePiframe bot (all bots are public and accessible by others!) by setting ```[Telegram bot]->chat_id``` list in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) - that will allow only the defined chat ids to control bot. To get chat id use the tool above.
 
 ### Web User Interface
+
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/web.gif" width="400">
+
 ePiframe can optionally be controlled by a web user interface under defined network port. Implementation uses [Flask](https://flask.palletsprojects.com/) and is a persistent thread running when ePiframe is online. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
 
 To configure:
