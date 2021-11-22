@@ -91,7 +91,7 @@ class weatherstampmanager:
 		x = self.__MARGIN
 		y = self.__MARGIN
 		
-		if self.__position in [1, 2]:
+		if self.__position in [1, 3]:
 			x = self.__width - sizew - self.__SPACE - sizet - self.__MARGIN
 			
 		if self.__position in [2, 3]:
