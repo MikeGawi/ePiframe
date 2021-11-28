@@ -1,6 +1,6 @@
 class constants:
 
-	EPIFRAME_VERSION = 'v0.9.5 beta'
+	EPIFRAME_VERSION = 'v0.9.7 beta'
 	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
 	
 	#minimal needed python version
@@ -94,3 +94,22 @@ class constants:
 	EXTENSIONS = [ x.replace('[0]','') for x in list(TYPE_TO_EXTENSION.values()) ]
 	
 	NOMATCH_INDICATOR_STRING = 'no match'
+	
+	USERS_DB_FILE = "misc/users.db"
+	
+	DB_NULL =						'NULL'
+	DB_ALL =						'*'
+	DB_SQL_COL =					'sql'
+	DB_NAME_COL =					'name'
+	DB_SQLITE_MASTER_TAB =			'sqlite_master'	
+	USERS_TABLE_NAME = 				'users'
+	USERS_TABLE_ID_HEADER = 		'id'
+	USERS_TABLE_USERNAME_HEADER = 	'username'
+	USERS_TABLE_HASH_HEADER = 		'hash'
+	
+	SALTS_TABLE_NAME = 				'salts'
+	SALTS_TABLE_ID_HEADER = 		'id'
+	SALTS_TABLE_USERID_HEADER = 	'userid'
+	SALTS_TABLE_SALT_HEADER = 		'salt'
+	
+	USERS_ACTIONS_TAG = "--------Users management: "

@@ -53,7 +53,7 @@ class logs:
 
 	@classmethod
 	def execution_time (self, startTime, endTime):
-	   return (strftime(" %H:%M:%S",gmtime(int('{:.0f}'.format(float(str((endTime - startTime))))))))
+		return (strftime(" %H:%M:%S",gmtime(int('{:.0f}'.format(float(str((endTime - startTime))))))))
 	
 	def log (self, text:str, silent = False):
 		timeObj = datetime.now().strftime("%Y-%m-%d %H:%M:%S :")

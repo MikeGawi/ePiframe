@@ -45,7 +45,8 @@ function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
 	declare -A pips=( ["Requests"]="requests" ["Pillow"]="pillow" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser"\
 				  ["Google components"]="-I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
-				  ["RPi.GPIO"]="RPi.GPIO" ["SPI Libs"]="spidev" ["Image"]="image" ["Pandas"]="pandas" ["Flask"]="flask" ["Flask-WTF"]="flask-wtf")
+				  ["RPi.GPIO"]="RPi.GPIO" ["SPI Libs"]="spidev" ["Image"]="image" ["Pandas"]="pandas" ["Flask"]="flask" ["Flask-WTF"]="flask-wtf" \
+				  ["Flask-Login"]="flask-login" )
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
 		out=`sudo -H pip3 -q install ${pips[$pip]} 2>&1 > /dev/null`
@@ -308,6 +309,11 @@ if [ "$1" = "--update" ]; then
 	if [ -f "token.pickle" ]; then
 		cp token.pickle backup/token.pickle.bak
 		echo -e '\n\033[0;30mSaved a copy of token file (token.pickle) in backup folder\033[0m'
+	fi
+	
+	if [ -f "misc/users.db" ]; then
+		cp misc/users.db backup/users.db.bak
+		echo -e '\n\033[0;30mSaved a copy of Users DB (misc/users.db) in backup folder\033[0m'
 	fi
 else
 	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path

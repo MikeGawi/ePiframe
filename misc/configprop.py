@@ -80,12 +80,7 @@ class configprop:
 		return self.__default
 	
 	def get_possible(self):
-		ret = self.__possible
-		
-		if self.__type == self.BOOLEAN_TYPE:
-			ret = list(range(2))
-		
-		return ret
+		return list(range(2)) if self.__type == self.BOOLEAN_TYPE else self.__possible
 	
 	def validate(self):
 		if self.__dependency and bool(self.__configmanager.getint(self.__dependency)) or not self.__dependency:

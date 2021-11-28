@@ -15,9 +15,8 @@ class albummanager:
 			albumNames = list(set(albumNames))	
 
 			for name in albumNames:
-				name = name.strip()
-				if name:
-					album = dfAlbums[dfAlbums[header] == name]
+				if name.strip():
+					album = dfAlbums[dfAlbums[header] == name.strip()]
 					if not album.empty:
 						self.__albumNames = self.__albumNames.append(album)
 		else:
