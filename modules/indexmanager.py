@@ -38,5 +38,4 @@ class indexmanager:
 		self.__id = val
 		
 	def check_index (self, max:int):
-		if self.__index >= max:
-			self.__index = 0
+		self.__index = 0 if self.__index >= max else self.__index

@@ -20,6 +20,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
       	* [Weather Stamp](#weather-stamp)
       	* [Telegram Bot](#telegram-bot)
       	* [Web User Interface](#web-user-interface)
+			* [WebUI Users](#webui-users)
    * [Update](#update)
       * [Update Automatically](#update-automatically)
       * [Update Manually](#update-manually)
@@ -60,6 +61,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 * (06.10.2021 since [ePiframe v0.9.3 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.3-beta)) Weather stamp (optional) - subtly showing current weather icon and temperature in defined display corner, size and color. Taken from free API of [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * (14.10.2021 since [ePiframe v0.9.4 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.4-beta)) Telegram Bot (optional) - control the ePiframe with few commands from Telegram IM - [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 * (20.11.2021 since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta)) WebUI (optional) - control the ePiframe with web user interface - [#9](https://github.com/MikeGawi/ePiframe/issues/9)
+* (28.11.2021 since [ePiframe v0.9.7 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.7-beta)) Users and passwords for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
 
 | Color presets             | Different backgrounds     |
 |:-------------------------:|:-------------------------:|
@@ -275,6 +277,12 @@ To configure:
 
 **_NOTE_** - Keep in mind that any port number below 5000 needs root privilleges to be possible to assign.
 
+#### WebUI Users
+
+It is possible to secure Web User Interface of ePiframe with usernames and passwords. You need to create an user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line).
+
+**_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successfull authentication. Deleting all users will unblock it for everyone.
+
 ## Update
 ### Update Automatically
 
@@ -345,6 +353,7 @@ Syntax: ```ePiframe.py [option]```
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
 * ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
 * ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
+* ```--users``` - manage users for the WebUI: add, change passwords, delete, etc.
 * ```--help``` - show help
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
@@ -428,6 +437,7 @@ ePiframe to-do list for 2021:
 Wait! There's more for 2021:
 * [x] Configuration backward compatibility - [#8](https://github.com/MikeGawi/ePiframe/issues/8)
 * [x] Update ePiframe version from script - [#10](https://github.com/MikeGawi/ePiframe/issues/10)
+* [x] Users and passwords for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
 
 Stay tuned!
 
@@ -444,6 +454,7 @@ This project uses:
 * [Flask](https://flask.palletsprojects.com/)
 * [WTForms](https://wtforms.readthedocs.io/)
 * [FlaskWTF](https://flask-wtf.readthedocs.io/)
+* [Flask-Login](https://flask-login.readthedocs.io/)
 * [Bootstrap](https://getbootstrap.com/)
 * [jQuery](https://jquery.com/)
 * [Dropzone.js](https://www.dropzone.dev/js/)

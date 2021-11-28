@@ -1,6 +1,7 @@
 import telebot, re
 from datetime import datetime, timedelta
 from misc.telebotcmd import telebotcmd
+from misc.connection import connection
 
 class telebotmanager:
 
@@ -15,6 +16,9 @@ class telebotmanager:
 	
 	@classmethod
 	def check_token (self, token):
+		ret = connection.check_internet('http://'+telebotcmd.API_URL, int(telebotcmd.API_CONNECTION_TIMEOUT))
+		if ret:
+			raise Exception(ret)
 		bot = telebot.TeleBot(token, parse_mode = telebotcmd.TG_PARSE_MODE)
 		user = bot.get_me()
 		return bot

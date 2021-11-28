@@ -1,12 +1,16 @@
 from flask import Flask, render_template, request, redirect, jsonify, send_file, flash, session
+from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from time import sleep
 from wtforms import StringField, BooleanField, IntegerField, SelectField
 from modules.configmanager import configmanager
+from modules.usersmanager import usersmanager
+from modules.databasemanager import databasemanager
 from misc.configprop import configprop
 from misc.constants import constants
 from werkzeug.utils import secure_filename
 import re, os, glob, logging
+
 
 class webuimanager:
 
@@ -65,11 +69,22 @@ class webuimanager:
 		self.app.add_url_rule('/_tools$', methods=['GET'], view_func=self.tools_functions)
 		self.app.add_url_rule('/_tools$<action>', methods=['GET'], view_func=self.tools_functions)
 		self.app.add_url_rule('/settings/<variable>', methods=['GET', 'POST'], view_func=self.setting)
+		self.app.add_url_rule('/logout', view_func=self.logout)
+		self.app.add_url_rule('/login', methods=['GET', 'POST'], view_func=self.login)
+		
+		self.__login_manager = LoginManager()
+		self.__login_manager.init_app(self.app)
+		self.__login_manager.login_view = "login"
+		self.__login_manager.user_loader(self.load_user)									   
 	
 	def start(self):
 		log = logging.getLogger('werkzeug')
 		if log:	log.setLevel(logging.CRITICAL)
-
+		
+		self.__dbman = databasemanager()
+		self.__usersman=usersmanager(self.__dbman)
+		
+		self.app.config['LOGIN_DISABLED'] = not self.__usersman.login_needed()		
 		self.app.run(host=self.config().get('web_host'), port=self.config().get('web_port'), debug=False)
 
 	def config(self):
@@ -77,8 +92,39 @@ class webuimanager:
 		
 	def __adapt_name(self, name):
 		return ('- ' if self.config().get_property(name).get_dependency() else str()) + name.replace("_"," ").title()
+	
+	#@app.route('/login')
+	def login(self):
+		if request.method == 'POST':
+			username = request.form.get('username')
+			password = request.form.get('password')
+			remember = True if request.form.get('remember') else False
+			
+			if username:
+				try:
+					self.__usersman.check(username, password)
+					login_user(self.load_user(username), remember=remember)
+				except Exception:
+					pass
+					flash('Please check your login details and try again!')
+			else:
+				flash('Please fill in all required data!')
+			return redirect('/')
+		else:
+			return render_template('login.html')
 
+	#@app.route('/logout')
+	@login_required	
+	def logout(self):
+		logout_user()
+		return redirect('/')
+	
+	def load_user(self, username):
+		res = self.__usersman.get_by_username(username)					
+		return res[0] if res and len(res)>0 else None
+	
 	#@app.route('/get_image')
+	@login_required
 	def get_image(self):
 		thumb = self.__THUMB_IND if self.__THUMB_TAG in request.args else str()
 		filename = str()
@@ -96,6 +142,7 @@ class webuimanager:
 		return send_file(filename, mimetype=constants.EXTENSION_TO_TYPE[str(filename).rsplit('.')[-1].lower()]) if filename else self.__NO_PHOTO_ERROR
 
 	#@app.route('/_get_status')
+	@login_required
 	def get_status(self):
 		mem = self.__backend.get_mem()
 		load = self.__backend.get_load()
@@ -111,6 +158,7 @@ class webuimanager:
 		return jsonify(mem=mem+'%', load=load, uptime=uptime, state=state, temp=temp, update=update, service=service, original=original, converted=converted)
 
 	#@app.route('/_upload_photo', methods=['POST'])
+	@login_required
 	def upload_photo(self):
 		if request.method == 'POST':
 			file = request.files[self.__FILE_TAG]
@@ -122,6 +170,7 @@ class webuimanager:
 		return redirect('/')
 
 	#@app.route('/_log_stream')
+	@login_required
 	def stream(self):
 		if not os.path.exists(self.config().get('log_files')): 
 			os.makedirs(os.path.dirname(self.config().get('log_files')), exist_ok=True)
@@ -132,6 +181,7 @@ class webuimanager:
 
 	#@app.route('/', defaults={'url': ''})
 	#@app.route('/<url>', methods=['GET', 'POST'])
+	@login_required
 	def handle(self, url=str()):
 		template = render_template(self.__INDEX_HTML, version=constants.EPIFRAME_VERSION)
 		if url == self.__TOOLS_HTML.replace(self.__HTML_IND, str()): 
@@ -145,6 +195,7 @@ class webuimanager:
 
 	#@app.route('/_tools$', methods=['GET'])
 	#@app.route('/_tools$<action>', methods=['GET'])
+	@login_required
 	def tools_functions(self, action=str()):
 		if request.method == 'GET':
 			if action:
@@ -155,6 +206,7 @@ class webuimanager:
 		return str()
 
 	#@app.route('/settings/<variable>', methods=['GET', 'POST'])
+	@login_required
 	def setting(self, variable=str()):
 		class MyForm(FlaskForm):
 			pass

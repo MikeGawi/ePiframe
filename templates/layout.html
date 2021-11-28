@@ -91,6 +91,16 @@
 								<i class="fs-3 bi bi-github"></i>
 							</a>
 						</li>
+						{% if current_user.is_authenticated %}
+						<li class="nav-item">
+							<a href="{{ url_for('logout') }}" class="nav-link align-middle px-1 link-secondary d-none d-md-block">
+								<i class="fs-6 bi bi-door-open"></i> <span>Log out</span>
+							</a>
+							<a href="{{ url_for('logout') }}" class="nav-link align-middle px-1 link-secondary d-block d-md-none">
+								<i class="fs-3 bi bi-door-open"></i>
+							</a>
+						</li>
+						{% endif %}
 					</ul>
 				</div>
 			</div>

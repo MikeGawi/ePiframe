@@ -19,6 +19,8 @@ from modules.photomanager import photomanager
 from modules.filteringmanager import filteringmanager
 from modules.displaymanager import displaymanager
 from modules.intervalmanager import intervalmanager
+from modules.databasemanager import databasemanager
+from modules.usersmanager import usersmanager
 
 if sys.version_info[0] < constants.MINIMAL_PYTHON_VERSION:
     raise Exception("Must be using Python {}!".format(constants.MINIMAL_PYTHON_VERSION))
@@ -35,6 +37,7 @@ if '--help' in [x.lower() for x in sys.argv]:
 	print ("--test-convert [file]	converts the photo file to configured")
 	print ("			photo_convert_filename current ePiframe configuration")
 	print ("--no-skip		like --test but is not skipping to another photo")
+	print ("--users			manage users")
 	print ("--help			this help")
 else: 	
 	startTime = logs.start_time()
@@ -60,6 +63,26 @@ else:
 	logging.log("OK!")
 
 	if '--check-config' in [x.lower() for x in sys.argv]: exit ()
+		
+	if '--users' in [x.lower() for x in sys.argv]:
+		logging.log (constants.USERS_ACTIONS_TAG + "Starting database management module...")
+		try:
+			dbman = databasemanager()
+			logging.log (constants.USERS_ACTIONS_TAG + "Success!")
+		except Exception as exc:
+			logging.log (constants.USERS_ACTIONS_TAG + "Fail! {}".format(str(exc)))
+			raise
+		
+		logging.log (constants.USERS_ACTIONS_TAG + "Starting users management module...")
+		try:
+			usersman = usersmanager(dbman)
+			logging.log (constants.USERS_ACTIONS_TAG + "Success!")
+		except Exception as exc:
+			logging.log (constants.USERS_ACTIONS_TAG + "Fail! {}".format(str(exc)))
+			raise
+		
+		usersman.manage(logging)
+		exit()
 
 	if not '--test' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv]:
 		try:
@@ -71,7 +94,7 @@ else:
 
 	try:
 		pidman = pidmanager(config.get('pid_file'))
-		
+
 		lastPid = pidman.read()
 		if int(lastPid) > 0:
 			try:
@@ -80,14 +103,14 @@ else:
 			except Exception: 
 				pass
 			pidman.remove()
-		
+
 		pidman.save()	
 		atexit.register(pidman.remove)
 	except Exception as e:
 		logging.log("Error! {}".format(e))
 		raise
 	
-	if not '--test-display' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv]:
+	if not '--test-display' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv] and not '--users' in [x.lower() for x in sys.argv]:
 		logging.log ("Checking connection...")
 
 		conn = connection.check_internet(constants.SCOPES[0], constants.CHECK_CONNECTION_TIMEOUT)
@@ -376,6 +399,7 @@ else:
 		if err != None:
 			logging.log ("Fail! {}".format(str(err)))
 		else:
+			logging.log ("Processing the photo...")
 			if convertman.convert_image(width, height, int(config.get('convert_option')), config.get('convert_bin_path'), \
 							filename, config.getint('image_width'), config.getint('image_height'), config.getint('invert_colors'),\
 							config.getint('horizontal'), config.get('background_color'), targetFilename,\
@@ -424,7 +448,7 @@ else:
 			displayman.show_image(targetFilename)
 		except Exception as exc:
 			logging.log ("Error sending photo to display: {}".format(exc))
-			raise																			
+			raise		
 		
 	endTime = logs.end_time()
 	logging.log ("Done in{}".format(logs.execution_time(startTime,endTime)))

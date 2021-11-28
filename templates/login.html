@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>	
+		<link rel="icon" href="{{ url_for('static', filename='favicon.png') }}"/>
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"/>
+		{% block head %}
+		<title>Log in - ePiframe</title>
+		{% endblock %}
+		
+		<style>
+			html, body { height: 100%; }
+
+			body {
+			  display: flex;
+			  align-items: center;
+			  padding-top: 40px;
+			  padding-bottom: 40px;
+			}
+
+			.form-signin {
+			  width: 100%;
+			  max-width: 330px;
+			  padding: 15px;
+			  margin: auto;
+			}
+
+			.form-signin .checkbox { font-weight: 400; }
+			.form-signin .form-floating:focus-within { z-index: 2; }
+
+			.form-signin input[type="text"] {
+			  margin-bottom: -1px;
+			  border-bottom-right-radius: 0;
+			  border-bottom-left-radius: 0;
+			}
+
+			.form-signin input[type="password"] {
+			  margin-bottom: 10px;
+			  border-top-left-radius: 0;
+			  border-top-right-radius: 0;
+			}
+		</style>
+	</head>
+  <body class="text-center bg-dark">
+	<main class="form-signin">
+	  <form method="post">
+		<svg fill="#171717" width="72" height="57" viewBox="0 0 24 17" class="mb-4">
+			<path d="M 0.26425819,8.5884046 V 0.26425463 H 11.882127 23.499996 V 8.5884046 16.912545 H 11.882127 0.26425819 Z m 21.55893181,0 v -6.64734 H 11.882127 1.9410642 v 6.64734 6.6473304 h 9.9410628 9.941063 z m -3.787108,4.7418104 c -0.643246,-0.39223 -0.689412,-0.67991 -0.736944,-4.5921004 l -0.04329,-3.56321 h -1.668801 -1.668798 v 4.01236 4.0123504 h -0.778517 -0.778517 v -4.0123504 -4.01236 h -0.538974 -0.538973 v -0.77852 -0.77851 h 4.311786 4.311787 v 0.77851 0.77852 h -0.538974 -0.538973 v 3.26708 c 0,3.7345204 0.01445,3.7994604 0.845194,3.7994604 h 0.472296 v 0.58389 c 0,0.55813 -0.01651,0.58718 -0.374287,0.65874 -0.684096,0.13682 -1.357145,0.0772 -1.736015,-0.15386 z M 6.2312582,13.135995 c -0.71768,-0.22827 -1.805547,-1.21366 -2.231623,-2.02139 -0.286975,-0.54403 -0.321695,-0.73912 -0.321695,-1.8075704 0,-1.06441 0.03527,-1.26438 0.316879,-1.79658 0.700927,-1.32466 1.861358,-2.09274 3.164927,-2.09484 1.095366,-0.002 1.796385,0.28893 2.575364,1.0679 0.7169118,0.71692 1.0147048,1.36069 1.1459438,2.47733 0.0618,0.52581 0.03514,0.65337 -0.181889,0.87041 -0.24183,0.2418304 -0.368821,0.2543004 -2.5898508,0.2543004 -1.284553,0 -2.335551,0.0287 -2.335551,0.0637 0,0.0351 0.07432,0.24159 0.165144,0.45898 0.415251,0.99383 1.488867,1.1988 2.908234,0.55523 0.43585,-0.19762 0.88444,-0.35931 0.996868,-0.35931 0.6237468,0 0.8232338,1.12283 0.2876678,1.61918 -0.7359298,0.68203 -2.8069898,1.06043 -3.9004188,0.71263 z m 2.835965,-5.0566204 c -0.637157,-1.56262 -2.832742,-1.51661 -3.287458,0.0689 l -0.109052,0.38024 h 1.789824 1.789824 z"/>
+		</svg>
+		<h1 class="h3 mb-3 fw-normal text-light">Please log in</h1>
+		{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<div class="text-light bg-danger rounded-3">
+				{{ messages[0] }}
+			</div>
+		{% endif %}
+		{% endwith %}
+		<div class="form-floating">
+		  <input type="text" class="form-control" id="floatingInput" placeholder="username" name="username">
+		  <label for="floatingInput">Username</label>
+		</div>
+		<div class="form-floating">
+		  <input type="password" class="form-control" id="floatingPassword" placeholder="password" name="password">
+		  <label for="floatingPassword">Password</label>
+		</div>
+
+		<div class="checkbox mb-3 text-light">
+		  <label>
+			<input type="checkbox" value="remember" name="remember"> Remember me
+		  </label>
+		</div>
+		<button class="w-100 btn btn-lg btn-primary" type="submit">Log in</button>
+	  </form>
+	</main>
+  </body>
+</html>

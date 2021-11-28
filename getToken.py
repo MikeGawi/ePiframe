@@ -7,6 +7,7 @@ from google.auth.transport.requests import Request
 PICKLE_FILE='token.pickle'
 CREDS_FILE='credentials.json'
 SCOPES = ['https://www.googleapis.com/auth/photoslibrary.readonly']
+PYTHON_VERSION = 3
 
 def manage_pickle (picklefile:str, credfile:str, scopes:str):
     creds = None
@@ -23,7 +24,7 @@ def manage_pickle (picklefile:str, credfile:str, scopes:str):
 def remove_token (picklefile:str):
     if os.path.exists(picklefile): os.remove(picklefile)
 
-if sys.version_info[0] < 3: raise Exception("Must be using Python {}!".format(3))
+if sys.version_info[0] < PYTHON_VERSION: raise Exception("Must be using Python {}!".format(PYTHON_VERSION))
 
 print ("ePiframe - e-Paper Raspberry Pi Photo Frame - get token tool\nThis tool will help get the Google token file")
 print ("(pickle file) for ePiframe. Run it on internet browser\nSaccessible machine to authenticate with Google account!")

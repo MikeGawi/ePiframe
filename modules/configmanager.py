@@ -46,17 +46,8 @@ class configmanager:
 			configprop('cred_file', self, prop_type=configprop.FILE_TYPE),
 			configprop('pickle_file', self, prop_type=configprop.FILE_TYPE),
 			configprop('photo_convert_path', self, prop_type=configprop.FILE_TYPE),
-			configprop('photo_download_name', self),
-			configprop('photo_convert_filename', self),
-			configprop('thumb_photo_convert_filename', self),
-			configprop('thumb_photo_download_name', self),
 			configprop('log_files', self, notempty=False),
 			configprop('convert_bin_path', self, prop_type=configprop.FILE_TYPE),
-			configprop('photo_index_file', self),
-			configprop('photo_list_file', self),
-			configprop('pid_file', self),
-			configprop('interval_mult_file', self),
-			configprop('display', self),
 			configprop('slide_interval', self, minvalue=180, prop_type=configprop.INTEGER_TYPE),
 			configprop('interval_mult', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('interval_mult_hotword', self, dependency='interval_mult'),
@@ -91,6 +82,12 @@ class configmanager:
 			configprop('web_host', self, dependency='use_web', checkfunction=connection.is_ip),
 			configprop('web_port', self, minvalue=1, maxvalue=65535, dependency='use_web', prop_type=configprop.INTEGER_TYPE)
 		]
+		
+		for p in self.__CONFIG_STRING.keys():
+			try:
+				self.get_property(p)
+			except Exception:
+				self.__SETTINGS.append(configprop(p,self))
 				
 	def read_config(self):
 		if not os.path.exists(self.__path):

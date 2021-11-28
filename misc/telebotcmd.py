@@ -14,6 +14,9 @@ class telebotcmd:
 	ORIGINAL_CMD = "/original"
 	LONGER_CMD = "/longer" + OPTION_IND
 	
+	API_CONNECTION_TIMEOUT = "5"
+	API_URL = "api.telegram.org"
+	
 	OK_REP = "OK"
 	PROGRESS_REP = "Frame update already in progress"
 	LATER_REP = "Try again later"

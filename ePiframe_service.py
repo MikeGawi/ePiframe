@@ -26,6 +26,9 @@ class service(daemon):
 	__SERVICE_LOG_MULT = __SERVICE_LOG_IND + "Interval multipicated for current photo"
 	__SERVICE_LOG_NEXT = __SERVICE_LOG_IND + "Next update scheduled at {}"
 	
+	__SERVICE_WEB_START = __SERVICE_LOG_IND + "Starting ePiframe WebUI server"
+	__SERVICE_TGBOT_START = __SERVICE_LOG_IND + "Starting Telegram Bot"
+	
 	__INITIAL_EVENT_TIME = 10
 	__WAIT_EVENT_TIME = 60
 	
@@ -65,6 +68,7 @@ class service(daemon):
 			self.__backend.refresh()
 			if self.__backend.is_web_enabled():
 				try:
+					self.__backend.log(self.__SERVICE_WEB_START, silent=True)
 					self.__webman = webuimanager(self.__backend)
 					self.__webman.start()
 				except Exception as e:
@@ -78,6 +82,7 @@ class service(daemon):
 			self.__backend.refresh()
 			if self.__backend.is_telebot_enabled():
 				try:
+					self.__backend.log(self.__SERVICE_TGBOT_START, silent=True)					
 					self.__telebot = telebotmanager(self.__backend)
 					self.__telebot.start()
 				except Exception as e:
