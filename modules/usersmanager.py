@@ -14,6 +14,12 @@ class usersmanager:
 	def __init__ (self, databasemanager):
 		self.__databasemanager = databasemanager
 		self.__schema = databasemanager.get_schema(constants.USERS_TABLE_NAME)
+		
+		#populate api key for old users
+		users = self.get()
+		if users and len(users):
+			for i in [u.id for u in users if not u.api]:
+				self.__databasemanager.update(constants.USERS_TABLE_NAME, constants.USERS_TABLE_API_HEADER, "'{}'".format(str(self.__gen_api())), constants.USERS_TABLE_ID_HEADER+" IS "+str(i))				
 	
 	def __get_column(self, name):
 		return next(x[0] for x in self.__schema if x[1] == name)
@@ -22,7 +28,8 @@ class usersmanager:
 		res = []
 		if rows and len(rows) > 0:
 			for row in rows:
-				res.append(user(row[self.__get_column(constants.USERS_TABLE_ID_HEADER)], row[self.__get_column(constants.USERS_TABLE_USERNAME_HEADER)], row[self.__get_column(constants.USERS_TABLE_HASH_HEADER)]))
+				res.append(user(row[self.__get_column(constants.USERS_TABLE_ID_HEADER)], row[self.__get_column(constants.USERS_TABLE_USERNAME_HEADER)],\
+								row[self.__get_column(constants.USERS_TABLE_HASH_HEADER)], row[self.__get_column(constants.USERS_TABLE_API_HEADER)]))
 		return res
 	
 	def get(self):
@@ -31,20 +38,26 @@ class usersmanager:
 	def get_by_username(self, username):
 		return self.__to_object(self.__databasemanager.select(constants.DB_ALL, constants.USERS_TABLE_NAME, constants.USERS_TABLE_USERNAME_HEADER + ' IS ' + "'{}'".format(username)))
 	
+	def get_by_api(self, api):
+		return self.__to_object(self.__databasemanager.select(constants.DB_ALL, constants.USERS_TABLE_NAME, constants.USERS_TABLE_API_HEADER + ' IS ' + "'{}'".format(api)))
+	
 	def login_needed(self):
 		us = self.get()		
 		return us and len(us) > 0 or False
 	
 	def __add_salt(self, password, salt=""):
 		salt = crypt.mksalt(crypt.METHOD_SHA512) if not salt else salt
-		return hashlib.md5((password + salt).encode()).hexdigest(), salt 
+		return hashlib.md5((password + salt).encode()).hexdigest(), salt
 	
-	def add(self, user):	
-		ids = self.get_by_username(user.username)
+	def __gen_api(self):
+		return self.__add_salt("","")[0]
+	
+	def add(self, userobj):	
+		ids = self.get_by_username(userobj.username)
 		if not ids:
-			passw, salt = self.__add_salt(user.password)
-			self.__databasemanager.insert(constants.USERS_TABLE_NAME, [constants.DB_NULL, user.username, str(passw)])		
-			ids = self.get_by_username(user.username)
+			passw, salt = self.__add_salt(userobj.password)
+			self.__databasemanager.insert(constants.USERS_TABLE_NAME, [constants.DB_NULL, userobj.username, str(passw), userobj.api])		
+			ids = self.get_by_username(userobj.username)
 			
 			if ids and len(ids) > 0:
 				self.__databasemanager.insert(constants.SALTS_TABLE_NAME, [constants.DB_NULL, str(ids[0].id), str(salt)])
@@ -85,8 +98,8 @@ class usersmanager:
 		else:
 			raise Exception (self.__NO_USER_ERROR)
 	
-	def __result(self, action):
-		print (action, "SUCCESSFULLY!")
+	def __result(self, action, result=True):
+		print (action, "SUCCESSFULLY!" if result else '')
 		input("Press any key to continue...")
 	
 	def __user_check(self, exist=True):
@@ -137,16 +150,17 @@ class usersmanager:
 			print("1. Add new user")
 			print("2. Delete user")
 			print("3. Change user password")
-			print("4. Test user password")        
-			print("5. Exit")
+			print("4. Show user API key")        
+			print("5. Test user password")        
+			print("6. Exit")
 			print(len(title) * "-")
-			self.__choice = input("Enter your choice [1-5]: ")
+			self.__choice = input("Enter your choice [1-6]: ")
 			
 			if self.__choice == '1':
 				print(5 * "-", "Adding new user", 5 * "-")
 				username = self.__user_check(False)
 				password = self.__new_password('Password [empty possible]: ', 'Confirm password [empty possible]: ')
-				self.add(user('', username, password))
+				self.add(user('', username, password, self.__gen_api()))
 				log.log(constants.USERS_ACTIONS_TAG + "User {} added!".format(username))
 				self.__result("USER ADDED")
 			elif self.__choice == '2':
@@ -171,13 +185,19 @@ class usersmanager:
 				newpassword = self.__new_password('New password [empty possible]: ', 'Confirm new password [empty possible]: ')
 				self.change_password(username, currpassword, newpassword)
 				log.log(constants.USERS_ACTIONS_TAG + "User {} password changed!".format(username))
-				self.__result("PASSWORD CHANGED")				
+				self.__result("PASSWORD CHANGED")
 			elif self.__choice == '4':
+				print(5 * "-", "Showing user API key", 5 * "-")
+				username = self.__user_check()
+				self.__password(username, 'Password: ')
+				userobj = self.get_by_username(username)[0]
+				self.__result("USER {} API KEY: {}".format(username, userobj.api), False)	
+			elif self.__choice == '5':
 				print(5 * "-", "Testing user password", 5 * "-")
 				username = self.__user_check()
 				self.__password(username, 'Password: ')
 				self.__result("YOU HAVE LOGGED IN")
-			elif self.__choice == '5':
+			elif self.__choice == '6':
 				print("Exiting...")
 				loop = False
 			else:

@@ -3,7 +3,7 @@
 
 # ePiframe
 
-Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather information, Telegram Bot and Web User Interface.
+Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather information, Telegram Bot, Web User Interface and API.
 
 
 ## Table of Contents
@@ -21,6 +21,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
       	* [Telegram Bot](#telegram-bot)
       	* [Web User Interface](#web-user-interface)
 			* [WebUI Users](#webui-users)
+			* [API](#api)
    * [Update](#update)
       * [Update Automatically](#update-automatically)
       * [Update Manually](#update-manually)
@@ -62,6 +63,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 * (14.10.2021 since [ePiframe v0.9.4 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.4-beta)) Telegram Bot (optional) - control the ePiframe with few commands from Telegram IM - [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 * (20.11.2021 since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta)) WebUI (optional) - control the ePiframe with web user interface - [#9](https://github.com/MikeGawi/ePiframe/issues/9)
 * (28.11.2021 since [ePiframe v0.9.7 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.7-beta)) Users and passwords for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
+* (05.12.2021 since [ePiframe v0.9.8 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.8-beta)) API - [#17](https://github.com/MikeGawi/ePiframe/issues/17)
 
 | Color presets             | Different backgrounds     |
 |:-------------------------:|:-------------------------:|
@@ -283,6 +285,163 @@ It is possible to secure Web User Interface of ePiframe with usernames and passw
 
 **_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successfull authentication. Deleting all users will unblock it for everyone.
 
+#### API
+
+It is possible to control ePiframe from a simple API and even secure it with authentication keys. It is not needed to have the key but in case You need to secure API calls create an user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line). Every user has an API key generated automatically which You then get in the same command tool.
+
+**_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successfull authentication or API key authentication. Deleting all users will unblock it for everyone.
+
+**_NOTE_** - The users database created in previous ePiframe versions doesn't need to be updated, recreated or modified as it will be updated automatically to the newest version and with no data lost. Old users will have their keys generated automatically.
+
+General API command:
+
+```
+<ePiframe IP with port>/api/<command>?api_key=<api key value>[&<optional parameter>=<optional value>&...]
+```
+e.g.: 
+
+```
+192.168.0.123:8080/api/get_image?api_key=1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p&original&thumb
+```
+
+**_NOTE_** - When there are no users in the database API key can be ommited but then everyone can control the frame.
+
+**_NOTE_** - Header authentication (basic) with API key (Base64 encoding allowed) is also possible.
+
+---
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/get_image``` | GET | <ul><li>```thumb``` - show thumbnail</li><li>```original``` - show original photo</li></ul> |
+
+Returns image of displayed photo (by default). Can display thumbnail with ```thumb``` parameter and original photo with ```original```.
+
+**Examples:**
+* ```/api/get_image?original&thumb``` - original photo thumbnail
+* ```/api/get_image?original``` - original photo
+* ```/api/get_image?thumb``` - displayed photo thumbnail
+* ```/api/get_image``` - displayed photo
+
+**Returns:**
+Image, MIME type according to the image type.
+
+---
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/get_status``` | GET | None |
+
+Returns status of ePiframe in JSON format.
+
+**Examples:**
+* ```/api/get_status```
+
+**Returns:**
+
+JSON format:
+* ```converted``` - converted/displayed photo modification timestamp (to keep track of photo change)
+* ```original``` - original photo modification timestamp (to keep track of photo change)
+* ```load``` - current OS load, 3 float values (1, 5, 15 minutes), space separated
+* ```mem``` - allocated memory percentage status (with % sign at the end)
+* ```service``` - ePiframe service status: _Running_ or _Not running!_
+* ```state``` - ePiframe state: _Idle_ or _Busy_
+* ```temp``` - current core temperature (with degree sign at the end)
+* ```update``` - date and time of the next frame update in format: _DD.MM.YYYY_ (not visible when the same day) _at hh:mm:ss_ (next line) _in d days m mins s secs_ (days not visible when less than one day)
+* ```uptime``` - device running time
+* ```version``` - version of ePiframe
+
+e.g.
+
+```
+{
+   "converted":1638394810.5973678,
+   "load":"0.8 0.11 0.09",
+   "mem":"21%",
+   "original":1638394806.737437,
+   "service":"Running",
+   "state":"Idle",
+   "temp":"32.6\u00b0C",
+   "update":"at 22:54:37\nin 0 mins 46 secs",
+   "uptime":"up 1 week, 1 day, 14 hours, 52 minutes",
+   "version":"v0.9.7 beta"
+}
+```
+
+---
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/get_log``` | GET | None |
+
+Returns ePiframe log file for current day.
+
+**Examples:**
+* ```/api/get_log```
+
+**Returns:**
+
+Real time ePiframe log file in text format with line breaks
+
+---
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/action=<action>``` | GET | where ```<action>``` should be one of</br><ul><li>```next``` - trigger photo change</li><li>```restart``` - restart ePiframe service</li><li>```reboot``` - reboot ePiframe</li><li>```poweroff``` - power off ePiframe</li></ul> |
+
+Performs action on ePiframe. **No confirmation is needed!**
+
+**Examples:**
+* ```/api/action=next``` - show next photo
+* ```/api/action=reboot``` - reboot ePiframe
+
+etc.
+
+**Returns:**
+
+Response or error in JSON format.
+
+```
+{ "status":"OK" }
+```
+
+**Errors:**
+
+```
+{ "error":"<error message>" }
+```
+
+* ```Action Unknown!``` - when action value is unknown
+* ```No Action!``` - when no action value was provided
+
+---
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/upload_photo``` | POST | None |
+
+Upload photo target that will automatically convert and display uploaded image. The next update time will be resetted.
+
+**Examples:**
+* ```/api/upload_photo```
+
+**Returns:**
+
+Response or error in JSON format.
+
+```
+{ "status":"OK" }
+```
+
+**Errors:**
+
+```
+{ "error":"<error message>" }
+```
+
+* ```File unknown!``` - when uploaded photo MIME type can't be recognized
+
+**_HINT_** ```curl -F "file=@photo.jpg" "http://<IP>:<PORT>/api/upload_photo?api_key=<API key value>"```
+
 ## Update
 ### Update Automatically
 
@@ -438,6 +597,7 @@ Wait! There's more for 2021:
 * [x] Configuration backward compatibility - [#8](https://github.com/MikeGawi/ePiframe/issues/8)
 * [x] Update ePiframe version from script - [#10](https://github.com/MikeGawi/ePiframe/issues/10)
 * [x] Users and passwords for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
+* [x] API - [#17](https://github.com/MikeGawi/ePiframe/issues/17)
 
 Stay tuned!
 
@@ -458,6 +618,7 @@ This project uses:
 * [Bootstrap](https://getbootstrap.com/)
 * [jQuery](https://jquery.com/)
 * [Dropzone.js](https://www.dropzone.dev/js/)
+* [SQLite](https://www.sqlite.org)
 
 Helpful links:
 * [Najeem Muhammed: Analyzing my Google Photos library with Python and Pandas](https://medium.com/@najeem/analyzing-my-google-photos-library-with-python-and-pandas-bcb746c2d0f2)

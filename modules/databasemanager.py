@@ -10,7 +10,7 @@ class databasemanager:
 		self.__dbconnection = sqlite3.connect(constants.USERS_DB_FILE, check_same_thread=False)
 		cur = self.__dbconnection.cursor()
 		
-		dbs = {	constants.USERS_TABLE_NAME : "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, username text, hash text)".format(constants.USERS_TABLE_NAME),
+		dbs = {	constants.USERS_TABLE_NAME : "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, username text, hash text, api text)".format(constants.USERS_TABLE_NAME),
 				constants.SALTS_TABLE_NAME : "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, userid INTEGER, salt text, FOREIGN KEY(userid) REFERENCES {}(id))".format(constants.SALTS_TABLE_NAME, constants.USERS_TABLE_NAME)}
 				
 		for db in dbs.keys():
@@ -53,7 +53,7 @@ class databasemanager:
 		return vals
 		
 	def select (self, fields, From, where=None):
-		return self.__get("SELECT {} FROM {}".format(self.__change_many(fields), self.__change_many(From)) + (" WHERE {}".format (where) if where else ""))
+		return self.__get("SELECT {} FROM {}".format(self.__change_many(fields), self.__change_many(From)) + (" WHERE {}".format(where) if where else ""))
 	
 	def update (self, table, field, value, where):
 		return self.__commit("UPDATE {} SET {} = {} WHERE {}".format(table, field, value, where))

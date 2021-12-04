@@ -9,8 +9,7 @@ from modules.databasemanager import databasemanager
 from misc.configprop import configprop
 from misc.constants import constants
 from werkzeug.utils import secure_filename
-import re, os, glob, logging
-
+import re, os, glob, logging, base64
 
 class webuimanager:
 
@@ -64,18 +63,26 @@ class webuimanager:
 		self.app.add_url_rule('/get_status', view_func=self.get_status)
 		self.app.add_url_rule('/_upload_photo', view_func=self.upload_photo, methods=['POST'])
 		self.app.add_url_rule('/_log_stream', view_func=self.stream)
-		self.app.add_url_rule('/', defaults={'url': ''}, methods=['GET', 'POST'], view_func=self.handle)
-		self.app.add_url_rule('/<url>', methods=['GET', 'POST'], view_func=self.handle)
 		self.app.add_url_rule('/_tools$', methods=['GET'], view_func=self.tools_functions)
 		self.app.add_url_rule('/_tools$<action>', methods=['GET'], view_func=self.tools_functions)
+		self.app.add_url_rule('/<url>', methods=['GET', 'POST'], view_func=self.handle)
+		self.app.add_url_rule('/', defaults={'url': ''}, methods=['GET', 'POST'], view_func=self.handle)
 		self.app.add_url_rule('/settings/<variable>', methods=['GET', 'POST'], view_func=self.setting)
 		self.app.add_url_rule('/logout', view_func=self.logout)
 		self.app.add_url_rule('/login', methods=['GET', 'POST'], view_func=self.login)
 		
+		self.app.add_url_rule('/api/get_image', view_func=self.get_image)
+		self.app.add_url_rule('/api/get_status', view_func=self.get_status)
+		self.app.add_url_rule('/api/get_log', view_func=self.stream)
+		self.app.add_url_rule('/api/upload_photo', view_func=self.upload_photo, methods=['POST'])
+		self.app.add_url_rule('/api/action=', methods=['GET'], view_func=self.tools_functions)
+		self.app.add_url_rule('/api/action=<action>', methods=['GET'], view_func=self.tools_functions)
+				
 		self.__login_manager = LoginManager()
 		self.__login_manager.init_app(self.app)
 		self.__login_manager.login_view = "login"
 		self.__login_manager.user_loader(self.load_user)									   
+		self.__login_manager.request_loader(self.load_user_from_request)									   
 	
 	def start(self):
 		log = logging.getLogger('werkzeug')
@@ -120,8 +127,40 @@ class webuimanager:
 		return redirect('/')
 	
 	def load_user(self, username):
-		res = self.__usersman.get_by_username(username)					
-		return res[0] if res and len(res)>0 else None
+		ret = None
+		
+		try:
+			res = self.__usersman.get_by_username(username)					
+			ret = res[0] if res and len(res)>0 else None
+		except Exception:
+			pass
+						
+		return ret
+	
+	def load_user_from_request(self, request):
+		result = None
+		api_key = request.args.get('api_key')
+
+		if not api_key:
+			api_key = request.headers.get('Authorization')
+			if api_key:
+				api_key = api_key.replace('Basic ', '', 1)
+				
+				try:
+					key = base64.b64decode(api_key)
+					if not '\\' in key.decode():
+						api_key = key.decode()
+				except Exception:
+					pass
+							
+		if api_key:
+			try:
+				res = self.__usersman.get_by_api(api_key)					
+				result = res[0] if res and len(res)>0 else None
+			except Exception:
+				pass
+
+		return result
 	
 	#@app.route('/get_image')
 	@login_required
@@ -155,19 +194,25 @@ class webuimanager:
 		original = self.__backend.get_filename_modtime_if_exists('thumb_photo_download_name')
 		converted = self.__backend.get_filename_modtime_if_exists('thumb_photo_convert_filename')
 
-		return jsonify(mem=mem+'%', load=load, uptime=uptime, state=state, temp=temp, update=update, service=service, original=original, converted=converted)
+		return jsonify(mem=mem+'%', load=load, uptime=uptime, state=state, temp=temp, update=update, service=service, original=original, converted=converted, version=constants.EPIFRAME_VERSION)
 
 	#@app.route('/_upload_photo', methods=['POST'])
 	@login_required
 	def upload_photo(self):
+		is_api = 'REQUEST_URI' in request.environ and request.environ['REQUEST_URI'] and '/api/' in request.environ['REQUEST_URI']
+		res = jsonify(status="OK")
+		
 		if request.method == 'POST':
 			file = request.files[self.__FILE_TAG]
 			extension = file.filename.rsplit('.')[-1].lower()
 			if file and extension in constants.EXTENSIONS:
 				filename = secure_filename(file.filename)
 				file.save(self.__backend.get_download_file() + '.' + extension)
+			else: res = jsonify(error="File unknown!")
 			self.__backend.refresh_frame()
-		return redirect('/')
+		else: res = jsonify(error="Method Not Allowed!")
+		
+		return res if is_api else redirect('/')
 
 	#@app.route('/_log_stream')
 	@login_required
@@ -197,13 +242,17 @@ class webuimanager:
 	#@app.route('/_tools$<action>', methods=['GET'])
 	@login_required
 	def tools_functions(self, action=str()):
+		res = jsonify(status="OK")
 		if request.method == 'GET':
 			if action:
 				if action == self.__REBOOT_ACT: self.__backend.reboot()
 				elif action == self.__RESTART_ACT: self.__backend.restart()
 				elif action == self.__POWEROFF_ACT: self.__backend.poweroff()
 				elif action == self.__NEXT_ACT: self.__backend.fire_event(self.__backend.get_empty_params())
-		return str()
+				else: res = jsonify(error="Action Unknown!")
+			else: res = jsonify(error="No Action!")
+		else: res = jsonify(error="Method Not Allowed!")
+		return res
 
 	#@app.route('/settings/<variable>', methods=['GET', 'POST'])
 	@login_required

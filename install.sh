@@ -300,17 +300,14 @@ if [ "$1" = "--update" ]; then
 			esac
 		done
 	fi
-	
 	if [ -f "credentials.json" ]; then
 		cp credentials.json backup/credentials.json.bak
 		echo -e '\n\033[0;30mSaved a copy of credentials file (credentials.json) in backup folder\033[0m'
 	fi
-	
 	if [ -f "token.pickle" ]; then
 		cp token.pickle backup/token.pickle.bak
 		echo -e '\n\033[0;30mSaved a copy of token file (token.pickle) in backup folder\033[0m'
 	fi
-	
 	if [ -f "misc/users.db" ]; then
 		cp misc/users.db backup/users.db.bak
 		echo -e '\n\033[0;30mSaved a copy of Users DB (misc/users.db) in backup folder\033[0m'
@@ -347,7 +344,6 @@ sudo chown -R pi $path
 sudo chmod +x $path/*.py
 
 if [ "$1" = "--update" ]; then
-	path=`pwd`
 	if [ -f "backup/config.cfg.bak" ]; then
 		cp backup/config.cfg.bak config.cfg
 	fi

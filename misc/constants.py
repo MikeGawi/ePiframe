@@ -106,6 +106,7 @@ class constants:
 	USERS_TABLE_ID_HEADER = 		'id'
 	USERS_TABLE_USERNAME_HEADER = 	'username'
 	USERS_TABLE_HASH_HEADER = 		'hash'
+	USERS_TABLE_API_HEADER = 		'api'
 	
 	SALTS_TABLE_NAME = 				'salts'
 	SALTS_TABLE_ID_HEADER = 		'id'

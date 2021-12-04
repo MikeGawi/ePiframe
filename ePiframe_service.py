@@ -44,8 +44,8 @@ class service(daemon):
 		self.__backend = backendmanager(self.restart, self.__config_path)
 		self.__backend.log(self.__SERVICE_LOG_STARTED, silent=True)
 		
-		self.__event = None
-		self.__sched = None
+		self.__sched = sched.scheduler(time.time, time.sleep)
+		self.__event = self.__sched.enter(self.__INITIAL_EVENT_TIME, self.__EVENT_PRIORITY, self.task)
 		
 		if not args or (args and args == self.__TGBOT_ARG):
 			self.__tbthread = Thread(target = self.tbthread)
@@ -54,10 +54,8 @@ class service(daemon):
 		if not args or (args and args == self.__WEB_ARG):
 			self.__webthread = Thread(target = self.webthread)
 			self.__webthread.start()
-		
+
 		if not args:
-			self.__sched = sched.scheduler(time.time, time.sleep)
-			self.__event = self.__sched.enter(self.__INITIAL_EVENT_TIME, self.__EVENT_PRIORITY, self.task)
 			self.__sched.run()
 		
 		while True:		
@@ -72,7 +70,7 @@ class service(daemon):
 					self.__webman = webuimanager(self.__backend)
 					self.__webman.start()
 				except Exception as e:
-					self.__backend.log(self.__ERROR_WEB.format(e))
+					self.__backend.log(self.__ERROR_WEB.format(e), silent=True)
 					raise
 			
 			time.sleep(self.__WAIT_EVENT_TIME)
@@ -86,7 +84,7 @@ class service(daemon):
 					self.__telebot = telebotmanager(self.__backend)
 					self.__telebot.start()
 				except Exception as e:
-					self.__backend.log(self.__ERROR_TELE_BOT.format(e))
+					self.__backend.log(self.__ERROR_TELE_BOT.format(e), silent=True)
 					raise
 			
 			time.sleep(self.__WAIT_EVENT_TIME)
