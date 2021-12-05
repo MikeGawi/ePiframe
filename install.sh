@@ -124,12 +124,14 @@ function display_libs {
 
 function epi_code {
 	declare -A cmds
+	cmds["Preparing"]='sudo rm -r ePiframe-master/ ePiframe.zip 2>&1 > /dev/null'
 	cmds["Downloading"]='sudo wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q ePiframe.zip'
 	cmds["Copying"]='sudo cp -r ePiframe-master/* .'
 	cmds["Cleanup"]='sudo rm -r ePiframe-master/ ePiframe.zip'
 	
 	declare -a order;
+	order+=( "Preparing" )
 	order+=( "Downloading" )
 	order+=( "Unpacking" )
 	order+=( "Copying" )
