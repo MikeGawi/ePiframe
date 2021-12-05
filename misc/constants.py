@@ -1,6 +1,6 @@
 class constants:
 
-	EPIFRAME_VERSION = 'v0.9.7 beta'
+	EPIFRAME_VERSION = 'v0.9.8 beta'
 	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
 	
 	#minimal needed python version
