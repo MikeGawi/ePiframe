@@ -92,12 +92,14 @@ function check_spi {
 
 function display_libs {
 	declare -A cmds
+	cmds["Preparing"]='sudo rm -r e-Paper-master/ waveshare.zip 2>&1 > /dev/null'
 	cmds["Downloading"]='sudo wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q waveshare.zip'
 	cmds["Copying"]='sudo cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .'
 	cmds["Cleanup"]='sudo rm -r e-Paper-master/ waveshare.zip'
 	
 	declare -a order;
+	order+=( "Preparing" )	
 	order+=( "Downloading" )
 	order+=( "Unpacking" )
 	order+=( "Copying" )
@@ -347,6 +349,7 @@ if [ "$1" = "--update" ]; then
 	if [ -f "backup/config.cfg.bak" ]; then
 		cp backup/config.cfg.bak config.cfg
 	fi
+	sudo systemctl start ePiframe.service
 else
 	show_next_steps
 fi

@@ -129,9 +129,10 @@ ePiframe is a very nice handmade gift idea: create an album that whole family ca
 Use *install.sh* script:
 
 ```
-wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh
-chmod +x install.sh
-./install.sh
+wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh -O install_now.sh
+chmod +x install_now.sh
+./install_now.sh
+rm install_now.sh
 ```
 Move to [next steps](#next-steps)
 
@@ -451,9 +452,10 @@ Use *install.sh* script:
 
 ```
 cd [Your ePiframe path]
-wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh -O install.sh
-chmod +x install.sh
-./install.sh --update
+wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh -O install_update.sh
+chmod +x install_update.sh
+./install_update.sh --update
+rm install_update.sh
 ```
 
 **_NOTE_** - Since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta) [#8](https://github.com/MikeGawi/ePiframe/issues/8) ePiframe has a [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file backward compatibility. That means that any existing configuration file can be used in the newer version of ePiframe and non-existing configuration properties will be set to default values.
