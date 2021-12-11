@@ -349,7 +349,7 @@ fi
 
 install_service $path
 
-sudo chown -R pi $path
+sudo chown -R pi:pi $path
 sudo chmod +x $path/*.py
 
 if [ "$1" = "--update" ]; then
