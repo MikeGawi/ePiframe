@@ -1,9 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, send_file, flash, session
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
-from time import sleep
 from wtforms import StringField, BooleanField, IntegerField, SelectField
-from modules.configmanager import configmanager
 from modules.usersmanager import usersmanager
 from modules.databasemanager import databasemanager
 from misc.configprop import configprop
@@ -15,6 +13,7 @@ class webuimanager:
 
 	__SETTINGS_HTML = 'settings.html'
 	__LOGS_HTML = 'logs.html'
+	__STATS_HTML = 'stats.html'
 	__TOOLS_HTML = 'tools.html'
 	__INDEX_HTML = 'index.html'
 	__HTML_IND = '.html'
@@ -77,12 +76,17 @@ class webuimanager:
 		self.app.add_url_rule('/api/upload_photo', view_func=self.upload_photo, methods=['POST'])
 		self.app.add_url_rule('/api/action=', methods=['GET'], view_func=self.tools_functions)
 		self.app.add_url_rule('/api/action=<action>', methods=['GET'], view_func=self.tools_functions)
+		
+		self.app.context_processor(self.inject_context)
 				
 		self.__login_manager = LoginManager()
 		self.__login_manager.init_app(self.app)
 		self.__login_manager.login_view = "login"
 		self.__login_manager.user_loader(self.load_user)									   
 		self.__login_manager.request_loader(self.load_user_from_request)									   
+	
+	def inject_context(self):
+		return dict(show_stats=bool(self.config().getint('show_stats')))
 	
 	def start(self):
 		log = logging.getLogger('werkzeug')
@@ -233,6 +237,8 @@ class webuimanager:
 			template = render_template(self.__TOOLS_HTML, version=constants.EPIFRAME_VERSION)
 		elif url == self.__LOGS_HTML.replace(self.__HTML_IND, str()):
 			template = render_template(self.__LOGS_HTML)
+		elif url == self.__STATS_HTML.replace(self.__HTML_IND, str()):
+			template = render_template(self.__STATS_HTML, version=constants.EPIFRAME_VERSION)
 		elif url == self.__SETTINGS_HTML.replace(self.__HTML_IND, str()):
 			self.__backend.refresh()
 			template = redirect('/{}/{}'.format(self.__SETTINGS_HTML.replace(self.__HTML_IND, str()), str(self.config().get_sections()[0])))

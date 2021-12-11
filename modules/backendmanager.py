@@ -175,6 +175,9 @@ class backendmanager:
 	def is_web_enabled (self):
 		return self.__config.getint('use_web')
 	
+	def stats_enabled (self):
+		return self.__config.getint('show_stats')
+	
 	def get_state(self):
 		return self.__BUSY_STATE if self.pid_file_exists() else self.__IDLE_STATE
 	

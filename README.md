@@ -15,18 +15,23 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 * Showing randomly, descendingly or ascendingly by creation date
 * Automatic conversion to black-and-white with 6 different presets, color inversion and various background colors 
 * For vertical or horizontal frame position
+* Can be controlled from Telegram Bot, embedded WebUI or API
+* Can display weather information
 * Even for Raspberry Pi Zero W + Raspberry Pi OS Lite
 * Low power consumption
 
-![](https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif)
+<p align="center">
+	<img src ="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif">
+</p>
 
 ### New features 🎉
 
-* **Weather stamp** (optional) - subtly showing current weather icon and temperature in defined display corner, size and color. Taken from free API of [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
+* **Weather stamp** (optional) - subtly showing current weather icon and temperature in defined display corner, size and color - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * **Telegram Bot** (optional) - control the ePiframe with few commands from Telegram IM - [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 * **WebUI** (optional) - control the ePiframe with web user interface - [#9](https://github.com/MikeGawi/ePiframe/issues/9)
 * **Users and passwords** for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
 * **API** - control the ePiframe with API calls [#17](https://github.com/MikeGawi/ePiframe/issues/17)
+* **Statistics** - load, memory and temperature graphs shown in WebUI [#19](https://github.com/MikeGawi/ePiframe/issues/19)
 
 ## Hardware required
 
@@ -44,9 +49,13 @@ You can use any photo frame for your ePiframe and cut the back to make place for
 
 Or you can 3D print a nice standing frame back with case for your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
 
+<div align="center">
+
 |<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500"/>| 
 |:--:| 
 |*Printed back (black) of 13x18cm (5"x7") frame for 7.5" screen with passe-partout (white)*|
+
+</div>
 
 [Thing files](https://www.thingiverse.com/thing:4727060)
 
@@ -68,13 +77,12 @@ ePiframe is a very nice handmade gift idea: create an album that whole family ca
 
 ## Installation
 
-Installation, configuration and API documentation can be found [HERE](https://github.com/MikeGawi/ePiframe/blob/master/INSTALL.md)
+Installation, configuration and API documentation can be found <font size="+2"><b>[HERE](https://github.com/MikeGawi/ePiframe/blob/master/INSTALL.md)</b></font>
 
 ## Future plans
 	
 ePiframe to-do list for 2021:
-* [ ] Easier token generation from the web interface (is this even possible?)
-* [ ] Frame lasers, robot arms and making lunch functionality...
+* [ ] Easier token generation from the web interface
 
 ePiframe to-do list for 2022:
 * [ ] Local mode - proposed by @spn91 [#16](https://github.com/MikeGawi/ePiframe/issues/16)
@@ -95,3 +103,4 @@ This project uses:
 * [jQuery](https://jquery.com/)
 * [Dropzone.js](https://www.dropzone.dev/js/)
 * [SQLite](https://www.sqlite.org)
+* [RRDtool](https://oss.oetiker.ch/rrdtool/), [javascriptRRD](http://javascriptrrd.sourceforge.net/), [Flot](http://www.flotcharts.org/)

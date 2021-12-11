@@ -3,9 +3,11 @@
 import sys, time, sched, os, signal, subprocess
 from threading import Thread
 from misc.daemon import daemon
+from misc.constants import constants
 from modules.backendmanager import backendmanager
 from modules.telebotmanager import telebotmanager
 from modules.webuimanager import webuimanager
+from modules.statsmanager import statsmanager
 
 class service(daemon):
 	
@@ -14,8 +16,10 @@ class service(daemon):
 	
 	__telebot = None
 	__webman = None
+	__statsman = None
 	__tbthread = None
 	__webthread = None
+	__statsthread = None
 	__event = None
 	
 	__SERVICE_LOG_IND = "--------ePiframe Service: "
@@ -23,7 +27,7 @@ class service(daemon):
 	__SERVICE_TRIGGER = __SERVICE_LOG_IND + "Activity triggered"
 	__SERVICE_LOG_STARTING = __SERVICE_LOG_IND + "Starting ePiframe script"
 	__SERVICE_LOG_SLEEPING = __SERVICE_LOG_IND + "Off hours - sleeping"
-	__SERVICE_LOG_MULT = __SERVICE_LOG_IND + "Interval multipicated for current photo"
+	__SERVICE_LOG_MULT = __SERVICE_LOG_IND + "Interval multiplicated for current photo"
 	__SERVICE_LOG_NEXT = __SERVICE_LOG_IND + "Next update scheduled at {}"
 	
 	__SERVICE_WEB_START = __SERVICE_LOG_IND + "Starting ePiframe WebUI server"
@@ -36,6 +40,7 @@ class service(daemon):
 	
 	__ERROR_TELE_BOT = "Error configuring Telegram Bot! {}"
 	__ERROR_WEB = "Error configuring WebUI! {}"
+	__ERROR_STATS = "Error getting statistics! {}"
 	
 	__WEB_ARG = 'web'
 	__TGBOT_ARG = 'telegram'
@@ -52,6 +57,8 @@ class service(daemon):
 			self.__tbthread.start()
 		
 		if not args or (args and args == self.__WEB_ARG):
+			self.__statsthread = Thread(target = self.statsthread)
+			self.__statsthread.start()
 			self.__webthread = Thread(target = self.webthread)
 			self.__webthread.start()
 
@@ -60,6 +67,19 @@ class service(daemon):
 		
 		while True:		
 			time.sleep(self.__WAIT_EVENT_TIME)
+	
+	def statsthread(self):
+		self.__statsman = statsmanager(self.__backend)
+		while True:
+			self.__backend.refresh()
+			if self.__backend.is_web_enabled() and self.__backend.stats_enabled():
+				try:
+					self.__statsman.feed_stats()
+				except Exception as e:
+					self.__backend.log(self.__ERROR_STATS.format(e), silent=True)
+					pass
+			
+			time.sleep(constants.STATS_STEP)
 	
 	def webthread(self):
 		while True:

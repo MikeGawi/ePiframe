@@ -258,10 +258,10 @@ Move to [next steps](#next-steps-1)
 
 ## Configuration
 
-* Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. No need to restart service after changing any of config file values as file is loaded per every display refresh/run
+* Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. The service restart is needed only for all service related features (i.e. WebUI, Telegram Bot, etc.) and it's indicated in the config file, the other settings are loaded per run/refresh
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - Interval multiplication option which can enlonger the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) 😟
+**_NOTE_** - Interval multiplication option which can prolong the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) 😟
 
 ## Command line
 

@@ -48,6 +48,7 @@ class configmanager:
 			configprop('photo_convert_path', self, prop_type=configprop.FILE_TYPE),
 			configprop('log_files', self, notempty=False),
 			configprop('convert_bin_path', self, prop_type=configprop.FILE_TYPE),
+			configprop('rrdtool_bin_path', self, prop_type=configprop.FILE_TYPE),
 			configprop('slide_interval', self, minvalue=180, prop_type=configprop.INTEGER_TYPE),
 			configprop('interval_mult', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('interval_mult_hotword', self, dependency='interval_mult'),
@@ -80,7 +81,8 @@ class configmanager:
 			configprop('chat_id', self, notempty=False, dependency='use_telebot', delimiter=',', prop_type=configprop.INTLIST_TYPE),
 			configprop('use_web', self, prop_type=configprop.BOOLEAN_TYPE, resetneeded=True),
 			configprop('web_host', self, dependency='use_web', checkfunction=connection.is_ip),
-			configprop('web_port', self, minvalue=1, maxvalue=65535, dependency='use_web', prop_type=configprop.INTEGER_TYPE)
+			configprop('web_port', self, minvalue=1, maxvalue=65535, dependency='use_web', prop_type=configprop.INTEGER_TYPE),
+			configprop('show_stats', self, dependency='use_web', prop_type=configprop.BOOLEAN_TYPE)
 		]
 		
 		for p in self.__CONFIG_STRING.keys():

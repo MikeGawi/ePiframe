@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>	
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" crossorigin="anonymous"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}"/>
 	{% block head %}
     <title>{% block title %}{% endblock %} - ePiframe</title>
@@ -69,6 +69,16 @@
 								<i class="fs-3 bi bi-activity"></i>
 							</a>
 						</li>
+						{% if show_stats %}
+						<li class="nav-item">
+							<a href="/stats" class="nav-link align-middle px-1 link-secondary stats-menu d-none d-md-block">
+								<i class="fs-6 bi bi-graph-up"></i> <span>Stats</span>
+							</a>
+							<a href="/stats" class="nav-link align-middle px-1 link-secondary stats-menu d-block d-md-none">
+								<i class="fs-3 bi bi-graph-up"></i>
+							</a>
+						</li>
+						{% endif %}
 						<li class="nav-item">
 							<a href="/settings" class="nav-link align-middle px-1 link-secondary settings-menu d-none d-md-block">
 								<i class="fs-6 bi bi-gear"></i> <span>Settings</span>
@@ -131,6 +141,6 @@
       	{% block footer %}
       	{% endblock %}
     </div>
-    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -26,7 +26,7 @@ echo -e '
 
 function install_apts {
 	echo -e '\n\033[0;30mInstalling system components\033[0m'
-	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch"\
+	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch" ["RRDTool"]="rrdtool"\
 				  ["LibAtlas"]="libatlas-base-dev" ["WiringPi"]="wiringpi" ["Python 3"]="python3" ["Pip 3"]="python3-pip")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"
@@ -292,7 +292,8 @@ if [ "$1" = "--update" ]; then
 	
 	if [ -f "config.cfg" ]; then
 		cp config.cfg backup/config.cfg.bak
-		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg) in backup folder\033[0m'
+		cp config.cfg backup/config-$(date +"%Y%m%d-%H%M%S").cfg.bak
+		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg and a copy with timestamp as well) in backup folder\033[0m'
 	else	
 		while true; do
 			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'		
@@ -316,6 +317,10 @@ if [ "$1" = "--update" ]; then
 		cp misc/users.db backup/users.db.bak
 		echo -e '\n\033[0;30mSaved a copy of Users DB (misc/users.db) in backup folder\033[0m'
 	fi
+	if [ -f "static/data/load.rrd" ]; then
+		cp static/data/*.rrd backup/
+		echo -e '\n\033[0;30mSaved a copy of Statistics RRD files (static/data/*.rrd) in backup folder\033[0m'
+	fi	
 else
 	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
 	if [ -z "$path" ]; then
