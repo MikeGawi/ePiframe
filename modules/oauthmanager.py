@@ -25,6 +25,7 @@ class oauthmanager:
 			# Save the credentials for the next run
 			with open(picklefile, 'wb') as token:
 				pickle.dump(self.__creds, token)
+		os.chmod(picklefile, 0o0666)		
 				
 	def build_service (self, name:str, ver:str):
 		self.__service = build(name, ver, credentials=self.__creds, static_discovery=False)

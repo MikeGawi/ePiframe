@@ -3,10 +3,10 @@
 from flask import Flask
 import sys, re
 
-API_KEY = None
 IP = '0.0.0.0'
 PORT = '80'
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'This is secret'
 
 @app.route("/")
 def hello_world():

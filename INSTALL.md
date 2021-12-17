@@ -6,6 +6,9 @@
       * [Automatic](#automatic)
       * [Manual](#manual)
       * [Next steps](#next-steps)
+	  	* [Activate](#activate)
+			* [Activate from ePiframe device](#activate-from-epiframe-device)
+			* [Activate from other device](#activate-from-other-device)
       	* [Weather Stamp](#weather-stamp)
       	* [Telegram Bot](#telegram-bot)
       	* [Web User Interface](#web-user-interface)
@@ -38,7 +41,6 @@
 ### Automatic
 
 Use *install.sh* script:
-
 ```
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh -O install_now.sh
 chmod +x install_now.sh
@@ -48,6 +50,9 @@ rm install_now.sh
 Move to [next steps](#next-steps)
 
 ### Manual
+
+<details>
+<summary>Click to expand</summary>
 
 * Install APTs:
 ```
@@ -87,7 +92,7 @@ Reboot ePiframe device to start enabled SPI support.
 * Install ePiframe service
   * replace paths
 	```
-	sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' ePiframe.service.org > ePiframe.service
+	sed 's/EPIEPIEPI/'$(pwd | sed 's_/_\\/_g')'\//g' misc/ePiframe.service.org > ePiframe.service
 	```
   * enable service
 	```
@@ -96,31 +101,74 @@ Reboot ePiframe device to start enabled SPI support.
 
 Move to [next steps](#next-steps)
 
+</details>
+
 ## Next steps
 
 * Connect display to Raspberry Pi
-* Add your Google account (the one used to pull photos from) support to Google Photos API on [Google Console](https://developers.google.com/photos/library/guides/get-started) - *Enable the Google Photos Library API*
-  * Name it *ePiframe*
-  * Use *TVs and Limited Input* as application type (sometimes works only with *Desktop Application* but You can change it later)
-  * Or through the Google API Console:  
-    * Go to the [Google API Console](https://console.developers.google.com/apis/library)
-    * From the menu bar, select a project or create a new project
-    * To open the Google API Library, from the Navigation menu, select *APIs & Services -> Library*
-    * Search for *Google Photos Library API*. Select the correct result and click *Enable*
-* Download credentials JSON file for the API from the previous step - *Download client configuration* button
-  * Or Download icon in *[Google Console](https://console.cloud.google.com/) -> Credentials -> OAuth 2.0 Client IDs*
-  * Save it under *credentials.json* name
-* Generate token pickle file with *getToken.py* script to use with Google Photos:
-  * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/getToken.py && chmod +x getToken.py && ./getToken.py```
-  * Run it on internet browser accessible machine as Google authentication is needed. It doesn't need to be ePiframe device
-  * Script will produce *token.pickle* file
-* Copy credentials JSON and token pickle file to ePiframe device inside installation path (using [*rsync*](https://ss64.com/bash/rsync.html) or [*scp*](https://ss64.com/bash/scp.html))
+* [Activate](#activate) ePiframe token and credentials for using Google Photos API
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
 * Do a test with ```./ePiframe.py --test-display``` to test display
 * Reboot ePiframe device to automatically run frame
 * Enjoy your ePiframe!
+
+## Activate
+
+ePiframe needs to have credentials and access token to access Google Photos of Google accout in an unsupervised way. For this You need to activate Google Photos API for the account used by ePiframe and configure application in Google Cloud Console.
+
+Usually You will be asked to do that after [automatic installation](#automatic) and there are two ways to do that: with the ePiframe Activation Tool website with visual guide or in the console but if not already done, here are the steps needed on Google Cloud Console:
+
+<details>
+<summary>Click to expand</summary>
+
+* Create new or use an existing Google account for **ePiframe** and log in. 
+* Go to [Google Cloud Console](https://console.cloud.google.com/).
+* Click on *Select a project*.
+* Click on *NEW PROJECT* 
+* Put *ePiframe* in the *Project name* field and click *CREATE* You have created **ePiframe** project! 
+* Now select *ePiframe* project by clicking on it 
+* Click *APIs & Services* in the panel on the left hand side and pick *Library* 
+* Search for *Photos* and then click *Photos Library API* 
+* Click on *ENABLE*. Now You have given Your **ePiframe** project support to Google Photos API 
+* Go to *Credentials* in the panel on the left hand side under *APIs & Services* and click *CONFIGURE CONSENT SCREEN* 
+* Choose *External* and click *CREATE* 
+* Put *ePiframe* in the *App name* field, type Google email used for Your **ePiframe** where necessary, scroll down and click on *SAVE AND CONTINUE* three times until You get to **Summary**. 
+* Click *BACK TO DASHBOARD*. Your application consent screen is ready! 
+* Click on *PUBLISH APP* in *Oauth consent screen* section under *APIs & Services* to publish Your application 
+* Click on *+CREATE CREDENTIALS* and choose *OAuth client ID* 
+* Pick *Desktop app* as *Application type* and put *ePiframe* in the *Name* field. Click *CREATE* 
+* You have created OAuth client for Your **ePiframe**! Click on *DOWNLOAD JSON* to download JSON formatted credentials file 
+* You can always get it from the *Credentials* dashboard by clicking download icon in *Actions* column of Your desired Client ID 
+
+Now go to next steps for ePiframe activation.
+
+</details>
+
+#### Activate from ePiframe device
+
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actweb.png" width="400">
+
+If not already done during [automatic installation](#automatic) start the ePiframe Activation Tool with `./install.sh --activate` command in the main path and follow the instructions.
+
+You can choose if You want to activate on website with visual guide or in the console.
+
+#### Activate from other device
+
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actcon.png" width="400">
+
+It is possible to activate the access to Google Photos API for ePiframe on any other device with Python 3.
+
+You need to have these prerequisites installed:
+```
+sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+```
+Then:
+* ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/activate.py && chmod +x activate.py && ./activate.py```
+* Only console mode is possible as there are too many dependencies needed for website mode
+* Script will produce *token.pickle* and *credentials.json* files
+* Copy these files to ePiframe device inside installation path (using [*rsync*](https://ss64.com/bash/rsync.html) or [*scp*](https://ss64.com/bash/scp.html))
 
 ### Weather Stamp
 
@@ -203,7 +251,7 @@ It is possible to control ePiframe from a simple API and even secure it with aut
 
 **_NOTE_** - The users database created in previous ePiframe versions doesn't need to be updated, recreated or modified as it will be updated automatically to the newest version and with no data lost. Old users will have their keys generated automatically.
 
-[ePiframe API](https://github.com/MikeGawi/ePiframe/blob/master/API.md)
+[ePiframe API](https://github.com/MikeGawi/ePiframe/blob/master/docs/API.md)
 
 ## Update
 ### Update Automatically
@@ -211,7 +259,6 @@ It is possible to control ePiframe from a simple API and even secure it with aut
 Since [ePiframe v0.9.6 beta](https://github.com/MikeGawi/ePiframe/releases/tag/v0.9.6-beta) [#10](https://github.com/MikeGawi/ePiframe/issues/10)
 
 Use *install.sh* script:
-
 ```
 cd [Your ePiframe path]
 wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/install.sh -O install_update.sh
@@ -224,10 +271,15 @@ rm install_update.sh
 
 ### Update Manually
 
+<details>
+<summary>Click to expand</summary>
+	
 * Save Your [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file in other location.
 * Save Your *credentials.json* file in other location. It may be under different name specified in the ```[Credentials]->cred_file``` entry in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file.
 * Save Your *token.pickle* file in other location. It may be under different name specified in the ```[Credentials]->pickle_file``` entry in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file.
 * Save Your *misc/users.db* file in other location.
+
+</details>
 
 [Uninstall](#uninstalling), [install](#installation) ePiframe again and copy back all files from previous steps.
 
@@ -245,11 +297,16 @@ Move to [next steps](#next-steps-1)
 
 ### Manual
 
+<details>
+<summary>Click to expand</summary>
+
 ```
 sudo systemctl stop ePiframe.service
 sudo systemctl disable ePiframe.service
 ```
 Move to [next steps](#next-steps-1)
+
+</details>
 
 ### Next steps
 

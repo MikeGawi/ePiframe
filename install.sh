@@ -26,7 +26,7 @@ echo -e '
 
 function install_apts {
 	echo -e '\n\033[0;30mInstalling system components\033[0m'
-	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch" ["RRDTool"]="rrdtool"\
+	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch"\
 				  ["LibAtlas"]="libatlas-base-dev" ["WiringPi"]="wiringpi" ["Python 3"]="python3" ["Pip 3"]="python3-pip")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"
@@ -92,7 +92,7 @@ function check_spi {
 
 function display_libs {
 	declare -A cmds
-	cmds["Preparing"]='sudo rm -rf e-Paper-master/ waveshare.zip'
+	cmds["Preparing"]='sudo rm -r e-Paper-master/ waveshare.zip 2>&1 > /dev/null'
 	cmds["Downloading"]='sudo wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q waveshare.zip'
 	cmds["Copying"]='sudo cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .'
@@ -124,7 +124,7 @@ function display_libs {
 
 function epi_code {
 	declare -A cmds
-	cmds["Preparing"]='sudo rm -rf ePiframe-master/ ePiframe.zip'
+	cmds["Preparing"]='sudo rm -r ePiframe-master/ ePiframe.zip 2>&1 > /dev/null'
 	cmds["Downloading"]='sudo wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q ePiframe.zip'
 	cmds["Copying"]='sudo cp -r ePiframe-master/* .'
@@ -156,7 +156,7 @@ function epi_code {
 
 function install_service {
 	declare -A cmds
-	cmds["Copying"]='sudo cp ePiframe.service.org ePiframe.service'
+	cmds["Copying"]='sudo cp misc/ePiframe.service.org ePiframe.service'
 	pwdesc=$(echo $1'/' | sed 's_/_\\/_g')
 	cmds["Configuring"]="sudo sed -i s/EPIEPIEPI/$pwdesc/g ePiframe.service"
 	cmds["Installing"]="sudo systemctl --quiet enable $1/ePiframe.service"
@@ -184,15 +184,15 @@ function install_service {
 
 function show_next_steps {
 	echo -e '\n\033[0;30mNext steps:\033[0m'
-	printf '\e[1;37m1. Add account support to Google Photos API on console.cloud.google.com\e[m\n'
-	printf '\e[1;37m2. Get credentials JSON file for the API from the previous step\e[m\n'
-	printf '\e[1;37m3. Generate token pickle file with getToken.py script to use with Google Photos\e[m\n'
-	printf '\e[1;37m4. Copy credentials JSON and token pickle file to ePiframe device\e[m\n'
 	printf '\e[1;37m5. Configure ePiframe with config.cfg file\e[m\n'
 	printf '\e[1;37m6. Check configuration with ./ePiframe.py --check-config\e[m\n'
 	printf '\e[1;37m7. Do a test with ./ePiframe.py --test without sending photo to display\e[m\n'
 	printf '\e[1;37m8. Reboot ePiframe device to start enabled SPI support\e[m\n'
 	printf '\e[1;37m9. Enjoy Your ePiframe!\e[m\n'
+}
+
+function start_activate {
+	sudo python3 activate.py
 }
 
 function show_uninstall {
@@ -211,6 +211,7 @@ function show_help {
 	printf '\e[1;37m	--uninstall		- uninstalls ePiframe\e[m\n'
 	printf '\e[1;37m	--update		- update ePiframe\e[m\n'
 	printf '\e[1;37m	--next-steps 		- show next steps after installation\e[m\n'
+	printf '\e[1;37m	--activate 		- token and creds activation of Google Photos\e[m\n'
 }
 
 ###############################################MAIN###############################################
@@ -235,6 +236,11 @@ fi
 
 clear
 show_logo
+
+if [ "$1" = "--activate" ]; then
+	start_activate
+	exit 0
+fi
 
 if [ "$1" = "--update" ]; then
 	echo -e "\n\033[0;30mUpdating ePiframe!\033[0m"
@@ -292,8 +298,7 @@ if [ "$1" = "--update" ]; then
 	
 	if [ -f "config.cfg" ]; then
 		cp config.cfg backup/config.cfg.bak
-		cp config.cfg backup/config-$(date +"%Y%m%d-%H%M%S").cfg.bak
-		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg and a copy with timestamp as well) in backup folder\033[0m'
+		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg) in backup folder\033[0m'
 	else	
 		while true; do
 			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'		
@@ -317,10 +322,6 @@ if [ "$1" = "--update" ]; then
 		cp misc/users.db backup/users.db.bak
 		echo -e '\n\033[0;30mSaved a copy of Users DB (misc/users.db) in backup folder\033[0m'
 	fi
-	if [ -f "static/data/load.rrd" ]; then
-		cp static/data/*.rrd backup/
-		echo -e '\n\033[0;30mSaved a copy of Statistics RRD files (static/data/*.rrd) in backup folder\033[0m'
-	fi	
 else
 	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
 	if [ -z "$path" ]; then
@@ -349,7 +350,7 @@ fi
 
 install_service $path
 
-sudo chown -R pi:pi $path
+sudo chown -R pi $path
 sudo chmod +x $path/*.py
 
 if [ "$1" = "--update" ]; then
@@ -358,6 +359,15 @@ if [ "$1" = "--update" ]; then
 	fi
 	sudo systemctl start ePiframe.service
 else
+	while true; do
+		read -p $'\n\e[1;37mDo You want to activate (if not already done) Google Photos token and credentials for Your ePiframe now? You can always start it later by running ./install.sh --activate command in the main path. [Y/n]\e[0m' -n 1 -r -e yn
+		case "${yn:-Y}" in
+			[Yy]* ) start_activate; break;;
+			[Nn]* ) echo -e '\033[0;31mRemember to activate it later to allow ePiframe use Google Photos\033[0m'; break;;
+			* ) echo "Please answer yes or no.";;
+		esac
+	done
+
 	show_next_steps
 fi
 

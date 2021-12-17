@@ -7,8 +7,8 @@ class weatherstampmanager:
 	__POSITION_VALUES = [0, 1, 2, 3]
 
 	__FONTS = {
-		'WEATHER_FONT' : 	'fonts/weathericons-regular-webfont.ttf',
-		'NORMAL_FONT' :		'fonts/NotoSans-SemiCondensed.ttf'
+		'WEATHER_FONT' : 	'static/fonts/weathericons-regular-webfont.ttf',
+		'NORMAL_FONT' :		'static/fonts/NotoSans-SemiCondensed.ttf'
 	}
 	
 	__COLORS = {

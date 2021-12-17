@@ -1,6 +1,6 @@
 class constants:
 
-	EPIFRAME_VERSION = 'v0.9.9 beta'
+	EPIFRAME_VERSION = 'v1.0.0 rc'
 	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
 	
 	#minimal needed python version
@@ -114,5 +114,3 @@ class constants:
 	SALTS_TABLE_SALT_HEADER = 		'salt'
 	
 	USERS_ACTIONS_TAG = "--------Users management: "
-	
-	STATS_STEP = 10

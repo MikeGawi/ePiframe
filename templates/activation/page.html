@@ -1,0 +1,105 @@
+{% extends "activation/layout.html" %}
+{% block title %}Token activation{% endblock %}
+{% block head %}
+  {{ super() }}
+	{% if type == 'upload' %}<script src="{{ url_for('static', filename='js/dropzone.min.js') }}"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.min.css') }}" type="text/css" />
+	<style>
+		   .btn-file {
+				position: relative;
+				overflow: hidden;
+			}
+		
+			.btn-file input[type=file] {
+				position: absolute;
+				top: 0;
+				right: 0;
+				min-width: 100%;
+				min-height: 100%;
+				font-size: 100px;
+				text-align: right;
+				filter: alpha(opacity=0);
+				opacity: 0;
+				outline: none;   
+				cursor: inherit;
+				display: block;
+			}
+	</style>{% endif %}
+{% endblock %}
+{% block content %}
+	<div class="d-grid">
+		<div class="d-flex">
+			<div class='col col-auto ps-1 pe-2'>
+				<ul>{% for key, value in toc.items() %}<li>
+					<a class="btn btn-link btn-sm p-0" id="step_{{ value }}" href="{{ value }}">{{ key }}</a>
+				</li>{% endfor %}</ul>
+			</div>
+			<div class='col'>
+				<div class="px-4" style="min-height:75vh">
+					<div class="row pt-1">
+						<h5>{{ title }}</h5>
+					</div>
+					<div class="px-4 pb-4">
+						{{ text | safe }}
+					</div>
+					{% if pic %}<a href="{{ url_for('static', filename='images/activation/' + pic) }}" target="_blank"><img class="row mx-auto" style="max-width:600px;max-height:280px" src="{{ url_for('static', filename='images/activation/' + pic) }}"></a>{% endif %}
+					{% if type == 'upload' %}<div class="d-flex justify-content-center px-2 mt-4">
+						<div class="col-2 px-3" style="width: 230px;">
+							<form action="{{ url_for('upload') }}" class="dropzone border border-5 rounded-3" id="dropzone">
+								<div class="dz-message">Drop file here to upload!</div>
+							</form>
+						</div>
+						<div class="px-1 col-auto mt-4">Or</div>
+						<div class="col-auto mt-4 px-3">
+							<div class="row px-1 col-auto mx-auto">
+								<form action="{{ url_for('upload') }}" class="px-0" method="POST" enctype="multipart/form-data">
+									<button class="btn btn-primary btn-file px-2 form-control" type="button" id="upload">
+										<input type="file" onchange="this.form.submit();" name="file">Upload File
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>{% endif %}
+					{% if type == 'code' %}<form action="{{ url_for('generate') }}" id="code_form" method="POST" class="d-flex justify-content-center px-2 mt-2">
+						<label for="code" class="px-1 text-nowrap form-label mx-1">Access code:</label>
+						<input class="form-control form-control-sm mx-1" type="text" name="code">
+						<button class='btn-primary btn-sm btn text-nowrap px-1 mx-1' type="submit" form="code_form">Generate Token</button>
+					</form>{% endif %}
+					{% if page == last %}<form action="{{ url_for('stop') }}" method="POST" id="stop_form" class="d-flex justify-content-center px-2 mt-2">
+						<button class='btn-primary btn-sm btn text-nowrap px-1 mx-1' type="submit" form="stop_form">Stop authentication tool</button>
+					</form>{% endif %}
+					{% with messages = get_flashed_messages() %}
+					{% if messages %}					
+						{% for message in messages %}<div class="text-center text-danger">
+							{{ message }}
+						</div>{% endfor %}
+					{% endif %}
+					{% endwith %}
+				</div>
+				<div class="d-flex pt-4 p-3">
+					{% if previous %}<a href="{{ previous }}" class="btn btn-secondary">Back</a>{% endif %}
+					{% if next %}<a href="{{ next }}" class="ms-auto btn btn-primary">Next</a>{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		{% if type == 'upload' %}
+		Dropzone.options.dropzone = { uploadMultiple:false, maxFiles:1, clickable:false,
+			init: function() {
+				this.on("maxfilesexceeded", function(file) {
+					this.removeAllFiles();
+					this.addFile(file);
+				});
+				this.on("success", function() {
+					if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+						window.location.href = "{{ next }}";
+					}
+				});
+    		}
+		};{% endif %}
+		
+		$("#step_{{ page }}").addClass("link-dark");
+		$("#step_{{ last }}").addClass("disabled");
+	</script>
+{% endblock %}

@@ -32,6 +32,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 * **Users and passwords** for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
 * **API** - control the ePiframe with API calls [#17](https://github.com/MikeGawi/ePiframe/issues/17)
 * **Statistics** - load, memory and temperature graphs shown in WebUI [#19](https://github.com/MikeGawi/ePiframe/issues/19)
+* **Easy activation** - activate Google Photos from ePiframe device (or any other one) with visual guide [#20](https://github.com/MikeGawi/ePiframe/issues/20)
 
 ## Hardware required
 
@@ -81,9 +82,6 @@ Installation, configuration and API documentation can be found <font size="+2"><
 
 ## Future plans
 	
-ePiframe to-do list for 2021:
-* [ ] Easier token generation from the web interface
-
 ePiframe to-do list for 2022:
 * [ ] Local mode - proposed by @spn91 [#16](https://github.com/MikeGawi/ePiframe/issues/16)
 

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>	
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" crossorigin="anonymous"/>
+	{% block head %}
+    <title>{% block title %}{% endblock %} - ePiframe activation</title>
+    {% endblock %}
+</head>
+	<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+<body>
+	<div class="container-fluid max-hh">
+		<div class="col">
+			<div class="row bg-dark"> 
+				<div class="col-auto text-white fw-lighter fs-1 align-middle align-self-center px-2">ePiframe</div>
+			</div>   
+			<div class="row" id="content">{% block content %}{% endblock %}</div>
+		</div>
+	</div>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" crossorigin="anonymous"></script>
+</body>
+</html>
