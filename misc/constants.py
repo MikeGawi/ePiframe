@@ -114,3 +114,5 @@ class constants:
 	SALTS_TABLE_SALT_HEADER = 		'salt'
 	
 	USERS_ACTIONS_TAG = "--------Users management: "
+	
+	STATS_STEP = 10
