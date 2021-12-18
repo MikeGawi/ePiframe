@@ -146,9 +146,9 @@ Now go to next steps for ePiframe activation.
 
 </details>
 
-#### Activate from ePiframe device
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actweb.png" width="200">
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actweb.png" width="400">
+#### Activate from ePiframe device
 
 If not already done during [automatic installation](#automatic) start the ePiframe Activation Tool with `./install.sh --activate` command in the main path and follow the instructions.
 
@@ -156,14 +156,15 @@ You can choose if You want to activate on website with visual guide or in the co
 
 #### Activate from other device
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actcon.png" width="400">
-
 It is possible to activate the access to Google Photos API for ePiframe on any other device with Python 3.
 
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actcon.png" width="200">	
+	
 You need to have these prerequisites installed:
 ```
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
+	
 Then:
 * ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/activate.py && chmod +x activate.py && ./activate.py```
 * Only console mode is possible as there are too many dependencies needed for website mode
