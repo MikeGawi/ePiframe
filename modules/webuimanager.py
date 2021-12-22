@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, send_file, flash, session
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, IntegerField, SelectField, validators
+from wtforms import StringField, BooleanField, IntegerField, SelectField
 from wtforms.widgets import html5
 from modules.usersmanager import usersmanager
 from modules.databasemanager import databasemanager
