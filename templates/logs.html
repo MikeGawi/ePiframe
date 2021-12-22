@@ -15,9 +15,11 @@
 				var output = document.getElementById('output');
 				if (data && data.length !== 0) { output.textContent = data; }
 			});
-			
+		}, 3000);
+		
+		setInterval(function() {
 		    var div = document.getElementById('outputframe');
-			var isScrolledToBottom = div.scrollHeight - div.clientHeight - 200 <= div.scrollTop;
+			var isScrolledToBottom = div.scrollHeight - div.clientHeight - 500 <= div.scrollTop;
 			
 		    if (isScrolledToBottom || ( scroll <= 10 && scroll >= 0) ){ 
 				$('#outputframe').animate({scrollTop: div.scrollHeight - div.clientHeight}, 500); 
