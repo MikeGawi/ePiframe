@@ -9,7 +9,7 @@ class daemon:
 		self.pidfile = pidfile
 		self.path = path
 	
-	def daemonize(self):
+	def daemonize(self, debug):
 		try: 
 			pid = os.fork() 
 			if pid > 0:
@@ -34,17 +34,18 @@ class daemon:
 		except OSError as err: 
 			sys.stderr.write('fork #2 failed: {0}\n'.format(err))
 			sys.exit(1) 
-	
-		# redirect standard file descriptors
-		sys.stdout.flush()
-		sys.stderr.flush()
-		si = open(os.devnull, 'r')
-		so = open(os.devnull, 'a+')
-		se = open(os.devnull, 'a+')
+		
+		if not debug:
+			# redirect standard file descriptors
+			sys.stdout.flush()
+			sys.stderr.flush()
+			si = open(os.devnull, 'r')
+			so = open(os.devnull, 'a+')
+			se = open(os.devnull, 'a+')
 
-		os.dup2(si.fileno(), sys.stdin.fileno())
-		os.dup2(so.fileno(), sys.stdout.fileno())
-		os.dup2(se.fileno(), sys.stderr.fileno())
+			os.dup2(si.fileno(), sys.stdin.fileno())
+			os.dup2(so.fileno(), sys.stdout.fileno())
+			os.dup2(se.fileno(), sys.stderr.fileno())
 	
 		# write pidfile
 		atexit.register(self.delpid)
@@ -56,7 +57,7 @@ class daemon:
 	def delpid(self):
 		os.remove(self.pidfile)
 
-	def start(self, args):
+	def start(self, args, debug=False):
 		# Check for a pidfile to see if the daemon already runs
 		#try:
 		#		pf = file(self.pidfile,'r')
@@ -71,7 +72,7 @@ class daemon:
 		#		sys.exit(1)
 		
 		# Start the daemon
-		self.daemonize()
+		self.daemonize(debug)
 		self.run(args)
 
 	def stop(self):

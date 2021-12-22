@@ -22,7 +22,7 @@ __PAGES = 	{
 	1 : { __TYPE : __TEXT_TYPE, __PIC : None, __TITLE : 'Welcome', __TEXT : 'This tool will guide You through token and credentials activation of Google Photos API support for <b>ePiframe</b>. <br><br>You can always start it by running <br><code>./install.sh --activate</code> <br>command in the main path' },
 	2 : { __TYPE : __TEXT_TYPE, __PIC : '1.png', __TITLE : 'Google Cloud Console', __TEXT : '<ul><li>Create new or use an existing Google account for <b>ePiframe</b> and log in. </li><li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console. </a></li><li>Click on <i>Select a project</i>.</li></ul>' },
 	3 : { __TYPE : __TEXT_TYPE, __PIC : '2.png', __TITLE : 'New project', __TEXT : 'Click on <i>NEW PROJECT</i>' },
-	4 : { __TYPE : __TEXT_TYPE, __PIC : '3.png', __TITLE : 'Configure new project', __TEXT : 'Put <i>ePiframe</i> in the <i>Project name</i> field and click <i>[CREATE]</i> <br>You have created <b>ePiframe</b> project!' },
+	4 : { __TYPE : __TEXT_TYPE, __PIC : '3.png', __TITLE : 'Configure new project', __TEXT : 'Put <i>ePiframe</i> in the <i>Project name</i> field and click <i>[CREATE]</i>. <br>You have created <b>ePiframe</b> project!' },
 	5 : { __TYPE : __TEXT_TYPE, __PIC : '4.png', __TITLE : 'Select project', __TEXT : 'Now select <i>ePiframe</i> project by clicking on it' },
 	6 : { __TYPE : __TEXT_TYPE, __PIC : '5.png', __TITLE : 'Libraries', __TEXT : 'Click <i>APIs & Services</i> in the panel on the left hand side and pick <i>Library</i>' },
 	7 : { __TYPE : __TEXT_TYPE, __PIC : '6.png', __TITLE : 'Search for API', __TEXT : 'Search for <i>Photos</i> and then click <i>Photos Library API</i>' },
