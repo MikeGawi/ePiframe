@@ -54,8 +54,8 @@ JSON format:
 * ```mem``` - allocated memory percentage status (with % sign at the end)
 * ```service``` - ePiframe service status: _Running_ or _Not running!_
 * ```state``` - ePiframe state: _Idle_ or _Busy_
-* ```temp``` - current core temperature (with degree sign at the end)
-* ```update``` - date and time of the next frame update in format: _DD.MM.YYYY_ (not visible when the same day) _at hh:mm:ss_ (next line) _in d days m mins s secs_ (days not visible when less than one day)
+* ```temp``` - current core temperature in Celcius (C) or Fahrentheit (F) according to units configuration (with degree sign at the end)
+* ```update``` - date and time of the next frame update in format: _YYYY-MM-DD_ (not visible when the same day) _at hh:mm:ss_ (next line) _in d days m mins s secs_ (days not visible when less than one day)
 * ```uptime``` - device running time
 * ```version``` - version of ePiframe
 
