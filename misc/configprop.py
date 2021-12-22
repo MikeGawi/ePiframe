@@ -82,6 +82,12 @@ class configprop:
 	def get_possible(self):
 		return list(range(2)) if self.__type == self.BOOLEAN_TYPE else self.__possible
 	
+	def get_min(self):
+		return self.__minvalue
+		
+	def get_max(self):
+		return self.__maxvalue
+	
 	def validate(self):
 		if self.__dependency and bool(self.__configmanager.getint(self.__dependency)) or not self.__dependency:
 	
