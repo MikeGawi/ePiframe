@@ -113,6 +113,7 @@ class configmanager:
 				try:
 					self.config.get(sect, prop)
 				except Exception:
+					if not self.config.has_section(sect): self.config.add_section(sect)
 					self.config.set(sect, prop, self.def_config.get(sect, prop))
 					pass
 				
