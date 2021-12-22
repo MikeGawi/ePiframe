@@ -6,6 +6,7 @@ from datetime import datetime
 class filteringmanager:
 	
 	__DATE_MASK = '%Y-%m-%d %H:%M:%S'
+	__DATE_MASK_OLD = '%Y.%m.%d %H:%M:%S'
 	
 	@classmethod
 	def filter_by_from_date (self, photos, date:str, header:str):
@@ -37,6 +38,17 @@ class filteringmanager:
 			ret = photos.sort_values(by = header, ascending = False)
 		
 		return ret
+	
+	@classmethod		
+	def convert (self, date):
+		res = date	
+		try: 
+			datetime.strptime(date, self.__DATE_MASK_OLD)
+			res = date.replace(".", "-")
+		except Exception:
+			pass
+	
+		return res
 	
 	@classmethod		
 	def verify (self, date):

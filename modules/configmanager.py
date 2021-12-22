@@ -70,8 +70,8 @@ class configmanager:
 			configprop('background_color', self, possible=convertmanager.get_background_colors()),
 			configprop('album_names', self, notempty=False),
 			configprop('randomize', self, prop_type=configprop.BOOLEAN_TYPE),
-			configprop('photos_from', self, notempty=False, checkfunction=filteringmanager.verify, special=configprop.special(filteringmanager.verify_times, ['photos_from', 'photos_to'])),
-			configprop('photos_to', self, notempty=False, checkfunction=filteringmanager.verify, special=configprop.special(filteringmanager.verify_times, ['photos_from', 'photos_to'])),
+			configprop('photos_from', self, notempty=False, convert=filteringmanager.convert, checkfunction=filteringmanager.verify, special=configprop.special(filteringmanager.verify_times, ['photos_from', 'photos_to'])),
+			configprop('photos_to', self, notempty=False, convert=filteringmanager.convert, checkfunction=filteringmanager.verify, special=configprop.special(filteringmanager.verify_times, ['photos_from', 'photos_to'])),
 			configprop('no_photos', self, minvalue=1, notempty=False, prop_type=configprop.INTEGER_TYPE),
 			configprop('sort_desc', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('show_weather', self, prop_type=configprop.BOOLEAN_TYPE),
@@ -95,6 +95,11 @@ class configmanager:
 				self.get_property(p)
 			except Exception:
 				self.__SETTINGS.append(configprop(p,self))
+				
+		for prop in self.__SETTINGS:
+			prop.convert()
+			
+		self.save()
 				
 	def read_config(self):
 		if not os.path.exists(self.__path):

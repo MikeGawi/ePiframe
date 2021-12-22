@@ -30,7 +30,7 @@ class configprop:
 			self.args = args
 			self.exctype = exctype			
 	
-	def __init__ (self, name, configmanager, prop_type=STRING_TYPE, notempty=True, dependency=None, minvalue=None, maxvalue=None, checkfunction=None, special=None, length=None, delimiter=None, possible=None, resetneeded=False):
+	def __init__ (self, name, configmanager, prop_type=STRING_TYPE, notempty=True, dependency=None, minvalue=None, maxvalue=None, checkfunction=None, special=None, length=None, delimiter=None, possible=None, resetneeded=False, convert=None):
 		self.__type = prop_type
 		self.__name = name
 		self.__dependency = dependency
@@ -44,6 +44,7 @@ class configprop:
 		self.__configmanager = configmanager
 		self.__possible = possible
 		self.__resetneeded = resetneeded
+		self.__convert = convert
 		
 		is_break = False
 		for sect in self.__configmanager.def_config.sections():
@@ -88,7 +89,12 @@ class configprop:
 	def get_max(self):
 		return self.__maxvalue
 	
+	def convert(self):
+		if self.__convert: 
+			self.__configmanager.set(self.__name, self.__convert(self.__configmanager.get(self.__name)))
+	
 	def validate(self):
+		
 		if self.__dependency and bool(self.__configmanager.getint(self.__dependency)) or not self.__dependency:
 	
 			if self.__notempty and not self.__configmanager.get(self.__name): raise Exception(self.STRING_ERROR_MSG.format(self.__name))
