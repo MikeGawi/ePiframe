@@ -26,7 +26,7 @@ echo -e '
 
 function install_apts {
 	echo -e '\n\033[0;30mInstalling system components\033[0m'
-	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch"\
+	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="ufraw-batch" ["RRDTool"]="rrdtool"\
 				  ["LibAtlas"]="libatlas-base-dev" ["WiringPi"]="wiringpi" ["Python 3"]="python3" ["Pip 3"]="python3-pip")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"
@@ -43,18 +43,27 @@ function install_apts {
 
 function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
-	declare -A pips=( ["Requests"]="requests" ["Pillow"]="pillow" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser"\
-				  ["Google components"]="-I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
-				  ["RPi.GPIO"]="RPi.GPIO" ["SPI Libs"]="spidev" ["Image"]="image" ["Pandas"]="pandas" ["Flask"]="flask" ["Flask-WTF"]="flask-wtf" \
-				  ["Flask-Login"]="flask-login" )
+	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="pyTelegramBotAPI==4.1.1" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
+				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
+				  ["RPi.GPIO"]="RPi.GPIO==0.7.0" ["SPI Libs"]="spidev==3.5" ["Image"]="image>=1.5.33" ["Pandas"]="pandas>=1.3.4" ["Flask"]="flask>=2.0.2" ["Flask-WTF"]="flask-wtf==1.0.0" \
+				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
-		out=`sudo -H pip3 -q install ${pips[$pip]} 2>&1 > /dev/null`
+		if [ "$pip" == "Google components" ]; then 
+			out=`sudo -H pip3 -q install -I ${pips[$pip]} 2>&1 > /dev/null`
+		else 
+			out=`sudo -H pip3 -q install -I "${pips[$pip]}" 2>&1 > /dev/null`
+		fi
+		
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
 			echo -e '\033[0;31merror!\033[0m'
-			echo -e "\033[1;37mPlease try to install 'sudo -H pip3 install ${pips[$pip]}' manually and run the script again\033[0m"
+			if [ "$pip" == "Google components" ]; then 
+				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I '${pips[$pip]}' manually and run the script again\033[0m"
+			else			
+				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I ${pips[$pip]} manually and run the script again\033[0m"
+			fi
 			exit 1
 		fi
 	done
@@ -92,7 +101,7 @@ function check_spi {
 
 function display_libs {
 	declare -A cmds
-	cmds["Preparing"]='sudo rm -rf e-Paper-master/ waveshare.zip 2>&1 > /dev/null'
+	cmds["Preparing"]='sudo rm -rf e-Paper-master/ waveshare.zip'
 	cmds["Downloading"]='sudo wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q waveshare.zip'
 	cmds["Copying"]='sudo cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .'
@@ -124,7 +133,7 @@ function display_libs {
 
 function epi_code {
 	declare -A cmds
-	cmds["Preparing"]='sudo rm -rf ePiframe-master/ ePiframe.zip 2>&1 > /dev/null'
+	cmds["Preparing"]='sudo rm -rf ePiframe-master/ ePiframe.zip'
 	cmds["Downloading"]='sudo wget -q https://github.com/MikeGawi/ePiframe/archive/master.zip -O ePiframe.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q ePiframe.zip'
 	cmds["Copying"]='sudo cp -r ePiframe-master/* .'
@@ -298,7 +307,8 @@ if [ "$1" = "--update" ]; then
 	
 	if [ -f "config.cfg" ]; then
 		cp config.cfg backup/config.cfg.bak
-		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg) in backup folder\033[0m'
+		cp config.cfg backup/config-$(date +"%Y%m%d-%H%M%S").cfg.bak
+		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg and a copy with timestamp as well) in backup folder\033[0m'
 	else	
 		while true; do
 			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'		
@@ -322,6 +332,10 @@ if [ "$1" = "--update" ]; then
 		cp misc/users.db backup/users.db.bak
 		echo -e '\n\033[0;30mSaved a copy of Users DB (misc/users.db) in backup folder\033[0m'
 	fi
+	if [ -f "static/data/load.rrd" ]; then
+		cp static/data/*.rrd backup/
+		echo -e '\n\033[0;30mSaved a copy of Statistics RRD files (static/data/*.rrd) in backup folder\033[0m'
+	fi	
 else
 	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
 	if [ -z "$path" ]; then
@@ -350,7 +364,7 @@ fi
 
 install_service $path
 
-sudo chown -R pi $path
+sudo chown -R pi:pi $path
 sudo chmod +x $path/*.py
 
 if [ "$1" = "--update" ]; then
