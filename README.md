@@ -17,6 +17,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 * For vertical or horizontal frame position
 * Can be controlled from Telegram Bot, embedded WebUI or API
 * Can display weather information
+* Can improve displayed photos on the fly, i.e. normalization, contrast and brightness settings, gamma correction, etc.
 * Even for Raspberry Pi Zero W + Raspberry Pi OS Lite
 * Low power consumption
 
@@ -29,9 +30,9 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 * **Weather stamp** (optional) - subtly showing current weather icon and temperature in defined display corner, size and color - [#3](https://github.com/MikeGawi/ePiframe/issues/3)
 * **Telegram Bot** (optional) - control the ePiframe with few commands from Telegram IM - [#5](https://github.com/MikeGawi/ePiframe/issues/5)
 * **WebUI** (optional) - control the ePiframe with web user interface - [#9](https://github.com/MikeGawi/ePiframe/issues/9)
-* **Users and passwords** for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
-* **API** - control the ePiframe with API calls [#17](https://github.com/MikeGawi/ePiframe/issues/17)
-* **Statistics** - load, memory and temperature graphs shown in WebUI [#19](https://github.com/MikeGawi/ePiframe/issues/19)
+* **Users and passwords** (optional) for web interface - [#15](https://github.com/MikeGawi/ePiframe/issues/15)
+* **API** (optional) - control the ePiframe with API calls [#17](https://github.com/MikeGawi/ePiframe/issues/17)
+* **Statistics** (optional) - load, memory and temperature graphs shown in WebUI [#19](https://github.com/MikeGawi/ePiframe/issues/19)
 * **Easy activation** - activate Google Photos from ePiframe device (or any other one) with visual guide [#20](https://github.com/MikeGawi/ePiframe/issues/20)
 
 ## Hardware required
