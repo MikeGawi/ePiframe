@@ -18,7 +18,7 @@ class convertmanager:
 	
 	#Don't use blur! Blur will kill Raspberry Pi Zero.
 	#Resizing to huge and then scaling to small will add some blur and it's 10x faster than blur operation.
-	__PHOTO_BACK_CODE = '( -clone 0 -gravity center -sample x{} -scale {}% -resize {}x -crop {}x+0+0 +repage ) ( -clone 0 -sample x{} ) -delete 0 -gravity center -compose over -composite '
+	__PHOTO_BACK_CODE = '( -clone 0 -gravity center -sample x{} -scale {}% -resize {}x{}^ -crop {}x+0+0 +repage ) ( -clone 0 -sample x{} ) -delete 0 -gravity center -compose over -composite '
 	__PHOTO_RESIZE_CODE = '-sample {}x{} '
 		
 	#options for ImageMagick converter
@@ -69,10 +69,10 @@ class convertmanager:
 		if back == "photo":
 			back = self.__BACK_COLORS[0]
 			#this takes more time to progress		
-			aspectratio = int(origwidth) / int(origwidth)
-			newheight = int(width / aspectratio)
+			aspectratio = int(origwidth) / int(origheight)
+			newheight = max (int(width / aspectratio), height)
 			scale = round(aspectratio * 10.0, 2)
-			code = self.__PHOTO_BACK_CODE.format(newheight, scale, width, width, height)
+			code = self.__PHOTO_BACK_CODE.format(newheight, scale, width, newheight, width, height)
 		else:
 			code = self.__PHOTO_RESIZE_CODE.format(width, height)
 			
