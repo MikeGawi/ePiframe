@@ -137,6 +137,7 @@ class service(daemon):
 		
 		if inter < 0 or params:
 			if self.__backend.should_i_work_now() or (params and self.__backend.triggers_enabled()):
+				self.__NUMBER_OF_NOTIF = 0
 				self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
 				
 				par = params if params != self.__backend.get_empty_params() else str()
