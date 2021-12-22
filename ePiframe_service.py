@@ -137,7 +137,6 @@ class service(daemon):
 		
 		if inter < 0 or params:
 			if self.__backend.should_i_work_now() or (params and self.__backend.triggers_enabled()):
-				self.__NUMBER_OF_NOTIF = 0
 				self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
 				
 				par = params if params != self.__backend.get_empty_params() else str()
@@ -148,7 +147,7 @@ class service(daemon):
 				self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1)%10
 				sleep = True
 		
-		frameTime = self.__backend.get_slide_interval() if not sleep else self.__WAIT_EVENT_TIME
+		frameTime = self.__backend.get_slide_interval() if not sleep else self.__INITIAL_EVENT_TIME
 		self.__backend.update_time()
 		if not sleep: self.__backend.log(self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()), silent=True)
 		self.__event = self.__sched.enter(frameTime, self.__EVENT_PRIORITY, self.task)	
@@ -156,7 +155,7 @@ class service(daemon):
 if __name__ == "__main__":
 	daemon = service('/tmp/ePiframe-service.pid', os.path.dirname(os.path.realpath(__file__)))
 
-	if len(sys.argv) >= 2 and not '--help' in [x.lower() for x in sys.argv]:
+	if len(sys.argv) >= 2:
 		if 'start' == sys.argv[1]:
 			p = subprocess.Popen(['ps', '-efa'], stdout=subprocess.PIPE)	
 			p.wait()		
@@ -168,7 +167,7 @@ if __name__ == "__main__":
 						pid = int(line.split()[1])
 						if not pid == os.getpid():
 							os.kill(pid, signal.SIGKILL)
-			daemon.start('web' if 'web' in [x.lower() for x in sys.argv] else 'telegram' if 'telegram' in [x.lower() for x in sys.argv] else str(), '--debug' in [x.lower() for x in sys.argv])
+			daemon.start(sys.argv[2] if len(sys.argv) > 2 else str())
 		elif 'stop' == sys.argv[1]:
 			daemon.stop()
 		elif 'restart' == sys.argv[1]:
@@ -183,7 +182,4 @@ if __name__ == "__main__":
 		print ("	service  	start only particular service (i.e. web or telegram)")
 		print ("			services must be enabled in configuration!")
 		print ("			for web: any port number below 5000 needs root privilleges to be possible to assign (use sudo ./ePiframe_service.py ...")
-		print ("")
-		print ("")
-		print ("Use --debug at the end for debugger info")
 		sys.exit(2)
