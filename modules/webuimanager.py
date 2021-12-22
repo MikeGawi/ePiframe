@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, jsonify, send_file,
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, IntegerField, SelectField
-from wtforms.widgets import html5
+from wtforms.widgets import NumberInput
 from modules.usersmanager import usersmanager
 from modules.databasemanager import databasemanager
 from misc.configprop import configprop
@@ -325,7 +325,7 @@ class webuimanager:
 					setattr(MyForm, n, StringField(self.__adapt_name(n), default=self.config().get_default(n), description=self.config().get_comment(n), render_kw=render))
 				else:
 					render[self.__HTML_FILL] = str()					
-					setattr(MyForm, n, IntegerField(self.__adapt_name(n), widget=html5.NumberInput(min = prop.get_min(), max = prop.get_max()), default=self.config().get_default(n), render_kw=render, description=self.config().get_comment(n)))
+					setattr(MyForm, n, IntegerField(self.__adapt_name(n), widget=NumberInput(min = prop.get_min(), max = prop.get_max()), default=self.config().get_default(n), render_kw=render, description=self.config().get_comment(n)))
 			elif prop.get_type() == configprop.FILE_TYPE:
 				setattr(MyForm, n, StringField(self.__adapt_name(n), default=self.config().get_default(n), render_kw=render, description=self.config().get_comment(n)))
 			elif prop.get_type() == configprop.BOOLEAN_TYPE:
