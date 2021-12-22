@@ -5,7 +5,7 @@ from datetime import datetime
 
 class filteringmanager:
 	
-	__DATE_MASK = '%Y.%m.%d %H:%M:%S'
+	__DATE_MASK = '%Y-%m-%d %H:%M:%S'
 	
 	@classmethod
 	def filter_by_from_date (self, photos, date:str, header:str):
