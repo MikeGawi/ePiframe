@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import modules.intervalmanager as iterman
 import modules.timermanager as timerman
 import modules.configmanager as confman
-import modules.weathermanager as weatherman
+from modules.weathermanager import weathermanager
 from misc.constants import constants
 from misc.logs import logs
 
@@ -127,7 +127,7 @@ class backendmanager:
 		return self.__interval.read()
 	
 	def is_metric (self):
-		return weatherman.is_metric(self.__config.get('units'))	
+		return weathermanager.is_metric(self.__config.get('units'))	
 	
 	def save_interval (self, num):
 		self.__interval.save(num)
