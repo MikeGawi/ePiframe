@@ -141,7 +141,7 @@ allow_triggers=1
 # There are 6 standard types of conversion to black&white image (add more in
 # convertmanager module). Every option gives slightly different
 # results and you can pick the one best for your display. Types are:
-# 1 - Floyd-Steinberg dither + enhanced contrast
+# 1 - Floyd-Steinberg dither
 # 2 - Floyd-Steinberg dither + high remap 
 # 3 - GIMP like result
 # 4 - Floyd-Steinberg ordered dither
@@ -172,6 +172,34 @@ background_color=white
 ; When 0 image will be rotated 90 degrees clockwise.
 # Default:1 (horizontal)
 horizontal=1
+
+# One of the image enhancements. 
+# Calculates the mean values of an image, then applies a calculated -gamma adjustment. 
+# Default:0 (disabled)
+auto_gamma=0
+
+# One of the image enhancements. 
+# It finds the exact minimum and maximum color values in the image 
+# and then stretches the values to the full range of values. 
+# Default:0 (disabled)
+auto_level=0
+
+# One of the image enhancements. 
+# Increases the contrast in an image by stretching the range of intensity values. 
+# Default:0 (disabled)
+normalize=0
+
+# One of the image enhancements. 
+# Adjusts the photo brightness. 
+# Value from -100(less) to 100(more) in % units. 
+# Default:0 (no change)
+brightness=0
+
+# One of the image enhancements. 
+# Adjusts the photo contrast. 
+# Value from -100(less) to 100(more) in % units. 
+# Default:0 (no change)
+contrast=0
 
 [Album settings]
 # Names of the photo slide source albums in Google Photos.

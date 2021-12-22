@@ -1,12 +1,6 @@
 import sys, os
 import subprocess
 
-#aspect = orgwidth/orgheight
-#scriptheight = 800 / aspect
-#scale = aspect * 10
-#usr/bin/convert photo.jpg -limit thread 1 \( +clone \( -clone 0 -gravity center -sample scriptheight -scale scale% -resize 800x -crop 800x+0+0 +repage \) \( -clone 0 -sample x480 \) -delete 0 -gravity center -compose over -composite -auto-gamma -channel rgb -auto-level -normalize -brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x480 -type bilevel -write ./photo2.bmp \) NULL:
-
-
 class convertmanager:
 	
 	__ERROR_VALUE_TEXT = 'Configuration background_color should be one of {}'
@@ -14,6 +8,11 @@ class convertmanager:
 	__INVERT_FLAG = "-negate"
 	__ROTATE_CODE = '-rotate 90'
 	__BACK_COLORS = ["white", "black", "photo"]
+	
+	__AUTO_GAMMA_ENH = '-auto-gamma '
+	__AUTO_LEVEL_ENH = '-channel rgb -auto-level '
+	__NORMALIZE_ENH = '-normalize '
+	__BRIGHT_CONTRAST_ENH = '-brightness-contrast {},{} '
 	
 	__GET_PHOTO_SIZE_CODE = '{} {} -format "%w,%h" info:'
 	
@@ -25,7 +24,7 @@ class convertmanager:
 	#options for ImageMagick converter
 	#https://legacy.imagemagick.org/Usage/quantize/
 	__CONVERT_OPTIONS = {
-		'1'	:	'{} {} -limit thread 1 {} ( +clone {}{}-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
+		'1'	:	'{} {} -limit thread 1 {} ( +clone {}{}-dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
 		'2'	:	'{} {} -limit thread 1 {} ( +clone {}{}-dither FloydSteinberg {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
 		'3'	:	'{} {} -limit thread 1 {} ( +clone {}{}-dither FloydSteinberg -remap pattern:gray50 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
 		'4'	:	'{} {} -limit thread 1 {} ( +clone {}{}-dither FloydSteinberg -ordered-dither o4x4 {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
@@ -50,13 +49,17 @@ class convertmanager:
 	def get_convert_options (self):
 		return list(self.__CONVERT_OPTIONS.keys())
 	
-	def __convert_option (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str, thumborgfile:str, thumbconvfile:str):
+	def __convert_option (self, origwidth:int, origheight:int, srcfile:str, target:str, config):
+		option = int(config.get('convert_option'))
+		width = config.getint('image_width')
+		height = config.getint('image_height')
+		back = config.get('background_color')
+		
 		if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1: option = 1
 		
 		#space at the end as those flag are optional
-		negate = self.__INVERT_FLAG + " " if invert == 1 else ''
-		rotate = self.__ROTATE_CODE + " " if horizontal == 0 else ''
-			
+		negate = self.__INVERT_FLAG + " " if config.getint('invert_colors') == 1 else ''
+		rotate = self.__ROTATE_CODE + " " if config.getint('horizontal') == 0 else ''		
 		
 		back = back.strip().lower()		
 				
@@ -70,19 +73,23 @@ class convertmanager:
 			newheight = int(width / aspectratio)
 			scale = round(aspectratio * 10.0, 2)
 			code = self.__PHOTO_BACK_CODE.format(newheight, scale, width, width, height)
-			
 		else:
 			code = self.__PHOTO_RESIZE_CODE.format(width, height)
+			
+		if bool(config.getint('auto_gamma')): code += self.__AUTO_GAMMA_ENH
+		if bool(config.getint('auto_level')): code += self.__AUTO_LEVEL_ENH
+		if bool(config.getint('normalize')): code += self.__NORMALIZE_ENH
+		code += self.__BRIGHT_CONTRAST_ENH.format(config.getint('brightness'),config.getint('contrast'))
 		
-		thumb1st = self.__THUMB_1ST_PART.format(width, height, width, height, thumborgfile)
-		thumb2nd = self.__THUMB_2ND_PART.format(thumbconvfile)
+		thumb1st = self.__THUMB_1ST_PART.format(width, height, width, height, os.path.join(config.get('photo_convert_path'), config.get('thumb_photo_download_name')))
+		thumb2nd = self.__THUMB_2ND_PART.format(os.path.join(config.get('photo_convert_path'), config.get('thumb_photo_convert_filename')))
 		
-		ret = self.__CONVERT_OPTIONS[str(option)].format(bin, srcfile, thumb1st, rotate, code, negate, back, width, height, target, thumb2nd)
+		ret = self.__CONVERT_OPTIONS[str(option)].format(config.get('convert_bin_path'), srcfile, thumb1st, rotate, code, negate, back, width, height, target, thumb2nd)
 		print (ret.replace('(','\(').replace(')','\)'))
 		return ret
 	
-	def convert_image (self, origwidth:int, origheight:int, option:int, bin:str, srcfile:str, width:int, height:int, invert:int, horizontal:int, back:str, target:str, thumborgfile:str, thumbconvfile:str):
-		args = (self.__convert_option(origwidth, origheight, option, bin, srcfile, width, height, invert, horizontal, back, target, thumborgfile, thumbconvfile)).split()
+	def convert_image (self, origwidth:int, origheight:int, srcfile:str, target:str, config):
+		args = (self.__convert_option(origwidth, origheight, srcfile, target, config)).split()
 		process = subprocess.Popen(args, stdout=subprocess.PIPE)
 		process.wait()
 		out, err = process.communicate()

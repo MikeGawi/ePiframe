@@ -335,12 +335,7 @@ else:
 									origheight = photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_HEIGHT_HEADER)							
 
 									#convert image
-									if convertmanager().convert_image(origwidth, origheight, int(config.get('convert_option')), config.get('convert_bin_path'), \
-																filename, config.getint('image_width'), config.getint('image_height'), config.getint('invert_colors'),\
-																config.getint('horizontal'), config.get('background_color'), targetFilename,\
-																os.path.join(config.get('photo_convert_path'), \
-															    config.get('thumb_photo_download_name')), os.path.join(config.get('photo_convert_path'), \
-															  	config.get('thumb_photo_convert_filename'))	)  != None:
+									if convertmanager().convert_image(origwidth, origheight, filename, targetFilename, config)  != None:
 										logging.log ("Fail! {}".format(str(err)))
 									else:
 										logging.log ("Success!")
@@ -400,12 +395,7 @@ else:
 			logging.log ("Fail! {}".format(str(err)))
 		else:
 			logging.log ("Processing the photo...")
-			if convertman.convert_image(width, height, int(config.get('convert_option')), config.get('convert_bin_path'), \
-							filename, config.getint('image_width'), config.getint('image_height'), config.getint('invert_colors'),\
-							config.getint('horizontal'), config.get('background_color'), targetFilename,\
-							os.path.join(config.get('photo_convert_path'), \
-							config.get('thumb_photo_download_name')), os.path.join(config.get('photo_convert_path'), \
-							config.get('thumb_photo_convert_filename'))	)  != None:
+			if convertman.convert_image(width, height, filename, targetFilename, config)  != None:
 				logging.log ("Fail! {}".format(str(err)))
 			else:
 				logging.log ("Success!")
