@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import modules.intervalmanager as iterman
 import modules.timermanager as timerman
 import modules.configmanager as confman
+import modules.weathermanager as weatherman
 from misc.constants import constants
 from misc.logs import logs
 
@@ -125,6 +126,9 @@ class backendmanager:
 	def get_interval (self):
 		return self.__interval.read()
 	
+	def is_metric (self):
+		return weatherman.is_metric(self.__config.get('units'))	
+	
 	def save_interval (self, num):
 		self.__interval.save(num)
 	
@@ -194,8 +198,25 @@ class backendmanager:
 		return os.popen(self.__MEM_CMD).read().strip() or self.__NOTHING
 	
 	def get_temp(self):
-		return os.popen(self.__TEMP_CMD).read().strip().replace("temp=", '').replace("'", '\N{DEGREE SIGN}') or self.__NOTHING
+		res =  os.popen(self.__TEMP_CMD).read().strip().replace("temp=", '').replace("'C", '') or self.__NOTHING
 		
+		if res:
+			if self.is_metric(): 
+				res += '\N{DEGREE SIGN}C'
+			else:
+				res = self.calc_to_f(res) + '\N{DEGREE SIGN}F'
+		
+		return res
+	
+	def calc_to_f(self, temp):
+		res = self.__NOTHING
+		try:
+			res = str(round(float(temp) * 1.8 + 32, 1))
+		except Exception:
+			pass
+		
+		return res
+	
 	def get_next_time(self):
 		time = self.get_update_time_formatted(True)
 		delta = self.get_update_time_formatted() - datetime.now(datetime.now().astimezone().tzinfo)

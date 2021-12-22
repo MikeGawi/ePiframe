@@ -41,5 +41,6 @@ class statsmanager:
 			path = os.path.join(self.__backend.get_path(), self.__PATH, fil + self.__EXTENSION)
 			if os.path.exists(path):
 				out = os.popen(self.__CMDS[fil]).read().strip().split()
+				if out and fil == 'temp' and not self.__backend.is_metric(): out = self.__backend.calc_to_f(out)
 				if out:
 					os.system(self.__UPDATE_CMD.format(self.__tool, path, ":".join(out)))

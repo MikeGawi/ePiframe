@@ -6,6 +6,7 @@ from misc.connection import connection
 class telebotmanager:
 
 	__STATUS_OS_CMD = "/usr/bin/free --mega -t | /usr/bin/awk '{print (NR==1?\"Type\":\"\"), $1, $2, $3, (NR==1?\"\":$4)}' | column -t | /bin/sed 's/ \+/ /g' && /usr/bin/uptime | /bin/sed 's/ \+/ /g' | /bin/sed 's/^ //g' && vcgencmd measure_temp"
+	__STATUS_OS_CMD_F = "/usr/bin/free --mega -t | /usr/bin/awk '{print (NR==1?\"Type\":\"\"), $1, $2, $3, (NR==1?\"\":$4)}' | column -t | /bin/sed 's/ \+/ /g' && /usr/bin/uptime | /bin/sed 's/ \+/ /g' | /bin/sed 's/^ //g' && echo \"temp=\"$(awk \"BEGIN {print `vcgencmd measure_temp | egrep -o '[0-9]*\.[0-9]*'`*1.8+32}\")\"\'F\""
 		
 	def __init__ (self, backend):
 		self.__backend = backend
@@ -117,7 +118,7 @@ class telebotmanager:
 			self.__bot.send_message(chatId, '*{}*\n\n{}\n{}\n\n{}\n\n{}'.format(telebotcmd.HELLO_MSG, telebotcmd.COMMANDS_MSG, telebotcmd.DESCRIPTIONS, \
 																				telebotcmd.UPLOAD_MSG, telebotcmd.ALL))
 		elif cmd == telebotcmd.STATUS_CMD:
-			result = self.__backend.start_sys_cmd(self.__STATUS_OS_CMD)
+			result = self.__backend.start_sys_cmd(self.__STATUS_OS_CMD) if self.__backend.is_metric() else self.__backend.start_sys_cmd(self.__STATUS_OS_CMD_F)
 			if result: 
 				self.__bot.send_message(chatId, result)
 			else:

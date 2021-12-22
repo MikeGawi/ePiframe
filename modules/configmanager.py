@@ -45,6 +45,7 @@ class configmanager:
 		self.__SETTINGS = [
 			configprop('cred_file', self, prop_type=configprop.FILE_TYPE),
 			configprop('pickle_file', self, prop_type=configprop.FILE_TYPE),
+			configprop('units', self, possible=weathermanager.get_units()),
 			configprop('photo_convert_path', self, prop_type=configprop.FILE_TYPE),
 			configprop('log_files', self, notempty=False),
 			configprop('convert_bin_path', self, prop_type=configprop.FILE_TYPE),
@@ -77,7 +78,6 @@ class configmanager:
 			configprop('apikey', self, dependency='show_weather'),
 			configprop('lat', self, dependency='show_weather'),
 			configprop('lon', self, dependency='show_weather'),
-			configprop('units', self, dependency='show_weather', possible=weathermanager.get_units()),
 			configprop('position', self, dependency='show_weather', prop_type=configprop.INTEGER_TYPE, possible=weatherstampmanager.get_positions()),
 			configprop('font', self, dependency='show_weather', minvalue=8, prop_type=configprop.INTEGER_TYPE),
 			configprop('font_color', self, dependency='show_weather', possible=weatherstampmanager.get_colors()),
