@@ -56,11 +56,11 @@ Move to [next steps](#next-steps)
 
 * Install APTs:
 ```
-sudo apt-get install imagemagick webp ufraw-batch libatlas-base-dev wiringpi python3 python3-pip
+sudo apt-get install imagemagick webp dcraw libatlas-base-dev python3 python3-pip RPi.GPIO
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install -I 'requests>=2.26.0' python-dateutil 'configparser>=5.0.0' 'pandas' RPi.GPIO==0.7.0 spidev==3.5 'image>=1.5.33' pillow==8.4.0 pyTelegramBotAPI==4.1.1 'flask>=2.0.2' flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
+sudo -H pip3 install -I 'requests>=2.26.0' python-dateutil 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 image pillow==8.4.0 pyTelegramBotAPI==4.1.1 'flask>=2.0.2' flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
