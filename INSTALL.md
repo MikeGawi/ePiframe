@@ -29,14 +29,14 @@
 
 ## Installation
 
-* [Install Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) formerly known as Raspbian. Lite version is supported
-* [Setup network connection](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
-* [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) - chapter *3. Enable SSH on a headless Raspberry Pi (add file to SD card on another machine)*
+* [Install Raspberry Pi OS](https://www.raspberrypi.com/documentation/computers/getting-started.html) formerly known as Raspbian. Lite version is supported
+* [Setup network connection](https://www.raspberrypi.com/documentation/computers/configuration.html#setting-up-a-headless-raspberry-pi)
+* [Enable SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) - Note: *For headless setup...*
 * [Assemble Raspberry Pi and power it](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
-* [Find Raspberry Pi IP address](https://www.raspberrypi.org/documentation/remote-access/ip-address.md)
-* [Log in with SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) - chapter *4. Set up your client*
-* [Configure Raspberry Pi](https://www.raspberrypi.org/documentation/configuration/raspi-config.md)
-* [Update Raspberry Pi](https://www.raspberrypi.org/documentation/raspbian/updating.md)
+* [Find Raspberry Pi IP address](https://www.raspberrypi.com/documentation/computers/remote-access.html)
+* [Log in with SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#secure-shell-from-linux-or-mac-os)
+* [Configure Raspberry Pi](https://www.raspberrypi.com/documentation/computers/configuration.html)
+* [Update Raspberry Pi](https://www.raspberrypi.com/documentation/computers/os.html)
 
 ### Automatic
 

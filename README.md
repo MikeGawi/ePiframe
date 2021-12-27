@@ -41,7 +41,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 <a href="http://www.raspberrypi.org"><img width="100" align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/RPi-Logo.png"></a>
 
 * A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
-* [microSD card for Raspberry Pi OS](https://www.raspberrypi.org/documentation/installation/sd-cards.md), 4GB minimum
+* [microSD card for Raspberry Pi OS](https://www.raspberrypi.com/documentation/computers/getting-started.html#sd-cards), 4GB minimum
 * [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest as well but with small modifications)
 * Raspberry Pi power supply (as display is usually powered from RasPi HAT then 5V/3A is preferred)
 * Photo frame (for 7.5" screen I used 13x18cm /5"x7"/ with printed parts)
