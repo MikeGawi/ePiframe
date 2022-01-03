@@ -8,6 +8,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 
 * Pulls photos (videos are ignored) from one or more albums in Google Photos and automatically prepares them for attached e-Paper display
 * Non-HDMI e-Paper Waveshare SPI displays supported
+* Simple activation for Google Photos access from ePiframe device (with guide) or any other device with Python
 * No additional storage or 3rd party software is required as only one and current photo is downloaded and processed per frame update
 * Updating after time interval with option to change time per photo (by *hot word* in photo description)
 * Off hours per different days
@@ -40,7 +41,7 @@ Python 3 e-Paper Raspberry Pi Photo Frame with Google Photos, weather informatio
 
 <a href="http://www.raspberrypi.org"><img width="100" align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/RPi-Logo.png"></a>
 
-* A Raspberry Pi (Zero W, 1, 2 were tested but I am sure all will work)
+* A Raspberry Pi with standard GPIO 40 pins and WiFi. Models Zero W and Zero WH supported
 * [microSD card for Raspberry Pi OS](https://www.raspberrypi.com/documentation/computers/getting-started.html#sd-cards), 4GB minimum
 * [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest as well but with small modifications)
 * Raspberry Pi power supply (as display is usually powered from RasPi HAT then 5V/3A is preferred)
@@ -64,7 +65,7 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 
 ## Advantages
 
-* Low power consuming and cheap ($90) photo frame on Raspberry Pi Zero W pulling photos from Google Photos albums shared between users who can modify the content
+* Low power consuming and cheap ($90) photo frame on Raspberry Pi Zero W (or WH) pulling photos from Google Photos albums shared between users who can modify the content
 * Autonomic device, once configured can be left headless
 * e-Paper display gives an unique look and you don't need to worry about ambient light control, light sensors or turning off screen light functions (as with LCDs)
 * Photo is displayed even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
