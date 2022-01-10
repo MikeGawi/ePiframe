@@ -31,17 +31,17 @@
 		<div class="d-flex justify-content-center px-2 mt-4">
 			<div class="col-auto px-1">
 				<div class="row px-1 col-auto text-center"><strong>Original</strong></div>
-				<div class="row px-1 col-auto mx-auto border border-4 rounded-3" >
-					<a href="{{ url_for('get_image') }}?original=" target="_blank" data-bs-toggle="tooltip" title="Click to view original image" data-bs-placement="top" style="height: 120px; width: 210px;">
-						<img src="{{ url_for('get_image') }}?original=&thumb=" alt="No Photo!" width="200" height="120" class="original" style="margin-left:-7px"/>
+				<div class="row px-0 col-auto mx-auto border border-4 rounded-3" >
+					<a href="{{ url_for('get_image') }}?original=" target="_blank" data-bs-toggle="tooltip" class="px-0" title="Click to view original image" data-bs-placement="top" style="height: 120px; width: 200px;">
+						<img src="{{ url_for('get_image') }}?original=&thumb=" alt="No Photo!" width="200" height="120" class="original"/>
 					</a>																				  
 				</div>				
 			</div>
 			<div class="col-auto px-1 d-none d-md-block">
 				<div class="row px-1 col-auto text-center"><strong>Displayed</strong></div>
-				<div class="row px-1 col-auto mx-auto border border-4 rounded-3">
-					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 210px;">
-						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted" style="margin-left:-7px"/>
+				<div class="row px-0 col-auto mx-auto border border-4 rounded-3">
+					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" class="px-0" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 200px;">
+						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted"/>
 					</a>	
 				</div>	
 			</div>
@@ -49,9 +49,9 @@
 		<div class="d-flex justify-content-center px-2 mt-4 d-block d-md-none">
 			<div class="col-auto px-1">
 				<div class="row px-1 col-auto text-center"><strong>Displayed</strong></div>
-				<div class="row px-1 col-auto mx-auto border border-4 rounded-3">
-					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 210px;">
-						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted" style="margin-left:-7px"/>
+				<div class="row px-0 col-auto mx-auto border border-4 rounded-3">
+					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" class="px-0" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 200px;">
+						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted"/>
 					</a>	
 				</div>	
 			</div>
