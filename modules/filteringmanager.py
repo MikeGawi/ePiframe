@@ -8,6 +8,10 @@ class filteringmanager:
 	__DATE_MASK = '%Y-%m-%d %H:%M:%S'
 	__DATE_MASK_OLD = '%Y.%m.%d %H:%M:%S'
 	
+	__SORTING_VALUES = ['none', 'asc', 'desc']
+	
+	__ERROR_SVALUE_TEXT = 'Configuration sorting should be one of {}'
+	
 	@classmethod
 	def filter_by_from_date (self, photos, date:str, header:str):
 		startDateTime = datetime.strptime(date, self.__DATE_MASK)
@@ -30,12 +34,15 @@ class filteringmanager:
 		return ret
 	
 	@classmethod
-	def sort (self, photos, header:str, column, desc:bool):
+	def sort (self, photos, header:str, column, typ):
 		ret = photos
 		
-		if desc:
+		if not typ == self.__SORTING_VALUES[0]:
 			photos[header] = pd.to_datetime(column)
-			ret = photos.sort_values(by = header, ascending = False)
+			if typ == self.__SORTING_VALUES[-1]:
+				ret = photos.sort_values(by = header, ascending = False)
+			else:
+				ret = photos.sort_values(by = header, ascending = True)
 		
 		return ret
 	
@@ -61,3 +68,17 @@ class filteringmanager:
 		if date1 and date2:
 			if datetime.strptime(date1, self.__DATE_MASK) > datetime.strptime(date2, self.__DATE_MASK):
 				raise Exception('Configuration photos_from time is older than photos_to!')
+				
+	@classmethod		
+	def verify_sorting (self, val):
+		if not val in [k.lower() for k in self.__SORTING_VALUES]:
+			raise Exception(self.__ERROR_SVALUE_TEXT.format([k.lower() for k in self.__SORTING_VALUES]))
+			
+	@classmethod		
+	def get_sorting (self):
+		return [k.lower() for k in self.__SORTING_VALUES]
+	
+	#legacy
+	@classmethod		
+	def get_descending (self, val):
+		return self.__SORTING_VALUES[-1] if val else self.__SORTING_VALUES[0]

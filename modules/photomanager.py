@@ -5,7 +5,7 @@ class photomanager:
 	__album = pd.DataFrame()
 	__photos = pd.DataFrame()
 	
-	def set_photos (self, album, mediametadataheader:str, photoheader:str, mimeheader:str, mimetype:str):
+	def set_photos (self, album, mediametadataheader:str, photoheader:str, mimeheader:str, mimetype:str, sourcelabel:str, source:str):
 		self.__album = album
 		
 		#get media items				
@@ -23,6 +23,9 @@ class photomanager:
 		#get only photos
 		isimage = all[mimeheader].str.startswith(mimetype)
 		self.__photos = all[isimage].reset_index(drop = True)
+		
+		#set source
+		self.__photos[sourcelabel] = source
 		
 		return self.__photos
 	
@@ -46,3 +49,8 @@ class photomanager:
 	
 	def get_photo_by_index (self, photos, index:int):
 		return photos.iloc[index]
+	
+	def append_photos (self, toDF, fromDF):
+		if toDF is None: toDF = pd.DataFrame()		
+		merged = toDF.append([fromDF])
+		return self.reset_index(merged)

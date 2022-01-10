@@ -44,7 +44,7 @@ function install_apts {
 
 function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
-	declare -A pips=( ["Requests"]="requests" ["Pillow"]="pillow==8.4.0" ["Telebot"]="pyTelegramBotAPI==4.1.1" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
+	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="pyTelegramBotAPI==4.1.1" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
 				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
 				  ["SPI Libs"]="spidev==3.5" ["Image"]="image" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask>=2.0.2" ["Flask-WTF"]="flask-wtf==1.0.0" \
 				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
@@ -373,6 +373,7 @@ if [ "$1" = "--update" ]; then
 	sudo systemctl start ePiframe.service
 else
 	while true; do
+		echo -e '\n\e[1;37mePiframe can use configured local storage as the source for photos but can also pull them from Google Photos but that needs to be activated.`\033[0m'
 		read -p $'\n\e[1;37mDo You want to activate (if not already done) Google Photos token and credentials for Your ePiframe now? You can always start it later by running ./install.sh --activate command in the main path. [Y/n]\e[0m' -n 1 -r -e yn
 		case "${yn:-Y}" in
 			[Yy]* ) start_activate; break;;

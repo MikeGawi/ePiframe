@@ -5,6 +5,7 @@ from modules.weathermanager import weathermanager
 from modules.weatherstampmanager import weatherstampmanager
 from modules.telebotmanager import telebotmanager
 from modules.convertmanager import convertmanager
+from modules.localsourcemanager import localsourcemanager
 from misc.configprop import configprop
 from misc.connection import connection
 
@@ -43,9 +44,14 @@ class configmanager:
 					parse = str()
 				
 		self.__SETTINGS = [
-			configprop('cred_file', self, prop_type=configprop.FILE_TYPE),
-			configprop('pickle_file', self, prop_type=configprop.FILE_TYPE),
-			configprop('units', self, possible=weathermanager.get_units()),
+			configprop('use_google_photos', self, prop_type=configprop.BOOLEAN_TYPE),
+			configprop('cred_file', self, prop_type=configprop.FILE_TYPE, dependency='use_google_photos'),
+			configprop('pickle_file', self, prop_type=configprop.FILE_TYPE, dependency='use_google_photos'),
+			configprop('album_names', self, notempty=False, dependency='use_google_photos'),
+			configprop('use_local', self, prop_type=configprop.BOOLEAN_TYPE),
+			configprop('local_path', self, prop_type=configprop.FILE_TYPE, dependency='use_local', convert=localsourcemanager.create_dir),
+			configprop('local_subfolders', self, prop_type=configprop.BOOLEAN_TYPE, dependency='use_local'),
+			configprop('units', self, possible=weathermanager.get_units(), checkfunction=weathermanager.verify_units),
 			configprop('photo_convert_path', self, prop_type=configprop.FILE_TYPE),
 			configprop('log_files', self, notempty=False),
 			configprop('convert_bin_path', self, prop_type=configprop.FILE_TYPE),
@@ -67,20 +73,19 @@ class configmanager:
 			configprop('normalize', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('brightness', self, minvalue=-100, maxvalue=100, prop_type=configprop.INTEGER_TYPE),
 			configprop('contrast', self, minvalue=-100, maxvalue=100, prop_type=configprop.INTEGER_TYPE),
-			configprop('background_color', self, possible=convertmanager.get_background_colors()),
-			configprop('album_names', self, notempty=False),
+			configprop('background_color', self, possible=convertmanager.get_background_colors(), checkfunction=convertmanager.verify_background_color),
 			configprop('randomize', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('photos_from', self, notempty=False, convert=filteringmanager.convert, checkfunction=filteringmanager.verify, special=configprop.special(filteringmanager.verify_times, ['photos_from', 'photos_to'])),
 			configprop('photos_to', self, notempty=False, convert=filteringmanager.convert, checkfunction=filteringmanager.verify, special=configprop.special(filteringmanager.verify_times, ['photos_from', 'photos_to'])),
 			configprop('no_photos', self, minvalue=1, notempty=False, prop_type=configprop.INTEGER_TYPE),
-			configprop('sort_desc', self, prop_type=configprop.BOOLEAN_TYPE),
+			configprop('sorting', self, possible=filteringmanager.get_sorting(), checkfunction=filteringmanager.verify_sorting),
 			configprop('show_weather', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('apikey', self, dependency='show_weather'),
 			configprop('lat', self, dependency='show_weather'),
 			configprop('lon', self, dependency='show_weather'),
-			configprop('position', self, dependency='show_weather', prop_type=configprop.INTEGER_TYPE, possible=weatherstampmanager.get_positions()),
+			configprop('position', self, dependency='show_weather', prop_type=configprop.INTEGER_TYPE, possible=weatherstampmanager.get_positions(), checkfunction=weatherstampmanager.verify_position),
 			configprop('font', self, dependency='show_weather', minvalue=8, prop_type=configprop.INTEGER_TYPE),
-			configprop('font_color', self, dependency='show_weather', possible=weatherstampmanager.get_colors()),
+			configprop('font_color', self, dependency='show_weather', possible=weatherstampmanager.get_colors(), checkfunction=weatherstampmanager.verify_color),
 			configprop('use_telebot', self, prop_type=configprop.BOOLEAN_TYPE, resetneeded=True),
 			configprop('token', self, dependency='use_telebot', checkfunction=telebotmanager.check_token),
 			configprop('chat_id', self, notempty=False, dependency='use_telebot', delimiter=',', prop_type=configprop.INTLIST_TYPE),
@@ -107,14 +112,36 @@ class configmanager:
 		
 		with open(self.__path) as f:
 			self.config.read_file(f)
-			
+		
+		self.__CONFIG_STRING = {}
+		for sect in self.config.sections():
+			for prop in list(dict(self.config.items(sect)).keys()):
+				self.__CONFIG_STRING[prop] = sect
+		
+		#legacy exceptional backward handling for converting one property to another property under different name
+		#and the ones that misc.configprop.convert could not handle
+		#If there would be more like this, then that needs to be refactored into more generic way
+		try:
+			val = self.config.getint('Album settings', 'sort_desc')
+			newVal = filteringmanager.get_descending(bool(val))
+			if not self.config.has_section('Filtering'): self.config.add_section('Filtering')
+			self.config.set('Filtering', 'sorting', newVal)
+		except Exception:
+			pass
+		#end
+				
 		for sect in self.def_config.sections():
 			for prop in list(dict(self.def_config.items(sect)).keys()):
 				try:
+					if not self.config.has_section(sect): self.config.add_section(sect)
 					self.config.get(sect, prop)
 				except Exception:
-					if not self.config.has_section(sect): self.config.add_section(sect)
-					self.config.set(sect, prop, self.def_config.get(sect, prop))
+					val = str()
+					try: 
+						val = self.get(prop)
+					except Exception:
+						pass
+					self.config.set(sect, prop, val if val else self.def_config.get(sect, prop))
 					pass
 				
 		self.__CONFIG_STRING = {}

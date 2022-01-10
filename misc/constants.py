@@ -1,6 +1,8 @@
+import itertools
+
 class constants:
 
-	EPIFRAME_VERSION = 'v1.0.1'
+	EPIFRAME_VERSION = 'v1.1.0'
 	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
 	
 	#minimal needed python version
@@ -41,6 +43,9 @@ class constants:
 	GOOGLE_PHOTOS_ALBUMS_PHOTO_WIDTH_HEADER = 'width'
 	GOOGLE_PHOTOS_ALBUMS_PHOTO_GET_DETAILS = '=d'
 	
+	PHOTOS_SOURCE_LABEL = 'source'
+	GOOGLE_PHOTOS_SOURCE = 'Google Photos'
+	LOCAL_SOURCE = 'Local'
 	
 	CHECK_CONNECTION_TIMEOUT = 5
 	OK_STATUS_ERRORCODE = 200
@@ -58,7 +63,7 @@ class constants:
 	IMAGE_MIMETYPE_STARTING_STRING = 'image'
 	
 	#image mime type to extension dictionary
-	TYPE_TO_EXTENSION = {
+	EXTEN = {
 		'image/x-sony-arw' : 'arw',
 		'image/x-canon-cr2' : 'cr2',
 		'image/x-canon-crw' : 'crw',
@@ -79,39 +84,45 @@ class constants:
 		'image/x-dcraw' : 'cr2',
 		'image/raw' : 'raw',
 		#only the first frame of gif
-		'image/gif' : 'gif[0]',
+		'image/gif' : 'gif',
 		'image/webp' : 'webp',
-		'image/jpeg' : 'jpg',
+		'image/jpeg' : [ 'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp' ],
 		'image/png' : 'png',
-		'image/tiff' : 'tiff',
+		'image/tiff' : [ 'tiff', 'tif' ],
+		'image/vnd.microsoft.icon' : 'ico',
 		'image/ico' : 'ico',
 		'image/icon' : 'ico',
 		'image/x-icon' : 'ico',
-		'image/vnd.microsoft.icon' : 'ico',
-		'image/bmp' : 'bmp'}
+		'image/bmp' : 'bmp'
+	}
 	
-	EXTENSION_TO_TYPE = dict((v.replace('[0]',''),k) for k,v in TYPE_TO_EXTENSION.items())	
-	EXTENSIONS = [ x.replace('[0]','') for x in list(TYPE_TO_EXTENSION.values()) ]
+	MIME_START = 'image/'
+	GIF_EXTENSION = 'gif'
+	FIRST_FRAME_GIF = '[0]'
+	
+	TYPE_TO_EXTENSION = dict((k, v[0] if isinstance(v, list) else v) for k,v in EXTEN.items())
+	EXTENSION_TO_TYPE = dict([y for x in [itertools.product(v if isinstance(v, list) else [v],[k]) for k,v in EXTEN.items()] for y in x])
+	EXTENSIONS = sum ([ x if isinstance(x, list) else [x] for x in list(EXTEN.values()) ], [])
 	
 	NOMATCH_INDICATOR_STRING = 'no match'
 	
 	USERS_DB_FILE = "misc/users.db"
 	
-	DB_NULL =						'NULL'
-	DB_ALL =						'*'
-	DB_SQL_COL =					'sql'
-	DB_NAME_COL =					'name'
-	DB_SQLITE_MASTER_TAB =			'sqlite_master'	
-	USERS_TABLE_NAME = 				'users'
-	USERS_TABLE_ID_HEADER = 		'id'
-	USERS_TABLE_USERNAME_HEADER = 	'username'
-	USERS_TABLE_HASH_HEADER = 		'hash'
-	USERS_TABLE_API_HEADER = 		'api'
+	DB_NULL = 'NULL'
+	DB_ALL = '*'
+	DB_SQL_COL = 'sql'
+	DB_NAME_COL = 'name'
+	DB_SQLITE_MASTER_TAB = 'sqlite_master'	
+	USERS_TABLE_NAME = 'users'
+	USERS_TABLE_ID_HEADER = 'id'
+	USERS_TABLE_USERNAME_HEADER = 'username'
+	USERS_TABLE_HASH_HEADER = 'hash'
+	USERS_TABLE_API_HEADER = 'api'
 	
-	SALTS_TABLE_NAME = 				'salts'
-	SALTS_TABLE_ID_HEADER = 		'id'
-	SALTS_TABLE_USERID_HEADER = 	'userid'
-	SALTS_TABLE_SALT_HEADER = 		'salt'
+	SALTS_TABLE_NAME = 'salts'
+	SALTS_TABLE_ID_HEADER = 'id'
+	SALTS_TABLE_USERID_HEADER = 'userid'
+	SALTS_TABLE_SALT_HEADER = 'salt'
 	
 	USERS_ACTIONS_TAG = "--------Users management: "
 	

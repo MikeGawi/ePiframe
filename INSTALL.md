@@ -6,7 +6,10 @@
       * [Automatic](#automatic)
       * [Manual](#manual)
       * [Next steps](#next-steps)
-	  	* [Activate](#activate)
+	  	* [Local Source](#local-source)
+			* [Cloud sync](#cloud-sync)		
+			* [Other sources](#other-sources)		
+	  	* [Google Photos](#google-photos)
 			* [Activate from ePiframe device](#activate-from-epiframe-device)
 			* [Activate from other device](#activate-from-other-device)
       	* [Weather Stamp](#weather-stamp)
@@ -106,7 +109,7 @@ Move to [next steps](#next-steps)
 ## Next steps
 
 * Connect display to Raspberry Pi
-* [Activate](#activate) ePiframe token and credentials for using Google Photos API
+* [Activate](#activate) ePiframe token and credentials for using Google Photos API and/or use local source option
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
@@ -114,9 +117,30 @@ Move to [next steps](#next-steps)
 * Reboot ePiframe device to automatically run frame
 * Enjoy your ePiframe!
 
-## Activate
+## Local Source
 
-ePiframe needs to have credentials and access token to access Google Photos of Google accout in an unsupervised way. For this You need to activate Google Photos API for the account used by ePiframe and configure application in Google Cloud Console.
+ePiframe can pull photos from a local folder (or subfolders recursively) specified in the configuration. This option is good for offline devices and when folder is synced with external sources. 
+
+**_NOTE_** - Local Source can be the only one or one of the photo sources enabled along with other possible options.
+
+The script will check the configured location looking for images according to extensions (case insensitive). It will also collect the modification time used for photo sorting and filtering.
+
+### Cloud sync
+
+As proposed by [@spn91](https://github.com/spn91) the Local Source folder can be used to synchronize with nearly every cloud storage using external software [Rclone](https://rclone.org/)
+
+### Other sources
+
+It is possible to download photos to a local storage (and use them by ePiframe) from several image hosting sites using 3rd party software:
+
+* [gallery-dl](https://github.com/mikf/gallery-dl) - a command-line program to download image galleries and collections from DeviantArt, Flickr, Instagram, Pinterest and many more
+* [iCloud Photos Downloader](https://github.com/icloud-photos-downloader/icloud_photos_downloader) - a command-line tool to download all your iCloud photos
+
+## Google Photos
+
+ePiframe needs to have credentials and *access token* to access Google Photos of Google account in an unsupervised way when Google Photos source is enabled in the configuration. For this You need to activate Google Photos API for the account used by ePiframe and configure application in Google Cloud Console.
+
+**_NOTE_** - Google Photos can be the only one or one of the photo sources enabled along with other possible options.
 
 Usually You will be asked to do that after [automatic installation](#automatic) and there are two ways to do that: with the ePiframe Activation Tool website with visual guide or in the console but if not already done, here are the steps needed on Google Cloud Console:
 
@@ -320,6 +344,8 @@ Move to [next steps](#next-steps-1)
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
 **_NOTE_** - Interval multiplication option which can prolong the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) 😟
+
+**_NOTE_** - Interval multiplication is also possible for photos from local source. The comment (i.e. *hotword #*, where # is interval multiplicator value) can be added with ImageMagick tool by ```convert <photo_name> -set comment <comment> <photo_name>``` and checked with ```convert <photo_name> -format "%c" info:```
 
 ## Command line
 
