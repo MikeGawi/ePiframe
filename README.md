@@ -74,10 +74,8 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 * Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display. No matter what quality and what size they are
 * Supports all image formats including RAW
 * Currently displayed photo can be removed from the album but ePiframe will remember where to continue
-* Simple script in Python to automate frame update, everything is configurable (within one [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file) and in one place
 * System service supervising whole process that is auto recovering and auto starting by itself
 * Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it yourself)
-* Simple yet powerful
 
 ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the display before handing it and many more. 
 
@@ -88,22 +86,12 @@ Installation, configuration and API documentation can be found <font size="+2"><
 ## Future plans
 	
 ePiframe to-do list for 2022:
-* [HDMI e-paper screens](https://github.com/MikeGawi/ePiframe/issues/33) - check what is possible
+* [ ] [HDMI e-paper screens #33](https://github.com/MikeGawi/ePiframe/issues/33)
 
 Stay tuned!
 
 ## Resources
 	
 This project uses:
-* [Google Photos API](https://developers.google.com/photos/library/guides/overview)
-* [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper)
-* [Pandas Dataframe](https://pandas.pydata.org/)
-* [ImageMagick](https://imagemagick.org/)
-* [OpenWeather API](https://openweathermap.org/api)
-* [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI)
-* [Flask](https://flask.palletsprojects.com/), [WTForms](https://wtforms.readthedocs.io/), [FlaskWTF](https://flask-wtf.readthedocs.io/), [Flask-Login](https://flask-login.readthedocs.io/)
-* [Bootstrap](https://getbootstrap.com/)
-* [jQuery](https://jquery.com/)
-* [Dropzone.js](https://www.dropzone.dev/js/)
-* [SQLite](https://www.sqlite.org)
-* [RRDtool](https://oss.oetiker.ch/rrdtool/), [javascriptRRD](http://javascriptrrd.sourceforge.net/), [Flot](http://www.flotcharts.org/)
+
+[Google Photos API](https://developers.google.com/photos/library/guides/overview) :white_small_square: [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper) :white_small_square: [Pandas Dataframe](https://pandas.pydata.org/) :white_small_square: [ImageMagick](https://imagemagick.org/) :white_small_square: [OpenWeather API](https://openweathermap.org/api) :white_small_square: [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) :white_small_square: [Flask](https://flask.palletsprojects.com/) :white_small_square: [WTForms](https://wtforms.readthedocs.io/) :white_small_square: [FlaskWTF](https://flask-wtf.readthedocs.io/) :white_small_square: [Flask-Login](https://flask-login.readthedocs.io/) :white_small_square: [Bootstrap](https://getbootstrap.com/) :white_small_square: [jQuery](https://jquery.com/) :white_small_square: [Dropzone.js](https://www.dropzone.dev/js/) :white_small_square: [SQLite](https://www.sqlite.org) :white_small_square: [RRDtool](https://oss.oetiker.ch/rrdtool/) :white_small_square: [javascriptRRD](http://javascriptrrd.sourceforge.net/) :white_small_square: [Flot](http://www.flotcharts.org/)
