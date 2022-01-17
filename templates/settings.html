@@ -31,7 +31,7 @@
 				</div>
 				<div class="col-4 {{ field.render_kw['invalid'] }} {{ field.render_kw['fill'] }}"> {{ field }} </div>
 				<div class="col-auto ms-auto">
-					<button name='-<[{{ field.name }}]>-' class='btn-outline-secondary btn-sm btn {{ field.render_kw['classdep'] }}' {{ field.render_kw['disabled'] }}>Reset</button>
+					<button name='-<[{{ field.name }}]>-' class="btn-outline-secondary btn-sm btn {{ field.render_kw['classdep'] }}" depval="{{ field.render_kw['depval'] }}" {{ field.render_kw['disabled'] }}>Reset</button>
 				</div>
 			{% if field.errors %}
 				<div class="offset-md-2 invalid-feedback"> {{ field.errors }} </div>
@@ -102,12 +102,18 @@
 			$('[data-bs-toggle=tooltip]').tooltip();
 		});
 		
-		$('.checkbox').change(function(e) {
+		$('.checkbox').change(function() {
 		  if (!$(this).is(':checked')) {
 			$('.'+this.getAttribute('name')).attr('disabled', '');
 		  } else {
 			$('.'+this.getAttribute('name')).removeAttr('disabled');
 		  }
+		});
+		
+		$('.form-select').change(function() {
+		  var selectedOption = $(this).children("option:selected").text();
+		  $('.'+this.getAttribute('name')+'[depval="'+selectedOption+'"]').removeAttr('disabled');
+		  $('.'+this.getAttribute('name')+'[depval!="'+selectedOption+'"]').attr('disabled', '');
 		});
 	</script>
 {% endblock %}

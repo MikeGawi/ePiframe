@@ -3,6 +3,7 @@
 ; Run the main script with flag --check-config to verify configuration
 
 [Sources]
+
 # Set 1 to get photos from Google Photos. 
 ; The rest of the values in this section regarding GP should be filled as well when enabled.
 # ACTIVATION IS NEEDED! Check documentation. 
@@ -37,6 +38,7 @@ local_path=photos
 local_subfolders=1
 
 [General]
+
 # Temperature units.
 # One of the values: metric or imperial
 # Default: metric
@@ -77,6 +79,10 @@ convert_bin_path=/usr/bin/convert
 # Default: /usr/bin/rrdtool
 rrdtool_bin_path=/usr/bin/rrdtool
 
+# Path and name of the FBI imageviewer binary. 
+# Default: /usr/bin/fbi
+fbi_bin_path=/usr/bin/fbi
+
 # Path and name of the index file holding current photo markups. 
 # Default: index
 photo_index_file=index
@@ -94,6 +100,14 @@ pid_file=pid
 interval_mult_file=time
 
 [Display]
+
+# Type of the display connected: SPI or HDMI/Composite. 
+# It's affecting other options specific for the display type. 
+# Possible values: SPI, HDMI. 
+# Default: SPI
+display_type=SPI
+
+# Used for e-Paper SPI displays! 
 ; The Waveshare display scripts are
 ; available here: https://github.com/waveshare/e-Paper
 ; Just download one for your display, test it and add to
@@ -103,6 +117,12 @@ interval_mult_file=time
 # Name of the display class from Waveshare python codes. 
 # Default: epd7in5_V2
 display=epd7in5_V2
+
+# Number of terminal (virtual console) used for HDMI/Composite display. 
+# This option wrongly set may hang or corrupt terminals. 
+# The default set will work on X and non-X environments. 
+# Default: 1
+tty=1
 
 # Photo frame refresh slide interval in seconds. 
 ; Waveshare producer says it's best to wait min 180s between
@@ -168,6 +188,8 @@ stop_times=23:30,23:30,23:30,23:30,23:30,23:30,23:30
 allow_triggers=1
 
 [Image]
+
+# Used for e-Paper SPI displays! 
 # There are 6 standard types of conversion to black&white image (add more in 
 # convertmanager module). Every option gives slightly different 
 # results and you can pick the one best for your display. Types are: 
@@ -186,6 +208,16 @@ image_width=800
 
 # Height of the display. Default: 480 for the Waveshare 7.5inch paper display 800x480 V2
 image_height=480
+
+# Convert photo to grayscale, used for HDMI/Composite displays. 
+# 1 for grayscale photo. Default: 0 (colorful)
+grayscale=0
+
+# Colors number limit used for HDMI/Composite displays with limited palette. 
+# Empty for no change and > 0 for specifying colors number. 
+# Can be combined with grayscale option. 
+# Default: empty
+colors_num=
 
 # Invert colors - white will be black and black will be white. 
 ; It can look intresting in frames with dark passe-partout frame. 
@@ -232,6 +264,7 @@ brightness=0
 contrast=10
 
 [Filtering]
+
 # Show random photos. 
 ; Photos will be showed randomly once per
 ; whole collection turn, list will be updated on every run.
@@ -266,6 +299,7 @@ no_photos=
 sorting=none
 
 [Weather]
+
 # Set 1 to show weather (icon and temperature) on the displayed photo. 
 ; The rest of the values in this section should be filled as well when enabled.
 # Default: 0 (do not show)
@@ -308,6 +342,7 @@ font=20
 font_color=white
 
 [Telegram bot]
+
 ; Please restart service after changing any of values in this section
 ; as bot thread is persistant per token and to not intefere threads
 ; it's better to re-run it
@@ -331,6 +366,7 @@ token=
 chat_id=
 
 [Web interface]
+
 ; Please restart service after changing any of values in this section
 ; as webUI thread is persistant per port and host and to not intefere threads
 ; it's better to re-run it

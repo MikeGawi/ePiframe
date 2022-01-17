@@ -81,4 +81,4 @@ class filteringmanager:
 	#legacy
 	@classmethod		
 	def get_descending (self, val):
-		return self.__SORTING_VALUES[-1] if val else self.__SORTING_VALUES[0]
+		return self.__SORTING_VALUES[-1] if bool(int(val)) else self.__SORTING_VALUES[0]

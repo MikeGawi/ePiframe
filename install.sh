@@ -27,7 +27,7 @@ echo -e '
 function install_apts {
 	echo -e '\n\033[0;30mInstalling system components\033[0m'
 	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="dcraw" ["RPi.GPIO"]="RPi.GPIO" ["RRDTool"]="rrdtool"\
-				  ["LibAtlas"]="libatlas-base-dev" ["Python 3"]="python3" ["Pip 3"]="python3-pip")
+				  ["LibAtlas"]="libatlas-base-dev" ["Python 3"]="python3" ["Pip 3"]="python3-pip" ["FBImageviewer"]="fbi")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"
 		out=`sudo apt-get install -y -qq ${apts[$apt]} 2>&1 > /dev/null`
@@ -44,13 +44,13 @@ function install_apts {
 
 function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
-	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="--upgrade pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
+	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="pyTelegramBotAPI==4.1.1" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
 				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
 				  ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask>=2.0.2" ["Flask-WTF"]="flask-wtf==1.0.0" \
 				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
-		if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Telebot" ]; then 
+		if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ]; then 
 			out=`sudo -H pip3 -q install -I ${pips[$pip]} 2>&1 > /dev/null`
 		else 
 			out=`sudo -H pip3 -q install -I "${pips[$pip]}" 2>&1 > /dev/null`
@@ -60,7 +60,7 @@ function install_pips {
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
 			echo -e '\033[0;31merror!\033[0m'
-			if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Telebot" ]; then 
+			if [ "$pip" == "Google components" ]; then 
 				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I '${pips[$pip]}' manually and run the script again\033[0m"
 			else			
 				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I ${pips[$pip]} manually and run the script again\033[0m"

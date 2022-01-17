@@ -25,6 +25,7 @@
       * [Manual](#manual-1)
       * [Next steps](#next-steps-1)
    * [Configuration](#configuration)
+      * [Display](#display)   
    * [Command line](#command-line)
    * [Debugging](#debugging)
    * [Service control](#service-control)
@@ -346,6 +347,18 @@ Move to [next steps](#next-steps-1)
 **_NOTE_** - Interval multiplication option which can prolong the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inacessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) 😟
 
 **_NOTE_** - Interval multiplication is also possible for photos from local source. The comment (i.e. *hotword #*, where # is interval multiplicator value) can be added with ImageMagick tool by ```convert <photo_name> -set comment <comment> <photo_name>``` and checked with ```convert <photo_name> -format "%c" info:```
+
+### Display
+
+Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays but now it supports any HDMI (there are also e-Paper HDMI displays) or Composite screens. [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) is used for that and it works with Desktop or CLI (console) OS versions. 
+
+To configure:
+* Enable HDMI in configuration and set screen width and height
+* Set up if photo should be converted to grayscale and/or limit the color pallete with colors number setting
+* Check manually if the image appears with ```sudo fbi -vt <virtual terminal> -a <photo name>``` (Escape leaves imageviewer), where _virtual terminal_ is the number >= 0 (1 by default) that represents the terminal to be used. Usually the default setting should work but on some OS other values should be checked.  
+* Set up TTY option in configuration to the working virtual terminal number
+* Test ePiframe from SSH with ```sudo ./ePiframe.py```
+* If all good then ePiframe service will work now with the display
 
 ## Command line
 

@@ -32,6 +32,7 @@ class webuimanager:
 	__HTML_FILL = 'fill'
 	__HTML_FLEX_FILL = 'flex-fill'
 	__HTML_CLASSDEP = 'classdep'
+	__HTML_CLASSDEPVAL = 'depval'
 	__HTML_PAD = 'pad'
 	__HTML_FORM = ' form-control form-control-sm'
 	__HTML_SELECT = ' form-select form-select-sm'
@@ -307,13 +308,13 @@ class webuimanager:
 		for n in props:
 			prop = self.config().get_property(n)
 			render = {}
-			render[self.__HTML_CLASS] = self.__HTML_FORM
+			render[self.__HTML_CLASS] = (str(prop.get_dependency()) if prop.get_dependency() else '') + self.__HTML_FORM
 			render[self.__HTML_FILL] = self.__HTML_FLEX_FILL
 			if prop.get_dependency():
-				render[self.__HTML_CLASS] = (str(prop.get_dependency()) if prop.get_dependency() else '') + self.__HTML_FORM
 				render[self.__HTML_PAD] = self.__HTML_PX3		
 				render[self.__HTML_CLASSDEP] = prop.get_dependency()
-				if not bool(self.config().getint(prop.get_dependency())):
+				render[self.__HTML_CLASSDEPVAL] = prop.get_dependency_value()
+				if (not prop.get_dependency_value() and not bool(self.config().getint(prop.get_dependency()))) or (prop.get_dependency_value() and not self.config().get(prop.get_dependency()) == prop.get_dependency_value()):
 					render[self.__HTML_DISABLED] = self.__HTML_DISABLED
 
 			if prop.get_type() == configprop.STRING_TYPE or prop.get_type() == configprop.INTEGER_TYPE:

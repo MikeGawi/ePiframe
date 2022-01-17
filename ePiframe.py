@@ -85,7 +85,7 @@ else:
 		usersman.manage(logging)
 		exit()
 
-	if not '--test' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv]:
+	if not '--test' in [x.lower() for x in sys.argv] and not '--test-convert' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv] and not displaymanager.is_hdmi(config.get('display_type')):
 		try:
 			if not config.check_system():
 				raise Exception("SPI is disabled on system!")
@@ -374,7 +374,7 @@ else:
 					logging.log ("Processing the photo...")
 
 					#convert image
-					if convertmanager().convert_image(origwidth, origheight, filename + constants.FIRST_FRAME_GIF, targetFilename, config)  != None:
+					if convertmanager().convert_image(origwidth, origheight, filename + constants.FIRST_FRAME_GIF, targetFilename, config, displaymanager.is_hdmi(config.get('display_type'))) != None:
 						logging.log ("Fail! {}".format(str(err)))
 					else:
 						logging.log ("Success!")
@@ -402,7 +402,7 @@ else:
 						if not '--test' in [x.lower() for x in sys.argv] and not '--no-skip' in [x.lower() for x in sys.argv]:
 							logging.log ("Sending to display...")
 
-							displayman = displaymanager(config.get('display'))
+							displayman = displaymanager(config.get('display'), config.get('display_type'), config.get('fbi_bin_path'), config.get('tty'))
 
 							try:
 								displayman.show_image(targetFilename)
@@ -434,7 +434,7 @@ else:
 			logging.log ("Fail! {}".format(str(err)))
 		else:
 			logging.log ("Processing the photo...")
-			if convertman.convert_image(width, height, filename + constants.FIRST_FRAME_GIF, targetFilename, config)  != None:
+			if convertman.convert_image(width, height, filename + constants.FIRST_FRAME_GIF, targetFilename, config, displaymanager.is_hdmi(config.get('display_type'))) != None:
 				logging.log ("Fail! {}".format(str(err)))
 			else:
 				logging.log ("Success!")
@@ -471,7 +471,7 @@ else:
 			raise Exception("No file: {}!".format(targetFilename))
 			
 		logging.log ("Sending to display...")
-		displayman = displaymanager(config.get('display'))
+		displayman = displaymanager(config.get('display'), config.get('display_type'), config.get('fbi_bin_path'), config.get('tty'))
 
 		try:
 			displayman.show_image(targetFilename)

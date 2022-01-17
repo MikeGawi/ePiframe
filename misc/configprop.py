@@ -72,7 +72,10 @@ class configprop:
 		return self.__type
 	
 	def get_dependency(self):
-		return self.__dependency
+		return self.__dependency if not isinstance(self.__dependency, list) else self.__dependency[0]
+	
+	def get_dependency_value(self):
+		return str() if not isinstance(self.__dependency, list) else self.__dependency[1]
 	
 	def get_resetneeded(self):
 		return self.__resetneeded
@@ -94,9 +97,8 @@ class configprop:
 			self.__configmanager.set(self.__name, self.__convert(self.__configmanager.get(self.__name)))
 	
 	def validate(self):
-		
-		if self.__dependency and bool(self.__configmanager.getint(self.__dependency)) or not self.__dependency:
-	
+		if (self.__dependency and not isinstance(self.__dependency, list) and bool(self.__configmanager.getint(self.__dependency))) or \
+			(self.__dependency and isinstance(self.__dependency, list) and self.__configmanager.get(self.__dependency[0]) == self.__dependency[1]) or not self.__dependency:
 			if self.__notempty and not self.__configmanager.get(self.__name): raise Exception(self.STRING_ERROR_MSG.format(self.__name))
 			
 			if self.__configmanager.get(self.__name):
@@ -108,11 +110,11 @@ class configprop:
 					except Exception:
 						raise Exception(self.INT_ERROR_MSG.format(self.__name))
 
-					if self.__minvalue:
+					if not self.__minvalue == None:
 						if self.__configmanager.getint(self.__name) < self.__minvalue:
 							raise Exception(self.MIN_ERROR_MSG.format(self.__name, self.__minvalue))
 
-					if self.__maxvalue:
+					if not self.__maxvalue == None:
 						if self.__configmanager.getint(self.__name) > self.__maxvalue:
 							raise Exception(self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue))
 				elif self.__type == self.BOOLEAN_TYPE:

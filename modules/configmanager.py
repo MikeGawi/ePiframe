@@ -6,6 +6,7 @@ from modules.weatherstampmanager import weatherstampmanager
 from modules.telebotmanager import telebotmanager
 from modules.convertmanager import convertmanager
 from modules.localsourcemanager import localsourcemanager
+from modules.displaymanager import displaymanager
 from misc.configprop import configprop
 from misc.connection import connection
 
@@ -56,6 +57,10 @@ class configmanager:
 			configprop('log_files', self, notempty=False),
 			configprop('convert_bin_path', self, prop_type=configprop.FILE_TYPE),
 			configprop('rrdtool_bin_path', self, prop_type=configprop.FILE_TYPE),
+			configprop('fbi_bin_path', self, prop_type=configprop.FILE_TYPE),
+			configprop('display_type', self, possible=displaymanager.get_displays(), checkfunction=displaymanager.verify_display),
+			configprop('display', self, dependency=['display_type', displaymanager.get_spi()]),
+			configprop('tty', self, minvalue=0, prop_type=configprop.INTEGER_TYPE, dependency=['display_type', displaymanager.get_hdmi()]),			
 			configprop('slide_interval', self, minvalue=180, prop_type=configprop.INTEGER_TYPE),
 			configprop('interval_mult', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('interval_mult_hotword', self, dependency='interval_mult'),
@@ -63,10 +68,12 @@ class configmanager:
 			configprop('start_times', self, delimiter=',', prop_type=configprop.STRINGLIST_TYPE, length=7, special=configprop.special(timermanager.verify, ['start_times', 'stop_times'])),
 			configprop('stop_times', self, delimiter=',', prop_type=configprop.STRINGLIST_TYPE, length=7, special=configprop.special(timermanager.verify, ['start_times', 'stop_times'])),
 			configprop('allow_triggers', self, prop_type=configprop.BOOLEAN_TYPE),
-			configprop('convert_option', self, prop_type=configprop.INTEGER_TYPE, possible=convertmanager.get_convert_options()),
+			configprop('convert_option', self, prop_type=configprop.INTEGER_TYPE, possible=convertmanager.get_convert_options(), dependency=['display_type', displaymanager.get_spi()]),
 			configprop('image_width', self, minvalue=1, prop_type=configprop.INTEGER_TYPE),
 			configprop('image_height', self, minvalue=1, prop_type=configprop.INTEGER_TYPE),
 			configprop('invert_colors', self, prop_type=configprop.BOOLEAN_TYPE),
+			configprop('grayscale', self, prop_type=configprop.BOOLEAN_TYPE, dependency=['display_type', displaymanager.get_hdmi()]),
+			configprop('colors_num', self, minvalue=1, notempty=False, prop_type=configprop.INTEGER_TYPE, dependency=['display_type', displaymanager.get_hdmi()]),
 			configprop('horizontal', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('auto_gamma', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('auto_level', self, prop_type=configprop.BOOLEAN_TYPE),
@@ -120,14 +127,17 @@ class configmanager:
 		
 		#legacy exceptional backward handling for converting one property to another property under different name
 		#and the ones that misc.configprop.convert could not handle
-		#If there would be more like this, then that needs to be refactored into more generic way
-		try:
-			val = self.config.getint('Album settings', 'sort_desc')
-			newVal = filteringmanager.get_descending(bool(val))
-			if not self.config.has_section('Filtering'): self.config.add_section('Filtering')
-			self.config.set('Filtering', 'sorting', newVal)
-		except Exception:
-			pass
+		legacy = [
+			type("", (), {"old" : ['Album settings', 'sort_desc'], "new" : ['Filtering', 'sorting'], "convert" : filteringmanager.get_descending})
+		]
+		
+		for sett in legacy:
+			try:
+				if not self.config.has_section(sett.new[0]): self.config.add_section(sett.new[0])
+				val = self.config.get(sett.old[0], sett.old[1])
+				self.config.set(sett.new[0], sett.new[1], sett.convert(val))
+			except Exception:
+				pass
 		#end
 				
 		for sect in self.def_config.sections():
