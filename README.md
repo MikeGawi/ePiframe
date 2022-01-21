@@ -31,7 +31,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 * **Local source** - (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
 * **HDMI screens support** - ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
-* **WebUI Dark Theme** - (optional) dark mode for Web User Interface[#43](https://github.com/MikeGawi/ePiframe/issues/43)
+* **WebUI Dark Theme** - (optional) dark mode for Web User Interface [#43](https://github.com/MikeGawi/ePiframe/issues/43)
 
 ## Hardware required
 
