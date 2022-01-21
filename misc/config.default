@@ -394,3 +394,7 @@ web_port=80
 # but disable if worried. 
 # Default: 1 (enabled)
 show_stats=1
+
+# Set 1 to load UI dark theme. 
+# Default: 0 (disabled = light theme)
+dark_theme=0

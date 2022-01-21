@@ -99,7 +99,8 @@ class configmanager:
 			configprop('use_web', self, prop_type=configprop.BOOLEAN_TYPE, resetneeded=True),
 			configprop('web_host', self, dependency='use_web', checkfunction=connection.is_ip),
 			configprop('web_port', self, minvalue=1, maxvalue=65535, dependency='use_web', prop_type=configprop.INTEGER_TYPE),
-			configprop('show_stats', self, dependency='use_web', prop_type=configprop.BOOLEAN_TYPE)
+			configprop('show_stats', self, dependency='use_web', prop_type=configprop.BOOLEAN_TYPE),
+			configprop('dark_theme', self, dependency='use_web', prop_type=configprop.BOOLEAN_TYPE)
 		]
 		
 		for p in self.__CONFIG_STRING.keys():
