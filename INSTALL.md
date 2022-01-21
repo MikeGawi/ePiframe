@@ -171,7 +171,7 @@ Now go to next steps for ePiframe activation.
 
 </details>
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actweb.png" width="200">
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/actweb.png" width="200">
 
 #### Activate from ePiframe device
 
@@ -183,7 +183,7 @@ You can choose if You want to activate on website with visual guide or in the co
 
 It is possible to activate the access to Google Photos API for ePiframe on any other device with Python 3.
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/actcon.png" width="200">	
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/actcon.png" width="200">	
 	
 You need to have these prerequisites installed:
 ```
@@ -198,7 +198,7 @@ Then:
 
 ### Weather Stamp
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/weather.gif" width="400">
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/weather.gif" width="400">
 
 ePiframe can show  weather stamp (icon + temperature) in defined frame corner, color and size. The weather information is taken from [OpenWeather](https://openweathermap.org/api) according to [Maps.ie](https://www.maps.ie/coordinates.html) coordinates. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
 
@@ -216,7 +216,7 @@ To get the needed values:
 
 ### Telegram Bot
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/tg.gif" width="200">
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/tg.gif" width="200">
 
 ePiframe can optionally be controlled by a Telegram Bot and expose some basic commands to control the frame. Implementation uses [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) and is a persistent thread running when ePiframe is online. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
 
@@ -249,7 +249,7 @@ To get the needed values:
 
 ### Web User Interface
 
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/web.gif" width="400">
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/web.gif" width="400">
 
 ePiframe can optionally be controlled by a web user interface under defined network port. Implementation uses [Flask](https://flask.palletsprojects.com/) and is a persistent thread running when ePiframe is online. You need to set up some values in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file.
 
