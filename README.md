@@ -29,9 +29,9 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 ### Newest features 🎉
 
-* **Photo improving** (optional) contrast and brightness, gamma correction, etc. [#25](https://github.com/MikeGawi/ePiframe/issues/25)
-* **Local source** (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
-* **HDMI screens support** ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
+* **Local source** - (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
+* **HDMI screens support** - ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
+* **WebUI Dark Theme** - (optional) dark mode for Web User Interface[#43](https://github.com/MikeGawi/ePiframe/issues/43)
 
 ## Hardware required
 
@@ -80,7 +80,7 @@ Installation, configuration and API documentation can be found <font size="+2"><
 ## Future plans
 	
 ePiframe to-do list for 2022:
-* [WebUI Dark Mode #43](https://github.com/MikeGawi/ePiframe/issues/43)
+* [Settings import/export](https://github.com/MikeGawi/ePiframe/issues/45)
 
 and more!
 
@@ -90,4 +90,4 @@ Stay tuned!
 	
 This project uses:
 
-[Google Photos API](https://developers.google.com/photos/library/guides/overview) :white_small_square: [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper) :white_small_square: [Pandas Dataframe](https://pandas.pydata.org/) :white_small_square: [ImageMagick](https://imagemagick.org/) :white_small_square: [OpenWeather API](https://openweathermap.org/api) :white_small_square: [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) :white_small_square: [Flask](https://flask.palletsprojects.com/) :white_small_square: [WTForms](https://wtforms.readthedocs.io/) :white_small_square: [FlaskWTF](https://flask-wtf.readthedocs.io/) :white_small_square: [Flask-Login](https://flask-login.readthedocs.io/) :white_small_square: [Bootstrap](https://getbootstrap.com/) :white_small_square: [jQuery](https://jquery.com/) :white_small_square: [Dropzone.js](https://www.dropzone.dev/js/) :white_small_square: [SQLite](https://www.sqlite.org) :white_small_square: [RRDtool](https://oss.oetiker.ch/rrdtool/) :white_small_square: [javascriptRRD](http://javascriptrrd.sourceforge.net/) :white_small_square: [Flot](http://www.flotcharts.org/) :white_small_square: [FBI framebuffer imageviewer](https://github.com/kraxel/fbida)
+[Google Photos API](https://developers.google.com/photos/library/guides/overview) :white_small_square: [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper) :white_small_square: [Pandas Dataframe](https://pandas.pydata.org/) :white_small_square: [ImageMagick](https://imagemagick.org/) :white_small_square: [OpenWeather API](https://openweathermap.org/api) :white_small_square: [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) :white_small_square: [Flask](https://flask.palletsprojects.com/) :white_small_square: [WTForms](https://wtforms.readthedocs.io/) :white_small_square: [FlaskWTF](https://flask-wtf.readthedocs.io/) :white_small_square: [Flask-Login](https://flask-login.readthedocs.io/) :white_small_square: [Bootstrap](https://getbootstrap.com/) :white_small_square: [bootstrap-dark-5](https://vinorodrigues.github.io/bootstrap-dark-5/) :white_small_square: [jQuery](https://jquery.com/) :white_small_square: [Dropzone.js](https://www.dropzone.dev/js/) :white_small_square: [SQLite](https://www.sqlite.org) :white_small_square: [RRDtool](https://oss.oetiker.ch/rrdtool/) :white_small_square: [javascriptRRD](http://javascriptrrd.sourceforge.net/) :white_small_square: [Flot](http://www.flotcharts.org/) :white_small_square: [FBI framebuffer imageviewer](https://github.com/kraxel/fbida)

@@ -4,8 +4,12 @@
     <meta charset="UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>	
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" crossorigin="anonymous"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}"/>
+    {% if dark_theme %}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-dark.min.css') }}" crossorigin="anonymous"/>
+	{% else %}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" crossorigin="anonymous"/>
+    {% endif %}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}"/>
 	{% block head %}
     <title>{% block title %}{% endblock %} - ePiframe</title>
     {% endblock %}

@@ -88,7 +88,7 @@ class webuimanager:
 		self.__login_manager.request_loader(self.load_user_from_request)									   
 	
 	def inject_context(self):
-		return dict(show_stats=bool(self.config().getint('show_stats')))
+		return dict(show_stats=bool(self.config().getint('show_stats')), dark_theme=bool(self.config().getint('dark_theme')))
 	
 	def start(self):
 		log = logging.getLogger('werkzeug')
