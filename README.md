@@ -1,4 +1,4 @@
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/logo.png">
+<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/logo.png">
 
 # ePiframe
 
@@ -24,7 +24,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 * Even for Raspberry Pi Zero W (wireless) and offline Raspberry Pi Zero (when using local source) + Raspberry Pi OS Lite
 
 <p align="center">
-	<img src ="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame.gif">
+	<img src ="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/frame.gif">
 </p>
 
 ### Newest features 🎉
@@ -35,7 +35,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 ## Hardware required
 
-<a href="http://www.raspberrypi.org"><img width="100" align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/assets/RPi-Logo.png"></a>
+<a href="http://www.raspberrypi.org"><img width="100" align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/RPi-Logo.png"></a>
 
 * A Raspberry Pi with standard GPIO 40 pins (for e-Paper HAT). Models Zero (offline - when using local source), Zero W and Zero WH supported
 * [microSD card for Raspberry Pi OS](https://www.raspberrypi.com/documentation/computers/getting-started.html#sd-cards), 4GB minimum
@@ -51,7 +51,7 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 
 <div align="center">
 
-|<img src="https://github.com/MikeGawi/ePiframe/blob/master/assets/frame1.jpg" width="500"/>| 
+|<img src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/frame1.jpg" width="500"/>| 
 |:--:| 
 |*Printed back (black) of 13x18cm (5"x7") frame for 7.5" screen with passe-partout (white)*|
 
