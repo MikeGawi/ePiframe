@@ -92,7 +92,7 @@ class service(daemon):
 					self.__webman.start()
 				except Exception as e:
 					self.__backend.log(self.__ERROR_WEB.format(e), silent=True)
-					raise
+					pass
 			
 			time.sleep(self.__WAIT_EVENT_TIME)
 	
@@ -106,7 +106,7 @@ class service(daemon):
 					self.__telebot.start()
 				except Exception as e:
 					self.__backend.log(self.__ERROR_TELE_BOT.format(e), silent=True)
-					raise
+					pass
 			
 			time.sleep(self.__WAIT_EVENT_TIME)
 	
