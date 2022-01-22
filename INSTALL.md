@@ -110,7 +110,7 @@ Move to [next steps](#next-steps)
 ## Next steps
 
 * Connect display to Raspberry Pi
-* [Activate](#activate) ePiframe token and credentials for using Google Photos API and/or use local source option
+* [Activate](#google-photos) ePiframe token and credentials for using Google Photos API and/or use local source option
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
