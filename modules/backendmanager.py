@@ -54,7 +54,7 @@ class backendmanager:
 	def __load_config (self):
 		try:
 			self.__config = confman.configmanager(os.path.join(self.__path, constants.CONFIG_FILE))
-			self.__lastdate = self.get_last_date(self.__path)			
+			self.__lastdate = self.get_last_date(constants.CONFIG_FILE)			
 		except Exception as e:
 			raise Exception(self.__ERROR_CONF_FILE.format(constants.CONFIG_FILE, e))
 	
@@ -62,9 +62,9 @@ class backendmanager:
 		self.__logging.log(text, silent)
 	
 	def refresh (self):
-		date = self.get_last_date(self.__path)
-		
-		if not date or not self.__lastdate or date != self.__lastdate:		
+		date = self.get_last_date(constants.CONFIG_FILE)
+
+		if not date or not self.__lastdate or date != self.__lastdate:
 			self.__load_config()
 			self.__interval = iterman.intervalmanager(self.__config.get('interval_mult_file'))
 			self.__timer = timerman.timermanager(self.__config.get('start_times').split(','), self.__config.get('stop_times').split(','))
