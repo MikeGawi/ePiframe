@@ -8,6 +8,8 @@ from modules.databasemanager import databasemanager
 from misc.configprop import configprop
 from misc.constants import constants
 from werkzeug.utils import secure_filename
+import modules.configmanager as confman 
+from tempfile import mkstemp
 import re, os, glob, logging, base64
 
 class webuimanager:
@@ -71,7 +73,9 @@ class webuimanager:
 		self.app.add_url_rule('/settings/<variable>', methods=['GET', 'POST'], view_func=self.setting)
 		self.app.add_url_rule('/logout', view_func=self.logout)
 		self.app.add_url_rule('/login', methods=['GET', 'POST'], view_func=self.login)
-		
+		self.app.add_url_rule('/export', view_func=self.export)
+		self.app.add_url_rule('/import', view_func=self.import_settings, methods=['POST'])		
+				
 		self.app.add_url_rule('/api/get_image', view_func=self.get_image)
 		self.app.add_url_rule('/api/get_status', view_func=self.get_status)
 		self.app.add_url_rule('/api/get_log', view_func=self.stream)
@@ -229,6 +233,35 @@ class webuimanager:
 		with open(self.config().get('log_files')) as f:
 				content = f.read()
 		return self.app.response_class(content, mimetype='text/plain')
+	
+	#@app.route('/export')
+	@login_required
+	def export(self):
+		return send_file(constants.CONFIG_FILE, as_attachment=True)
+	
+	#@app.route('/import', methods=['POST'])
+	@login_required
+	def import_settings(self):
+		if request.method == 'POST':
+			file = request.files[self.__FILE_TAG]
+			if file:
+				filename = secure_filename(file.filename)
+				status, temp = mkstemp(text=True)
+				file.save(temp)
+				
+				try:
+					temp_conf = confman.configmanager(temp)
+					temp_conf.verify()
+					temp_conf.save(constants.CONFIG_FILE)
+					self.__backend.refresh()
+					flash("File has been imported successfully!")
+				except Exception as e:
+					flash("Error importing settings file: {}".format(str(e)))
+					pass
+				finally:
+					if os.path.exists(temp):
+						os.remove(temp)
+		return redirect('/{}/{}'.format(self.__SETTINGS_HTML.replace(self.__HTML_IND, str()), self.__current))	
 
 	#@app.route('/', defaults={'url': ''})
 	#@app.route('/<url>', methods=['GET', 'POST'])

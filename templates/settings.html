@@ -2,6 +2,27 @@
 {% block title %}Settings{% endblock %}
 {% block head %}
   {{ super() }}
+	<style>
+		   .btn-file {
+				position: relative;
+				overflow: hidden;
+			}
+		
+			.btn-file input[type=file] {
+				position: absolute;
+				top: 0;
+				right: 0;
+				min-width: 100%;
+				min-height: 100%;
+				font-size: 100px;
+				text-align: right;
+				filter: alpha(opacity=0);
+				opacity: 0;
+				outline: none;   
+				cursor: inherit;
+				display: block;
+			}
+	</style>
 {% endblock %}
 {% block content %}
   	<nav class="navbar navbar-expand-sm navbar-dark bg-secondary">
@@ -19,37 +40,50 @@
 			</ul>
 	  	</div>
 	</nav>
-
-    <form method="POST" action="" id="setform" class="p-2">
-		{{ form.hidden_tag() }}
-		{% for field in form if field.widget.input_type != 'hidden' %}
-			<div class="row g-2 p-1 align-items-center"> 
-				<div class="col-2 {{ field.render_kw['pad'] }} small d-none d-md-block"><strong> {{ field.label }} </strong></div>
-				<div class="col-2 {{ field.render_kw['pad'] }} small d-block d-md-none" style="min-width:100px"><strong> {{ field.label }} </strong></div>
-				<div class="col-auto px-0">
-				  <a href="#" data-bs-toggle="tooltip" title="{{ field.description }}" data-bs-placement="top"><i class="bi bi-question-circle"></i></a>
+	
+	<div class="p-2">
+		<form method="POST" action="" id="setform">
+			{{ form.hidden_tag() }}
+			{% for field in form if field.widget.input_type != 'hidden' %}
+				<div class="row g-2 p-1 align-items-center"> 
+					<div class="col-2 {{ field.render_kw['pad'] }} small d-none d-md-block"><strong> {{ field.label }} </strong></div>
+					<div class="col-2 {{ field.render_kw['pad'] }} small d-block d-md-none" style="min-width:100px"><strong> {{ field.label }} </strong></div>
+					<div class="col-auto px-0">
+					  <a href="#" data-bs-toggle="tooltip" title="{{ field.description }}" data-bs-placement="top"><i class="bi bi-question-circle"></i></a>
+					</div>
+					<div class="col-4 {{ field.render_kw['invalid'] }} {{ field.render_kw['fill'] }}"> {{ field }} </div>
+					<div class="col-auto ms-auto">
+						<button name='-<[{{ field.name }}]>-' class="btn-outline-secondary btn-sm btn {{ field.render_kw['classdep'] }}" depval="{{ field.render_kw['depval'] }}" {{ field.render_kw['disabled'] }}>Reset</button>
+					</div>
+				{% if field.errors %}
+					<div class="offset-md-2 invalid-feedback"> {{ field.errors }} </div>
+				{% endif %}
 				</div>
-				<div class="col-4 {{ field.render_kw['invalid'] }} {{ field.render_kw['fill'] }}"> {{ field }} </div>
-				<div class="col-auto ms-auto">
-					<button name='-<[{{ field.name }}]>-' class="btn-outline-secondary btn-sm btn {{ field.render_kw['classdep'] }}" depval="{{ field.render_kw['depval'] }}" {{ field.render_kw['disabled'] }}>Reset</button>
+			{% endfor %}
+			{% if reset_needed%}
+				<div class="row g-2 p-1">
+					<div class="col-auto"><div class="text-left px-0 text-danger" style="font-size:12px"><strong>Service restart needed after changing these settings!</strong></div></div>
 				</div>
-			{% if field.errors %}
-				<div class="offset-md-2 invalid-feedback"> {{ field.errors }} </div>
 			{% endif %}
-			</div>
-		{% endfor %}
-		{% if reset_needed%}
-		    <div class="row g-2 p-1">
-				<div class="col-auto"><div class="text-left px-0 text-danger" style="font-size:12px"><strong>Service restart needed after changing these settings!</strong></div></div>
-			</div>
-		{% endif %}
+			<div class="row g-2 p-1">
+				<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>			
+				<div class="col-auto"><button class="btn btn-secondary" name='CANCEL' id='CANCEL' value='CANCEL'>Cancel</button></div>
+				<div class="col-auto flex-fill"></div>
+				<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset All To Defaults</button></div>
+			</div>		
+		</form>
 		<div class="row g-2 p-1">
-			<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>			
-			<div class="col-auto"><button class="btn btn-secondary" name='CANCEL' id='CANCEL' value='CANCEL'>Cancel</button></div>
-			<div class="col-4 flex-fill"></div>
-			<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset All To Defaults</button></div>
+			<div class="col-auto flex-fill"></div>
+			<div class="col-auto"><a href="{{ url_for('export') }}" target="_blank" download="config.cfg"><button class="btn btn-outline-secondary" type="button" id='EXPORT' name='EXPORT' value='EXPORT'>Export Settings</button></a></div>
+			<div class="col-auto">
+				<form action="{{ url_for('import_settings') }}" method="POST" enctype="multipart/form-data">
+					<button class="btn btn-outline-secondary btn-file form-control" type="button" id="IMPORT" name='IMPORT' value='IMPORT'>
+						<input type="file" onchange="this.form.submit();" name="file">Import Settings
+					</button>
+				</form>
+			</div>
 		</div>
-    </form>
+	</div>
 
 	{% with messages = get_flashed_messages() %}
 	  {% if messages %}
@@ -95,6 +129,14 @@
 				return true;
 			} else {
 				return false;		
+			}
+		});
+		
+		 $('#IMPORT').on('click', function () {
+			if (confirm('Are you sure you want to import settings file? Any unexisting properties in the uploaded file will be set to default values.')) {        
+				document.getElementById('file').click();
+			} else {
+				return false;
 			}
 		});
 		

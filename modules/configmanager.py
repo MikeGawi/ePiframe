@@ -188,7 +188,8 @@ class configmanager:
 	def set (self, name:str, val):
 		self.config.set(self.__CONFIG_STRING[name], name, val)
 		
-	def save (self):
+	def save (self, pathe=None):
+		path = self.__path if pathe == None else pathe
 		filestr =''
 		
 		iterator = itertools.cycle(self.__CONFIG_STRING.keys())
@@ -204,7 +205,7 @@ class configmanager:
 				else:
 					raise Exception(self.__ERROR_SAVE)
 		
-		with open(self.__path, self.__FILE_WRITE_FLAG) as f:
+		with open(path, self.__FILE_WRITE_FLAG) as f:
 			f.write(filestr)
 	
 	def get_default (self, name:str):
