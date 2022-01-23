@@ -80,9 +80,7 @@ Installation, configuration and API documentation can be found <font size="+2"><
 ## Future plans
 	
 ePiframe to-do list for 2022:
-* [Settings import/export](https://github.com/MikeGawi/ePiframe/issues/45)
-
-and more!
+* **A surprise feature, something big that will take some time to implement** - in progress
 
 Stay tuned!
 
