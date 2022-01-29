@@ -58,6 +58,7 @@ function install_pips {
 		
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
+			sleep 5
 		else
 			echo -e '\033[0;31merror!\033[0m'
 			if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Telebot" ]; then 
