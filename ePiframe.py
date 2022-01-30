@@ -325,7 +325,8 @@ else:
 						pass
 					
 				targetFilename = os.path.join(config.get('photo_convert_path'), config.get('photo_convert_filename'))
-				
+				for oldfile in glob.glob(os.path.join(config.get('photo_convert_path'), config.get('photo_download_name')) + '.*'): os.remove(oldfile)
+								
 				logging.log ("Getting next photo...")
 				if photo[constants.PHOTOS_SOURCE_LABEL] == constants.GOOGLE_PHOTOS_SOURCE:
 					filename = config.get('photo_download_name') + "." \
