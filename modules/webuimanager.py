@@ -53,9 +53,6 @@ class webuimanager:
 	__POWEROFF_ACT = 'poweroff'
 	__NEXT_ACT = 'next'
 	
-	__form = None
-	__current = None
-
 	def __init__ (self, backend):
 		self.__backend = backend
 		
@@ -261,7 +258,7 @@ class webuimanager:
 				finally:
 					if os.path.exists(temp):
 						os.remove(temp)
-		return redirect('/{}/{}'.format(self.__SETTINGS_HTML.replace(self.__HTML_IND, str()), self.__current))	
+		return redirect('/{}'.format(self.__SETTINGS_HTML.replace(self.__HTML_IND, str())))	
 
 	#@app.route('/', defaults={'url': ''})
 	#@app.route('/<url>', methods=['GET', 'POST'])
@@ -302,11 +299,11 @@ class webuimanager:
 			pass
 
 		if variable:
-			self.__current = variable
+			current = variable
 		else:
-			self.__current = self.config().get_sections()[0]
+			current = self.config().get_sections()[0]
 
-		props = self.config().get_section_properties(self.__current)	
+		props = self.config().get_section_properties(current)	
 
 		if request.method == 'POST':
 			for n in props:
@@ -336,7 +333,7 @@ class webuimanager:
 					self.config().set(n, str(self.config().get_default(n)))
 			elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
 				self.config().read_config()
-			return redirect('/{}/{}'.format(self.__SETTINGS_HTML.replace(self.__HTML_IND, str()), self.__current))		
+			return redirect(request.path)
 
 		for n in props:
 			prop = self.config().get_property(n)
@@ -370,9 +367,9 @@ class webuimanager:
 			elif prop.get_type() == configprop.INTLIST_TYPE:
 				setattr(MyForm, n, StringField(self.__adapt_name(n), default=self.config().get_default(n), render_kw=render, description=self.config().get_comment(n)))		
 
-		self.__form = MyForm(data = [(name, self.config().get(name)) for name in props if self.config().get_property(name).get_type() != configprop.BOOLEAN_TYPE])
+		form = MyForm(data = [(name, self.config().get(name)) for name in props if self.config().get_property(name).get_type() != configprop.BOOLEAN_TYPE])
 		for i in [prop for prop in props if self.config().get_property(prop).get_type() == configprop.BOOLEAN_TYPE]:
-			getattr(self.__form, i).data = self.config().getint(i)
+			getattr(form, i).data = self.config().getint(i)
 		
 		reset_needed = False
 		for i in props:
@@ -380,13 +377,13 @@ class webuimanager:
 				reset_needed = True
 			try:
 				self.config().validate(i)
-				getattr(self.__form, i).errors = ()
+				getattr(form, i).errors = ()
 			except Warning:
-				getattr(self.__form, i).errors = ()
+				getattr(form, i).errors = ()
 				pass
 			except Exception as e:
-				getattr(self.__form, i).errors = (e)
-				getattr(self.__form, i).render_kw[self.__HTML_CLASS] += self.__HTML_IS_INVALID
-				getattr(self.__form, i).render_kw[self.__HTML_INVALID] = self.__HTML_IS_INVALID
+				getattr(form, i).errors = (e)
+				getattr(form, i).render_kw[self.__HTML_CLASS] += self.__HTML_IS_INVALID
+				getattr(form, i).render_kw[self.__HTML_INVALID] = self.__HTML_IS_INVALID
 
-		return render_template(self.__SETTINGS_HTML, form=self.__form, navlabels=self.config().get_sections(), reset_needed=reset_needed, version=constants.EPIFRAME_VERSION)	
+		return render_template(self.__SETTINGS_HTML, form=form, navlabels=self.config().get_sections(), reset_needed=reset_needed, version=constants.EPIFRAME_VERSION)	
