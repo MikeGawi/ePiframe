@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 import math
 from modules.weathermanager import weathermanager
 
@@ -73,7 +73,7 @@ class weatherstampmanager:
 		return [k.lower() for k in self.__COLORS.keys()]
 
 	def compose(self, temp, units, icon):
-		image = Image.open(self.__outputfile).convert('1')
+		image = Image.open(self.__outputfile)
 		
 		if not self.__horizontal: image = image.transpose(Image.ROTATE_90) 
 		
@@ -100,8 +100,11 @@ class weatherstampmanager:
 		fillcolor = self.__COLORS[self.__color.upper()]
 		strokecolor = (self.__COLORS['WHITE'] + self.__COLORS['BLACK']) - fillcolor
 		
-		draw.text((x, y), textw, font = wfont, fill = fillcolor, stroke_width=2, stroke_fill=strokecolor)
-		draw.text((x + sizew + self.__SPACE, y), textt, font = fontt, fill = fillcolor, stroke_width=2, stroke_fill=strokecolor)
+		stroke = ImageColor.getcolor({value:key for key, value in self.__COLORS.items()}[strokecolor], image.mode)
+		fill = ImageColor.getcolor(self.__color, image.mode)
+		
+		draw.text((x, y), textw, font = wfont, fill = fill, stroke_width=2, stroke_fill=stroke)
+		draw.text((x + sizew + self.__SPACE, y), textt, font = fontt, fill = fill, stroke_width=2, stroke_fill=stroke)
 		
 		if not self.__horizontal: image = image.transpose(Image.ROTATE_270) 
 		image.save(self.__outputfile)
