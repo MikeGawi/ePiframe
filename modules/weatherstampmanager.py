@@ -76,7 +76,7 @@ class weatherstampmanager:
 		image = Image.open(self.__outputfile)
 		
 		if not self.__horizontal: image = image.transpose(Image.ROTATE_90) 
-		
+		width, height = image.size
 		draw = ImageDraw.Draw(image)
 
 		fontt = ImageFont.truetype(self.__FONTS['NORMAL_FONT'], self.__font)
@@ -92,10 +92,10 @@ class weatherstampmanager:
 		y = self.__MARGIN
 		
 		if self.__position in [1, 3]:
-			x = self.__width - sizew - self.__SPACE - sizet - self.__MARGIN
+			x = width - sizew - self.__SPACE - sizet - self.__MARGIN
 			
 		if self.__position in [2, 3]:
-			y = self.__height - self.__MARGIN - self.__font
+			y = height - self.__MARGIN - self.__font
 
 		fillcolor = self.__COLORS[self.__color.upper()]
 		strokecolor = (self.__COLORS['WHITE'] + self.__COLORS['BLACK']) - fillcolor
