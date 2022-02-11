@@ -343,7 +343,7 @@ class webuimanager:
 			if prop.get_dependency():
 				render[self.__HTML_PAD] = self.__HTML_PX3		
 				render[self.__HTML_CLASSDEP] = prop.get_dependency()
-				render[self.__HTML_CLASSDEPVAL] = prop.get_dependency_value()
+				render[self.__HTML_CLASSDEPVAL] = prop.get_dependency_value() if prop.get_dependency_value() else '1'
 				if (not prop.get_dependency_value() and not bool(self.config().getint(prop.get_dependency()))) or (prop.get_dependency_value() and not self.config().get(prop.get_dependency()) == prop.get_dependency_value()):
 					render[self.__HTML_DISABLED] = self.__HTML_DISABLED
 

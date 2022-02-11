@@ -391,7 +391,7 @@ else:
 								logging.log ("Putting weather stamp...")
 								weatherstampman = weatherstampmanager(targetFilename, config.getint('image_width'), config.getint('image_height'),\
 																	  bool(config.getint('horizontal')), config.getint('font'),\
-																	  config.get('font_color'), config.getint('position'))
+																	  config.get('font_color'), config.getint('position'), config.getint('rotation'))
 								weatherstampman.compose(weatherman.get_temperature(constants.WEATHER_TEMP_MAINTAG, constants.WEATHER_TEMP_TAG),\
 														config.get('units'), weatherman.get_weathericon(constants.WEATHER_ICON_MAINTAG,\
 																										constants.WEATHER_ICON_POSITION,\
@@ -451,7 +451,7 @@ else:
 						logging.log ("Putting weather stamp...")
 						weatherstampman = weatherstampmanager(targetFilename, config.getint('image_width'), config.getint('image_height'),\
 															  bool(config.getint('horizontal')), config.getint('font'),\
-															  config.get('font_color'), config.getint('position'))
+															  config.get('font_color'), config.getint('position'), config.getint('rotation'))
 						weatherstampman.compose(weatherman.get_temperature(constants.WEATHER_TEMP_MAINTAG, constants.WEATHER_TEMP_TAG),\
 												config.get('units'), weatherman.get_weathericon(constants.WEATHER_ICON_MAINTAG,\
 																								constants.WEATHER_ICON_POSITION,\

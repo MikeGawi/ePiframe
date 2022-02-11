@@ -45,7 +45,7 @@ class weatherstampmanager:
 	__ERROR_VALUE_TEXT = 'Configuration position should be one of {}'
 	__ERROR_CVALUE_TEXT = 'Configuration font_color should be one of {}'
 	
-	def __init__ (self, outputfile, width, height, horizontal, font, color, position):
+	def __init__ (self, outputfile, width, height, horizontal, font, color, position, rotation):
 		self.__outputfile = outputfile
 		self.__width = width
 		self.__height = height
@@ -53,6 +53,7 @@ class weatherstampmanager:
 		self.__position = position
 		self.__color = color
 		self.__horizontal = horizontal
+		self.__rotation = rotation
 
 	@classmethod		
 	def verify_position (self, val):
@@ -75,7 +76,7 @@ class weatherstampmanager:
 	def compose(self, temp, units, icon):
 		image = Image.open(self.__outputfile)
 		
-		if not self.__horizontal: image = image.transpose(Image.ROTATE_90) 
+		if not self.__horizontal: image = image.transpose(Image.ROTATE_90 if self.__rotation == 90 else Image.ROTATE_270) 
 		width, height = image.size
 		draw = ImageDraw.Draw(image)
 
@@ -106,5 +107,5 @@ class weatherstampmanager:
 		draw.text((x, y), textw, font = wfont, fill = fill, stroke_width=2, stroke_fill=stroke)
 		draw.text((x + sizew + self.__SPACE, y), textt, font = fontt, fill = fill, stroke_width=2, stroke_fill=stroke)
 		
-		if not self.__horizontal: image = image.transpose(Image.ROTATE_270) 
+		if not self.__horizontal: image = image.transpose(Image.ROTATE_270 if self.__rotation == 90 else Image.ROTATE_90) 
 		image.save(self.__outputfile)

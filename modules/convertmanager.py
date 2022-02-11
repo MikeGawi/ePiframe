@@ -6,7 +6,7 @@ class convertmanager:
 	__ERROR_VALUE_TEXT = 'Configuration background_color should be one of {}'
 	
 	__INVERT_FLAG = "-negate"
-	__ROTATE_CODE = '-rotate 90'
+	__ROTATE_CODE = '-rotate {}'
 	__BACK_COLORS = ["white", "black", "photo"]
 	__GRAYSCALE_FLAG = "-colorspace Gray "
 	__COLORS_FLAG = "-colors {} "
@@ -23,7 +23,7 @@ class convertmanager:
 	
 	#Don't use blur! Blur will kill Raspberry Pi Zero.
 	#Resizing to huge and then scaling to small will add some blur and it's 10x faster than blur operation.
-	__PHOTO_BACK_CODE = '( -clone 0 -gravity center -sample x{} -scale {}% -resize {}x{}^ -crop {}x+0+0 +repage ) ( -clone 0 -sample x{} ) -delete 0 -gravity center -compose over -composite '
+	__PHOTO_BACK_CODE = '( -clone 0 -gravity center -sample x{} -scale {}% -resize {}x{}^ -crop {}x+0+0 +repage ) ( -clone 0 -sample {}x{} ) -delete 0 -gravity center -compose over -composite '
 	__PHOTO_RESIZE_CODE = '-sample {}x{} '
 		
 	#options for ImageMagick converter
@@ -36,6 +36,8 @@ class convertmanager:
 		'5'	:	'{} ' + __FILE_MARK + ' -limit thread 1 {} ( +clone {}{}{}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:',
 		'6'	:	'{} ' + __FILE_MARK + ' -limit thread 1 {} ( +clone {}{}-colors 2 +dither {}-background {} -gravity center -extent {}x{} -type bilevel -write {} ) {} NULL:'
 	}
+	
+	__ROTATION = [ 90, 270 ]
 	
 	__HDMI_CODE = '{} ' + __FILE_MARK + ' -limit thread 1 {} ( +clone {}{}{}-background {} -gravity center -extent {}x{} {}-write {} ) {} NULL:'
 	
@@ -56,6 +58,10 @@ class convertmanager:
 	def get_convert_options (self):
 		return list(self.__CONVERT_OPTIONS.keys())
 	
+	@classmethod		
+	def get_rotation (self):
+		return list(self.__ROTATION)
+	
 	def __convert_option (self, origwidth:int, origheight:int, target:str, config, hdmi):
 		option = int(config.get('convert_option'))
 		width = config.getint('image_width')
@@ -66,7 +72,7 @@ class convertmanager:
 		
 		#space at the end as those flag are optional
 		negate = self.__INVERT_FLAG + " " if config.getint('invert_colors') == 1 else ''
-		rotate = self.__ROTATE_CODE + " " if config.getint('horizontal') == 0 else ''		
+		rotate = self.__ROTATE_CODE.format(config.getint('rotation')) + " " if config.getint('horizontal') == 0 else ''		
 		
 		back = back.strip().lower()		
 				
@@ -79,7 +85,7 @@ class convertmanager:
 			aspectratio = int(origwidth) / int(origheight)
 			newheight = max (int(width / aspectratio), height)
 			scale = round(aspectratio * 10.0, 2)
-			code = self.__PHOTO_BACK_CODE.format(newheight, scale, width, newheight, width, height)
+			code = self.__PHOTO_BACK_CODE.format(newheight, scale, width, newheight, width, width, height)
 		else:
 			code = self.__PHOTO_RESIZE_CODE.format(width, height)
 			

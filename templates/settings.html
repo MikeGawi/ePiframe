@@ -145,11 +145,13 @@
 		});
 		
 		$('.checkbox').change(function() {
+		  var valu = '1';
 		  if (!$(this).is(':checked')) {
-			$('.'+this.getAttribute('name')).attr('disabled', '');
-		  } else {
-			$('.'+this.getAttribute('name')).removeAttr('disabled');
+			  valu = '0';
 		  }
+			
+		  $('.'+this.getAttribute('name')+'[depval="'+valu+'"]').removeAttr('disabled');
+		  $('.'+this.getAttribute('name')+'[depval!="'+valu+'"]').attr('disabled', '');
 		});
 		
 		$('.form-select').change(function() {
