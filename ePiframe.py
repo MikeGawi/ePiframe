@@ -466,7 +466,7 @@ else:
 		fil = next((x for x in [y.lower() for y in sys.argv[1:]] if not '--' in x), '')
 
 		if fil:
-			filename = fil
+			targetFilename = fil
 	
 		if not os.path.exists(targetFilename):
 			raise Exception("No file: {}!".format(targetFilename))
