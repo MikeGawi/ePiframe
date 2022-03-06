@@ -17,6 +17,7 @@
       	* [Web User Interface](#web-user-interface)
 			* [WebUI Users](#webui-users)
 			* [API](#api)
+      	* [Plugins](#plugins)
    * [Update](#update)
       * [Update Automatically](#update-automatically)
       * [Update Manually](#update-manually)
@@ -278,6 +279,10 @@ It is possible to control ePiframe from a simple API and even secure it with aut
 **_NOTE_** - The users database created in previous ePiframe versions doesn't need to be updated, recreated or modified as it will be updated automatically to the newest version and with no data lost. Old users will have their keys generated automatically.
 
 [ePiframe API](https://github.com/MikeGawi/ePiframe/blob/master/docs/API.md)
+
+### Plugins
+
+ePiframe supports custom plugins that can be created by anyone and can enhance *ALL* ePiframe functions (or even more). Check [ePiframe_plugin](https://github.com/MikeGawi/ePiframe_plugin) for more information, documentation, examples, tutorial and available plugins list.
 
 ## Update
 ### Update Automatically

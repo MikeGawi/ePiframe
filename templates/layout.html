@@ -57,48 +57,16 @@
 					</a>
 					<div class="p-2 col-auto align-items-center d-block d-md-none align-middle" style="min-height:55px"></div>
 					<ul class="navbar-nav flex-column mb-sm-auto mb-0 align-items-sm-start" id="menu">
+						{% for entry in menu %}
 						<li class="nav-item">
-							<a href="/" class="nav-link align-middle px-1 link-secondary home-menu d-none d-md-block">
-								<i class="fs-6 bi bi-house"></i> <span>Home</span>
+							<a href="{{ entry.url }}" class="nav-link align-middle px-1 link-secondary {{ entry.id }} d-none d-md-block">
+								<i class="fs-6 {{ entry.icon }}"></i> <span>{{ entry.name }}</span>
 							</a>
-							<a href="/" class="nav-link align-middle px-1 link-secondary home-menu d-block d-md-none">
-								<i class="fs-3 bi bi-house"></i>
+							<a href="{{ entry.url }}" class="nav-link align-middle px-1 link-secondary {{ entry.id }} d-block d-md-none">
+								<i class="fs-3 {{ entry.icon }}"></i>
 							</a>
 						</li>
-						<li class="nav-item">
-							<a href="/logs" class="nav-link align-middle px-1 link-secondary logs-menu d-none d-md-block">
-								<i class="fs-6 bi bi-activity"></i> <span>Logs</span>
-							</a>
-							<a href="/logs" class="nav-link align-middle px-1 link-secondary logs-menu d-block d-md-none">
-								<i class="fs-3 bi bi-activity"></i>
-							</a>
-						</li>
-						{% if show_stats %}
-						<li class="nav-item">
-							<a href="/stats" class="nav-link align-middle px-1 link-secondary stats-menu d-none d-md-block">
-								<i class="fs-6 bi bi-graph-up"></i> <span>Stats</span>
-							</a>
-							<a href="/stats" class="nav-link align-middle px-1 link-secondary stats-menu d-block d-md-none">
-								<i class="fs-3 bi bi-graph-up"></i>
-							</a>
-						</li>
-						{% endif %}
-						<li class="nav-item">
-							<a href="/settings" class="nav-link align-middle px-1 link-secondary settings-menu d-none d-md-block">
-								<i class="fs-6 bi bi-gear"></i> <span>Settings</span>
-							</a>
-							<a href="/settings" class="nav-link align-middle px-1 link-secondary settings-menu d-block d-md-none">
-								<i class="fs-3 bi bi-gear"></i>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a href="/tools" class="nav-link align-middle px-1 link-secondary tools-menu d-none d-md-block">
-								<i class="fs-6 bi bi-tools"></i> <span>Tools</span>
-							</a>
-							<a href="/tools" class="nav-link align-middle px-1 link-secondary tools-menu d-block d-md-none">
-								<i class="fs-3 bi bi-tools"></i>
-							</a>
-						</li>
+						{% endfor %}
 						<div class="container-fluid px-1 border border-secondary rounded border-1 border-top my-3"></div>
 						<li class="nav-item">
 							<a href="https://github.com/MikeGawi/ePiframe" target="_blank" class="nav-link align-middle px-1 link-secondary">

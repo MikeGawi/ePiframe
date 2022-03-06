@@ -1,30 +1,30 @@
 {% extends "layout.html" %}
-{% block title %}Settings{% endblock %}
+{% block title %}Plugins{% endblock %}
 {% block head %}
   {{ super() }}
-	<style>
-		   .btn-file {
-				position: relative;
-				overflow: hidden;
-			}
-		
-			.btn-file input[type=file] {
-				position: absolute;
-				top: 0;
-				right: 0;
-				min-width: 100%;
-				min-height: 100%;
-				font-size: 100px;
-				text-align: right;
-				filter: alpha(opacity=0);
-				opacity: 0;
-				outline: none;   
-				cursor: inherit;
-				display: block;
-			}
-	</style>
 {% endblock %}
 {% block content %}
+
+{% if info %}
+	<div class="p-4 pb-4">
+		{{ info | safe }}
+	</div>
+{% else %}
+  	<nav class="navbar navbar-expand-sm navbar-dark bg-dark bg-gradient">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavMain" aria-controls="navbarNavMain" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+	  	<div class="collapse navbar-collapse" id="navbarNavMain">
+			<ul class="navbar-nav mr-auto">
+		  	{% for lab in plugins %}
+				<li class="nav-item">
+					<a class="nav-link small" href="plugins?plugin={{ lab }}">{{ lab }}</a>
+				</li>
+		  	{% endfor %}
+			</ul>
+	  	</div>
+	</nav>
   	<nav class="navbar navbar-expand-sm navbar-dark bg-secondary bg-gradient">
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
@@ -34,7 +34,7 @@
 			<ul class="navbar-nav mr-auto">
 		  	{% for lab in navlabels %}
 				<li class="nav-item">
-					<a class="nav-link small" href="{{ lab }}">{{ lab }}</a>
+					<a class="nav-link small" href="plugins?plugin={{ plugin_name }}&variable={{ lab }}">{{ lab }}</a>
 				</li>
 		  	{% endfor %}
 			</ul>
@@ -60,7 +60,7 @@
 				{% endif %}
 				</div>
 			{% endfor %}
-			{% if reset_needed%}
+			{% if reset_needed %}
 				<div class="row g-2 p-1">
 					<div class="col-auto"><div class="text-left px-0 text-danger" style="font-size:12px"><strong>Service restart needed after changing these settings!</strong></div></div>
 				</div>
@@ -72,17 +72,6 @@
 				<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset All To Defaults</button></div>
 			</div>		
 		</form>
-		<div class="row g-2 p-1">
-			<div class="col-auto flex-fill"></div>
-			<div class="col-auto"><a href="{{ url_for('export') }}" target="_blank" download="config.cfg"><button class="btn btn-outline-secondary" type="button" id='EXPORT' name='EXPORT' value='EXPORT'>Export Settings</button></a></div>
-			<div class="col-auto">
-				<form action="{{ url_for('import_settings') }}" method="POST" enctype="multipart/form-data">
-					<button class="btn btn-outline-secondary btn-file form-control" type="button" id="IMPORT" name='IMPORT' value='IMPORT'>
-						<input type="file" onchange="this.form.submit();" name="file">Import Settings
-					</button>
-				</form>
-			</div>
-		</div>
 	</div>
 
 	{% with messages = get_flashed_messages() %}
@@ -95,17 +84,18 @@
 		</script>
 	  {% endif %}
 	{% endwith %}
+{% endif %}
 	<script>
 		$(function () {
 		  $(".navbar-nav .nav-link").each(function () {
-			if (window.location.href == (this.href)) {
+			if ($(this).attr("href") == "plugins?plugin={{ plugin_name }}" || $(this).attr("href") == "plugins?plugin={{ plugin_name }}&variable={{ sett_name }}")	 {
 			  $(this).closest("a").addClass("active");
 			  $(this).closest("a").parent().parent().addClass("active");
 			}
 		  });
 		});
 
-		$(".settings-menu").addClass("link-light");
+		$(".plugins-menu").addClass("link-light");
 	</script>
 	<script>
 		 $('#DEFAULTS').on('click', function () {
@@ -129,14 +119,6 @@
 				return true;
 			} else {
 				return false;		
-			}
-		});
-		
-		 $('#IMPORT').on('click', function () {
-			if (confirm('Are you sure you want to import settings file? Any unexisting properties in the uploaded file will be set to default values.')) {        
-				document.getElementById('file').click();
-			} else {
-				return false;
 			}
 		});
 		

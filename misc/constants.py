@@ -2,7 +2,7 @@ import itertools
 
 class constants:
 
-	EPIFRAME_VERSION = 'v1.4.0'
+	EPIFRAME_VERSION = 'v1.5.0'
 	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
 	
 	#minimal needed python version
@@ -10,6 +10,7 @@ class constants:
 
 	#config filename
 	CONFIG_FILE = 'config.cfg'
+	CONFIG_FILE_DEFAULT = 'misc/config.default'
 	
 	
 	#If modifying these scopes, delete the file token.pickle.

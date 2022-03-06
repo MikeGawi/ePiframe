@@ -6,9 +6,9 @@
 {% block content %}
 	<div class="d-grid gap-2 col-8 mx-auto align-center">
 	  <div class="row py-3"></div>
-	  <button class="btn btn-primary" type="button" id="next"><i class="bi bi-skip-end px-2"></i>Next Photo</button>
-	  <button class="btn btn-primary" type="button" id="restart"><i class="bi bi-arrow-repeat px-2"></i>Restart Service</button>
-	  <button class="btn btn-primary" type="button" id="reboot"><i class="bi bi-arrow-counterclockwise px-2"></i>Reboot</button>
+	  {% for act in actions %}
+  	  <button class="btn btn-primary" type="button" id="{{ act.action }}"><i class="{{ act.icon }} px-2"></i>{{ act.name }}</button>
+	  {% endfor %}
 	  <button class="btn btn-secondary" type="button" id="poweroff"><i class="bi bi-power px-2"></i>Power Off</button>
 	</div>
 	<script>		

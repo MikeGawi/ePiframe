@@ -4,6 +4,8 @@ import modules.intervalmanager as iterman
 import modules.timermanager as timerman
 import modules.configmanager as confman
 from modules.weathermanager import weathermanager
+import modules.pidmanager as pidman
+import modules.pluginsmanager as pluginsman
 from misc.constants import constants
 from misc.logs import logs
 
@@ -39,6 +41,7 @@ class backendmanager:
 		self.remove_interval()
 		self.update_time()
 		self.__logging = logs(self.__config.get('log_files'))
+		self.__plugins = pluginsman.pluginsmanager(self.__path, pidman.pidmanager(self.__config.get('pid_file')), self.__logging, self.__config)
 	
 	def get_last_date(self, file):
 		ret = None
@@ -51,9 +54,12 @@ class backendmanager:
 	def get_path(self):
 		return self.__path
 	
+	def get_plugins(self):
+		return self.__plugins
+	
 	def __load_config (self):
 		try:
-			self.__config = confman.configmanager(os.path.join(self.__path, constants.CONFIG_FILE))
+			self.__config = confman.configmanager(os.path.join(self.__path, constants.CONFIG_FILE), os.path.join(self.__path, constants.CONFIG_FILE_DEFAULT))
 			self.__lastdate = self.get_last_date(constants.CONFIG_FILE)			
 		except Exception as e:
 			raise Exception(self.__ERROR_CONF_FILE.format(constants.CONFIG_FILE, e))
@@ -104,6 +110,9 @@ class backendmanager:
 	def fire_event (self, args=None):
 		self.remove_interval()
 		self.__event(args)
+		
+	def next_photo (self):
+		self.fire_event(self.__EMPTY_PARAMS)
 	
 	def get_empty_params(self):
 		return self.__EMPTY_PARAMS

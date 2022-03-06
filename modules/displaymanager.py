@@ -22,6 +22,7 @@ class displaymanager:
 		self.__usehdmi = self.is_hdmi(distype)
 		self.__binary = binary
 		self.__vt = vt
+		self.__display = display
 		
 		if not self.__usehdmi:
 			#it's like : from waveshare_epd import 'display'
@@ -52,6 +53,15 @@ class displaymanager:
 		else:
 			 os.popen(self.__DISPLAY_PHOTO_CODE.format(self.__PROCESS_NAME, self.__binary, self.__vt, photo_path))
 	
+	def get_display (self):
+		return self.__display
+	
+	def get_vt (self):
+		return self.__vt
+	
+	def is_display_hdmi (self):
+		return self.__usehdmi
+	
 	@classmethod
 	def verify_display (self, val):
 		if not val in [k for k in self.__DISPLAY_VALUES]:
@@ -62,7 +72,7 @@ class displaymanager:
 		return [k for k in self.__DISPLAY_VALUES]
 	
 	@classmethod		
-	def get_hdmi(self):
+	def get_hdmi (self):
 		return self.__DISPLAY_VALUES[1]
 	
 	@classmethod		

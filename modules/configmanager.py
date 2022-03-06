@@ -1,4 +1,4 @@
-import configparser, subprocess, itertools, os, shutil
+import subprocess
 from modules.filteringmanager import filteringmanager
 from modules.timermanager import timermanager
 from modules.weathermanager import weathermanager
@@ -7,44 +7,17 @@ from modules.telebotmanager import telebotmanager
 from modules.convertmanager import convertmanager
 from modules.localsourcemanager import localsourcemanager
 from modules.displaymanager import displaymanager
+from modules.base.configbase import configbase
 from misc.configprop import configprop
 from misc.connection import connection
 
-class configmanager:
+class configmanager(configbase):
 	
 	__SPI_CHECK1 = 'ls -l /dev/spidev*'
 	__SPI_CHECK2 = 'lsmod | grep spi_'
 	
-	__ERROR_PARSE = "Error parsing {} configuration entry"
-	__ERROR_SAVE = "Error saving config file!"
-	
-	__COMMENT_IND_OK = '# '
-	__COMMENT_IND_NOK = '; '
-	__SECTION_IND = '['
-	__REPLACE_IND = ' '
-	__VALUE_IND = '='
-	
-	__FILE_WRITE_FLAG = 'w'
-	
-	__DEFAULT_FILE = "misc/config.default"
-	
-	def __init__ (self, path:str):
-		self.config = configparser.ConfigParser()
-		self.__path = path
-		self.__load_default_file()
-		self.read_config()
-		
-		self.__COMMENTS = {}
-		with open(self.__DEFAULT_FILE) as f:
-			parse = str()
-			for line in f:
-				if line.startswith(self.__COMMENT_IND_OK): 
-					parse = parse + str.strip(line).replace(self.__COMMENT_IND_OK, self.__REPLACE_IND)
-				elif str.strip(line) and not line.startswith(self.__SECTION_IND) and not line.startswith(self.__COMMENT_IND_NOK):
-					self.__COMMENTS[line.split(self.__VALUE_IND)[0]] = str.lstrip(parse)
-					parse = str()
-				
-		self.__SETTINGS = [
+	def load_settings(self):
+		self.SETTINGS = [
 			configprop('use_google_photos', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('cred_file', self, prop_type=configprop.FILE_TYPE, dependency='use_google_photos'),
 			configprop('pickle_file', self, prop_type=configprop.FILE_TYPE, dependency='use_google_photos'),
@@ -61,7 +34,7 @@ class configmanager:
 			configprop('display_type', self, possible=displaymanager.get_displays()),
 			configprop('display', self, dependency=['display_type', displaymanager.get_spi()]),
 			configprop('tty', self, minvalue=0, prop_type=configprop.INTEGER_TYPE, dependency=['display_type', displaymanager.get_hdmi()]),			
-			configprop('slide_interval', self, minvalue=180, prop_type=configprop.INTEGER_TYPE),
+			configprop('slide_interval', self, minvalue=180, prop_type=configprop.FLOAT_TYPE),
 			configprop('interval_mult', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('interval_mult_hotword', self, dependency='interval_mult'),
 			configprop('interval_max_mult', self, dependency='interval_mult', minvalue=1, prop_type=configprop.INTEGER_TYPE),
@@ -103,30 +76,8 @@ class configmanager:
 			configprop('show_stats', self, dependency='use_web', prop_type=configprop.BOOLEAN_TYPE),
 			configprop('dark_theme', self, dependency='use_web', prop_type=configprop.BOOLEAN_TYPE)
 		]
-		
-		for p in self.__CONFIG_STRING.keys():
-			try:
-				self.get_property(p)
-			except Exception:
-				self.__SETTINGS.append(configprop(p,self))
-				
-		for prop in self.__SETTINGS:
-			prop.convert()
-			
-		self.save()
-				
-	def read_config(self):
-		if not os.path.exists(self.__path):
-			shutil.copy(self.__DEFAULT_FILE, self.__path)
-		
-		with open(self.__path) as f:
-			self.config.read_file(f)
-		
-		self.__CONFIG_STRING = {}
-		for sect in self.config.sections():
-			for prop in list(dict(self.config.items(sect)).keys()):
-				self.__CONFIG_STRING[prop] = sect
-		
+	
+	def legacy_convert(self):
 		#legacy exceptional backward handling for converting one property to another property under different name
 		#and the ones that misc.configprop.convert could not handle
 		legacy = [
@@ -141,105 +92,6 @@ class configmanager:
 			except Exception:
 				pass
 		#end
-				
-		for sect in self.def_config.sections():
-			for prop in list(dict(self.def_config.items(sect)).keys()):
-				try:
-					if not self.config.has_section(sect): self.config.add_section(sect)
-					self.config.get(sect, prop)
-				except Exception:
-					val = str()
-					try: 
-						val = self.get(prop)
-					except Exception:
-						pass
-					self.config.set(sect, prop, val if val else self.def_config.get(sect, prop))
-					pass
-				
-		self.__CONFIG_STRING = {}
-		for sect in self.def_config.sections():
-			for prop in list(dict(self.def_config.items(sect)).keys()):
-				self.__CONFIG_STRING[prop] = sect
-				
-		self.save()
-				
-	def get (self, name:str):
-		ret = ''
-		
-		try:
-			ret = self.config.get(self.__CONFIG_STRING[name], name)
-		except Exception as e: 
-			raise Exception(self.__ERROR_PARSE.format(name))		
-		return ret
-	
-	def __load_default_file(self):
-		self.def_config = configparser.ConfigParser()
-		with open(self.__DEFAULT_FILE) as f:
-			self.def_config.read_file(f)
-	
-	def getint (self, name:str):
-		ret = 0
-		
-		try:
-			ret = self.config.getint(self.__CONFIG_STRING[name], name)
-		except Exception as e: 
-			raise Exception(self.__ERROR_PARSE.format(name))		
-		return ret
-	
-	def set (self, name:str, val):
-		self.config.set(self.__CONFIG_STRING[name], name, val)
-		
-	def save (self, pathe=None):
-		path = self.__path if pathe == None else pathe
-		filestr =''
-		
-		iterator = itertools.cycle(self.__CONFIG_STRING.keys())
-		nex = next(iterator)
-		
-		with open(self.__DEFAULT_FILE) as f:
-			for line in f:
-				if line.startswith(self.__COMMENT_IND_OK) or line.startswith(self.__SECTION_IND) or line.startswith(self.__COMMENT_IND_NOK) or not str.strip(line):
-					filestr = filestr + line
-				elif nex in line:					
-					filestr += "{}{}{}\n".format(nex, self.__VALUE_IND, self.get(nex))
-					nex = next(iterator)
-				else:
-					raise Exception(self.__ERROR_SAVE)
-		
-		with open(path, self.__FILE_WRITE_FLAG) as f:
-			f.write(filestr)
-	
-	def get_default (self, name:str):
-		proper = self.get_property(name)
-		return proper.get_default() if str(proper.get_default()) else ''
-	
-	def get_possible_values (self, name:str):
-		proper = self.get_property(name)
-		return proper.get_possible()
-	
-	def get_comment (self, name:str):
-		ret = None
-		
-		try:
-			ret = self.__COMMENTS[name]
-		except Exception as e: 
-			raise Exception(self.__ERROR_PARSE.format(name))		
-		return ret
-	
-	def get_property (self, name:str):
-		ret = None
-		
-		try:
-			ret = next((prop for prop in self.__SETTINGS if prop.get_name() == name), None)
-			if not ret: 
-				raise Exception
-		except Exception as e: 
-			raise Exception(self.__ERROR_PARSE.format(name))		
-		return ret
-	
-	def validate (self, name:str):
-		proper = self.get_property(name)
-		proper.validate()
 		
 	def check_system (self):
 		ret = False;
@@ -255,32 +107,4 @@ class configmanager:
 		if not err and out2:
 			ret = True
 
-		return ret		
-	
-	def get_sections(self):
-		return self.config.sections()
-	
-	def get_section_properties(self, section):
-		return [prop for prop in self.__CONFIG_STRING.keys() if self.__CONFIG_STRING[prop] == section]
-	
-	def verify (self):
-		for prop in self.__SETTINGS:
-			prop.validate()
-	
-	def verify_exceptions (self):
-		for prop in self.__SETTINGS:
-			try:			
-				prop.validate()
-			except Warning:
-				pass
-			except Exception as e:
-				raise e
-	
-	def verify_warnings (self):
-		for prop in self.__SETTINGS:
-			try:			
-				prop.validate()
-			except Warning as e:
-				raise e
-			except Exception:
-				pass
+		return ret

@@ -4,36 +4,36 @@
 
 [Sources]
 
-# Set 1 to get photos from Google Photos. 
+# Set 1 to get photos from Google Photos.
 ; The rest of the values in this section regarding GP should be filled as well when enabled.
-# ACTIVATION IS NEEDED! Check documentation. 
+# ACTIVATION IS NEEDED! Check documentation.
 # Default: 1 (enabled)
 use_google_photos=1
 
-# Google API credentials filename and path. 
+# Google API credentials filename and path.
 # Default: credentials.json
 cred_file=credentials.json
 
-# Google API token pickle filename and path to save authentication token for further use. 
+# Google API token pickle filename and path to save authentication token for further use.
 # Default: token.pickle
 pickle_file=token.pickle
 
-# Names of the photo slide source albums in Google Photos. 
+# Names of the photo slide source albums in Google Photos.
 ; Multiple allowed - comma separated (e.g. Greece 2020,Tom's 2nd birthday).
 # Empty means all. Default: empty
 album_names=
 
-# Set 1 to get photos from local storage. 
+# Set 1 to get photos from local storage.
 ; The rest of the values in this section regarding local should be filled as well when enabled.
 # Default: 1 (enabled)
 use_local=1
 
-# Path of photos in local storage. 
-# Folder will be created if not exists. 
+# Path of photos in local storage.
+# Folder will be created if not exists.
 # Default: 1 (enabled)
 local_path=photos
 
-# Set 1 to get photos from local storage recursively from subfolders. 
+# Set 1 to get photos from local storage recursively from subfolders.
 # Default: 1 (enabled)
 local_subfolders=1
 
@@ -44,87 +44,87 @@ local_subfolders=1
 # Default: metric
 units=metric
 
-# Path of the downloaded original photo slide and conversion location. 
+# Path of the downloaded original photo slide and conversion location.
 # Default: .
 photo_convert_path=.
 
-# Download name of the original photo slide. 
-# Leave only name in photo_download_name as the extension will be added automatically. 
+# Download name of the original photo slide.
+# Leave only name in photo_download_name as the extension will be added automatically.
 # Default: origphoto
 photo_download_name=origphoto
 
-# Converted name of the current photo slide showed on the display. 
+# Converted name of the current photo slide showed on the display.
 # Default: photo.bmp
 photo_convert_filename=photo.bmp
 
-# Converted photo slide thumbnail filename. 
+# Converted photo slide thumbnail filename.
 # Default: photo_thumb.jpg
 thumb_photo_convert_filename=photo_thumb.jpg
 
-# Original photo slide thumbnail filename. 
+# Original photo slide thumbnail filename.
 # Default: origphoto_thumb.jpg
 thumb_photo_download_name=origphoto_thumb.jpg
 
-# Path and name of ePiframe service log files. 
-# Path will be created if doesn't exists. 
-# Use empty to disable logs. 
+# Path and name of ePiframe service log files.
+# Path will be created if doesn't exists.
+# Use empty to disable logs.
 # Default: logs/ePiframe.log
 log_files=logs/ePiframe.log
 
-# Path and name of the ImageMagick convert tool binary. 
+# Path and name of the ImageMagick convert tool binary.
 # Default: /usr/bin/convert
 convert_bin_path=/usr/bin/convert
 
-# Path and name of the RRDTool binary. 
+# Path and name of the RRDTool binary.
 # Default: /usr/bin/rrdtool
 rrdtool_bin_path=/usr/bin/rrdtool
 
-# Path and name of the FBI imageviewer binary. 
+# Path and name of the FBI imageviewer binary.
 # Default: /usr/bin/fbi
 fbi_bin_path=/usr/bin/fbi
 
-# Path and name of the index file holding current photo markups. 
+# Path and name of the index file holding current photo markups.
 # Default: index
 photo_index_file=index
 
-# Path and name of the list file holding whole photo collection. 
+# Path and name of the list file holding whole photo collection.
 # Default: list
 photo_list_file=list
 
-# Path and name of the PID file holding current running script PID. 
+# Path and name of the PID file holding current running script PID.
 # Default: pid
 pid_file=pid
 
-# Path and name of the interval multiplicator file holding current photo time. 
+# Path and name of the interval multiplicator file holding current photo time.
 # Default: time
 interval_mult_file=time
 
 [Display]
 
-# Type of the display connected: SPI or HDMI/Composite. 
-# It's affecting other options specific for the display type. 
-# Possible values: SPI, HDMI. 
+# Type of the display connected: SPI or HDMI/Composite.
+# It's affecting other options specific for the display type.
+# Possible values: SPI, HDMI.
 # Default: SPI
 display_type=SPI
 
-# Used for e-Paper SPI displays! 
+# Used for e-Paper SPI displays!
 ; The Waveshare display scripts are
 ; available here: https://github.com/waveshare/e-Paper
 ; Just download one for your display, test it and add to
 ; modules/displaymanager imports and code.
 ; Out-of-the-box 7.5inch waveshare (black & white) V2 with
 ; Pi HAT is supported.
-# Name of the display class from Waveshare python codes. 
+# Name of the display class from Waveshare python codes.
 # Default: epd7in5_V2
 display=epd7in5_V2
 
-# Number of terminal (virtual console) used for HDMI/Composite display. 
-# This option wrongly set may hang or corrupt terminals. 
-# The default set will work on X and non-X environments. 
+# Number of terminal (virtual console) used for HDMI/Composite display.
+# This option wrongly set may hang or corrupt terminals.
+# The default set will work on X and non-X environments.
 # Default: 1
 tty=1
 
-# Photo frame refresh slide interval in seconds. 
+# Photo frame refresh slide interval in seconds.
 ; Waveshare producer says it's best to wait min 180s between
 ; refreshing the display, so keep this value >= 180
 ; Average photo preparation time (download + processing) may take up
@@ -133,44 +133,44 @@ tty=1
 # Default: 600 (10 minutes)
 slide_interval=600
 
-# Allow slide_interval multiplication. 
+# Allow slide_interval multiplication.
 # When in photo description there is interval_mult_hotword and value,
-# e.g. <hotword> <multiplicator> 
-# i.e. Frame 3 
-# this photo will be displayed slide_interval * multiplicator longer. 
+# e.g. <hotword> <multiplicator>
+# i.e. Frame 3
+# this photo will be displayed slide_interval * multiplicator longer.
 ; Users should manually add this DESCRIPTION per photo.
 # Default:1 (option is enabled)
 interval_mult=1
 
-# Hotword to find in photo descriptions for the interval multiplication. 
+# Hotword to find in photo descriptions for the interval multiplication.
 ; Option interval_mult will not work without this.
 ; Don't leave it empty as someone can put for example
 ; year the photo was taken in it's description and it will
-; mess it. 
+; mess it.
 # Default:Frame
 interval_mult_hotword=Frame
 
-# Maximum interval multiplicator for interval_mult. 
+# Maximum interval multiplicator for interval_mult.
 ; Option interval_mult will not work without this.
-# Every value above will be set to interval_max_mult value. 
-# E.g. <hotword> 10 when interval_max_mult=5 will result in slide_interval * 5. 
+# Every value above will be set to interval_max_mult value.
+# E.g. <hotword> 10 when interval_max_mult=5 will result in slide_interval * 5.
 ; That is to prevent users from putting some
 ; crazy values and photo will stay on the display forever.
 # Default:6
 interval_max_mult=6
 
-# Starting time for every day of the week of photo frame to start changing photos. 
-# Starting with Monday and Sunday is last. 
+# Starting time for every day of the week of photo frame to start changing photos.
+# Starting with Monday and Sunday is last.
 ; That will save power and will not update
 ; photo frame when it's not seen, e.g. at night.
 ; The values should be between 0:00 and 23:59.
 ; To change the format see modules/timermanager.py
-# Put - when frame should not work that day at all. 
+# Put - when frame should not work that day at all.
 # Default: 5:30,5:30,5:30,5:30,5:30,5:30,5:30 (start updating every day at 5:30 in the morning)
 start_times=5:30,5:30,5:30,5:30,5:30,5:30,5:30
 
-# Ending time for every day of the week of photo frame to stop changing photos. 
-# Starting with Monday and Sunday is last. 
+# Ending time for every day of the week of photo frame to stop changing photos.
+# Starting with Monday and Sunday is last.
 ; That will save power and will not update
 ; photo frame when it's not seen, e.g. at night.
 ; The values should be between 0:00 and 23:59.
@@ -178,27 +178,27 @@ start_times=5:30,5:30,5:30,5:30,5:30,5:30,5:30
 ; Put - when frame should not stop updating that day and will
 ; work until start_times - or stop_times next days.
 ; - here when - same day in start_times will not update frame.
-# Put - everywhere to let frame work all the time. 
+# Put - everywhere to let frame work all the time.
 # Default: 23:30,23:30,23:30,23:30,23:30,23:30,23:30(stop updating every day at 23:30 in the evening
 stop_times=23:30,23:30,23:30,23:30,23:30,23:30,23:30
 
-# This will allow to trigger (from web, bots, etc.) photo change or update 
-# during off hours. Disabling will respect sleep time and supress triggers. 
+# This will allow to trigger (from web, bots, etc.) photo change or update
+# during off hours. Disabling will respect sleep time and supress triggers.
 # Default:1 (Enable triggers).
 allow_triggers=1
 
 [Image]
 
-# Used for e-Paper SPI displays! 
-# There are 6 standard types of conversion to black&white image (add more in 
-# convertmanager module). Every option gives slightly different 
-# results and you can pick the one best for your display. Types are: 
-# 1 - Floyd-Steinberg dither 
-# 2 - Floyd-Steinberg dither + high remap 
-# 3 - GIMP like result 
-# 4 - Floyd-Steinberg ordered dither 
-# 5 - direct conversion to black&white 
-# 6 - simple conversion to black&white + basic dither 
+# Used for e-Paper SPI displays!
+# There are 6 standard types of conversion to black&white image (add more in
+# convertmanager module). Every option gives slightly different
+# results and you can pick the one best for your display. Types are:
+# 1 - Floyd-Steinberg dither
+# 2 - Floyd-Steinberg dither + high remap
+# 3 - GIMP like result
+# 4 - Floyd-Steinberg ordered dither
+# 5 - direct conversion to black&white
+# 6 - simple conversion to black&white + basic dither
 ; To add more see modules/convertmanager.py
 # Default: 1
 convert_option=1
@@ -209,28 +209,28 @@ image_width=800
 # Height of the display. Default: 480 for the Waveshare 7.5inch paper display 800x480 V2
 image_height=480
 
-# Convert photo to grayscale, used for HDMI/Composite displays. 
+# Convert photo to grayscale, used for HDMI/Composite displays.
 # 1 for grayscale photo. Default: 0 (colorful)
 grayscale=0
 
-# Colors number limit used for HDMI/Composite displays with limited palette. 
-# Empty for no change and > 0 for specifying colors number. 
-# Can be combined with grayscale option. 
+# Colors number limit used for HDMI/Composite displays with limited palette.
+# Empty for no change and > 0 for specifying colors number.
+# Can be combined with grayscale option.
 # Default: empty
 colors_num=
 
-# Invert colors - white will be black and black will be white. 
-; It can look intresting in frames with dark passe-partout frame. 
+# Invert colors - white will be black and black will be white.
+; It can look intresting in frames with dark passe-partout frame.
 # 1 for negative photo. Default: 0 (normal)
 invert_colors=0
 
-# When image is smaller than the display 
-# underlay will be added. Options: white, black or photo. 
-; photo will put blurred original photo underneath - takes more time to process. 
+# When image is smaller than the display
+# underlay will be added. Options: white, black or photo.
+; photo will put blurred original photo underneath - takes more time to process.
 # Default:white
 background_color=white
 
-# Frame position - horizontal or vertical. 
+# Frame position - horizontal or vertical.
 # Default:1 (horizontal)
 horizontal=1
 
@@ -244,32 +244,32 @@ rotation=90
 # Default:0 (disabled)
 auto_gamma=0
 
-# One of the image enhancements. 
-# It finds the exact minimum and maximum color values in the image 
-# and then stretches the values to the full range of values. 
+# One of the image enhancements.
+# It finds the exact minimum and maximum color values in the image
+# and then stretches the values to the full range of values.
 # Default:0 (disabled)
 auto_level=0
 
-# One of the image enhancements. 
-# Increases the contrast in an image by stretching the range of intensity values. 
+# One of the image enhancements.
+# Increases the contrast in an image by stretching the range of intensity values.
 # Default:0 (disabled)
 normalize=0
 
-# One of the image enhancements. 
-# Adjusts the photo brightness. 
-# Value from -100(less) to 100(more) in % units. 
+# One of the image enhancements.
+# Adjusts the photo brightness.
+# Value from -100(less) to 100(more) in % units.
 # Default:0 (no change)
 brightness=0
 
-# One of the image enhancements. 
-# Adjusts the photo contrast. 
-# Value from -100(less) to 100(more) in % units. 
+# One of the image enhancements.
+# Adjusts the photo contrast.
+# Value from -100(less) to 100(more) in % units.
 # Default:10 (+10% more)
 contrast=10
 
 [Filtering]
 
-# Show random photos. 
+# Show random photos.
 ; Photos will be showed randomly once per
 ; whole collection turn, list will be updated on every run.
 ; With this option on asc/desc sort has no power.
@@ -277,26 +277,26 @@ contrast=10
 randomize=0
 
 ; All filtering options can be used in the same time (not only separately)
-; to narrow number of photos 
+; to narrow number of photos
 
-# Starting creation date and time for photos filtering (everything after) 
-# In format YYYY-MM-DD hh:mm:ss (e.g. 2020-05-01 10:01:17). 
+# Starting creation date and time for photos filtering (everything after)
+# In format YYYY-MM-DD hh:mm:ss (e.g. 2020-05-01 10:01:17).
 ; To change the format see modules/filteringmanager.py
 # Empty means no low limit. Default: empty
 photos_from=
 
-# Ending creation date and time for photos filtering (everything before) 
-# in format YYYY-MM-DD hh:mm:ss (e.g. 2020-05-01 10:01:17). 
+# Ending creation date and time for photos filtering (everything before)
+# in format YYYY-MM-DD hh:mm:ss (e.g. 2020-05-01 10:01:17).
 ; To change the format see modules/filteringmanager.py
 # Empty means no high limit. Default: empty
 photos_to=
 
-# Number of photos to show. Only n first photos from the albums (and filtered if set) will be shown. Empty means no limit. 
+# Number of photos to show. Only n first photos from the albums (and filtered if set) will be shown. Empty means no limit.
 ; This will work only with randomize option disabled
 # Default: empty
 no_photos=
 
-# Sort photos by creation date and time. 
+# Sort photos by creation date and time.
 ; This will work only with randomize option disabled
 # Options: none (no sorting), asc (ascending), desc (descending)
 # Default: none (no sorting)
@@ -304,43 +304,43 @@ sorting=none
 
 [Weather]
 
-# Set 1 to show weather (icon and temperature) on the displayed photo. 
+# Set 1 to show weather (icon and temperature) on the displayed photo.
 ; The rest of the values in this section should be filled as well when enabled.
 # Default: 0 (do not show)
 show_weather=0
 
-# API key for the weather data. 
+# API key for the weather data.
 ; Get it for free on https://openweathermap.org
 # Default: empty
 apikey=
 
-# Latitude of weather location. 
+# Latitude of weather location.
 ; Get it here: https://www.maps.ie/coordinates.html
-# Example: 53.2734 
+# Example: 53.2734
 # Default: empty
 lat=
 
-# Longitude of weather location. 
+# Longitude of weather location.
 ; Get it here: https://www.maps.ie/coordinates.html
-# Example: 7.7783 
-# Default: empty 
+# Example: 7.7783
+# Default: empty
 lon=
 
-# Weather information position. 
+# Weather information position.
 ; One of the values: 0, 1, 2, 3
 ; 0 is for left-top corner
 ; 1 is for right-top corner
-; 2 is for right-bottom corner
-; 3 is for left-bottom corner
+; 2 is for left-bottom corner
+; 3 is for right-bottom corner
 # Default: 0 (left-top corner)
 position=0
 
-# Weather information font size. 
+# Weather information font size.
 # Default: 20
 font=20
 
-# Weather information font color. 
-# One of the values: white, black. 
+# Weather information font color.
+# One of the values: white, black.
 ; Font stroke will be always in opposite color
 # Default: white
 font_color=white
@@ -351,21 +351,21 @@ font_color=white
 ; as bot thread is persistant per token and to not intefere threads
 ; it's better to re-run it
 
-# Set 1 to use Telegram bot to control frame from Telegram IM. 
+# Set 1 to use Telegram bot to control frame from Telegram IM.
 ; The rest of the values in this section should be filled as well when enabled.
 # Default: 0 (disabled)
 use_telebot=0
 
-# Telegram bot API token. 
+# Telegram bot API token.
 ; Taken from BotFather Telegram Bot after creating new bot
-# Example: 1234567890:ABCDEFGAHIJKLMNabcdefghijklmn012345. 
+# Example: 1234567890:ABCDEFGAHIJKLMNabcdefghijklmn012345.
 # Default: empty
 token=
 
-# Chat ids to talk with. 
+# Chat ids to talk with.
 ; Set the chat ids (take them from Telegram API) to narrow the chats that can control Telegram bot
 ; Multiple allowed - comma separated
-# Example: 123456789,-987654321. 
+# Example: 123456789,-987654321.
 # Default: empty (everyone can control bot)
 chat_id=
 
@@ -375,30 +375,30 @@ chat_id=
 ; as webUI thread is persistant per port and host and to not intefere threads
 ; it's better to re-run it
 
-# Set 1 to use WebUI to control frame from the website. 
+# Set 1 to use WebUI to control frame from the website.
 ; The rest of the values in this section should be filled as well when enabled.
 # Default: 0 (disabled)
 use_web=0
 
-# ePiframe WebUI host. 
-# Example: 127.0.0.1 (local only). 
-# 0.0.0.0 for (all) public IP address. 
+# ePiframe WebUI host.
+# Example: 127.0.0.1 (local only).
+# 0.0.0.0 for (all) public IP address.
 # Default: 0.0.0.0
 web_host=0.0.0.0
 
-# ePiframe WebUI port. 
-# SOMETIMES YOU NEED TO OPEN IT IN YOUR FIREWALL SETTINGS! 
-# Ports below 5000 need root privilleges. 
-# Value in 1-65535 range. 
+# ePiframe WebUI port.
+# SOMETIMES YOU NEED TO OPEN IT IN YOUR FIREWALL SETTINGS!
+# Ports below 5000 need root privilleges.
+# Value in 1-65535 range.
 # Default: 80
 web_port=80
 
-# Set 1 to show and gather statistics (load, temp, mem) in 
-# WebUI. It should not be noticed in device performance, 
-# but disable if worried. 
+# Set 1 to show and gather statistics (load, temp, mem) in
+# WebUI. It should not be noticed in device performance,
+# but disable if worried.
 # Default: 1 (enabled)
 show_stats=1
 
-# Set 1 to load UI dark theme. 
+# Set 1 to load UI dark theme.
 # Default: 0 (disabled = light theme)
 dark_theme=0

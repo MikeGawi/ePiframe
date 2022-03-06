@@ -1,17 +1,20 @@
-import os
+import os, numbers
 
 class configprop:
 	
 	STRING_TYPE = 'STRING'
 	FILE_TYPE = 'FILE'
 	INTEGER_TYPE = 'INTEGER'
+	FLOAT_TYPE = 'FLOAT'
 	BOOLEAN_TYPE = 'BOOLEAN'
 	STRINGLIST_TYPE = 'STRINGLIST'
 	INTLIST_TYPE = 'INTLIST'
+	PASSWORD_TYPE = 'PASSWORD'
 	
 	STRING_ERROR_MSG = "{} configuration entry is missing!"
 	FILE_ERROR_MSG = "{} configuration entry path does not exist!"
 	INT_ERROR_MSG = "{} configuration entry in not an integer value!"
+	FLOAT_ERROR_MSG = "{} configuration entry in not an float value!"
 	BOOL_ERROR_MSG = "{} configuration entry in not a boolean (0 or 1) value!"
 	MIN_ERROR_MSG = "{} configuration entry should be >= than {}!"
 	MAX_ERROR_MSG = "{} configuration entry should be <= than {}!"
@@ -116,6 +119,20 @@ class configprop:
 
 					if not self.__maxvalue == None:
 						if self.__configmanager.getint(self.__name) > self.__maxvalue:
+							raise Exception(self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue))
+				elif self.__type == self.FLOAT_TYPE:
+					try:
+						if not isinstance(float(self.__configmanager.get(self.__name)), numbers.Real):
+							raise Exception()
+					except Exception:
+						raise Exception(self.FLOAT_ERROR_MSG.format(self.__name))
+							
+					if not self.__minvalue == None:
+						if float(self.__configmanager.get(self.__name)) < float(self.__minvalue):
+							raise Exception(self.MIN_ERROR_MSG.format(self.__name, self.__minvalue))
+
+					if not self.__maxvalue == None:
+						if float(self.__configmanager.getint(self.__name)) > float(self.__maxvalue):
 							raise Exception(self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue))
 				elif self.__type == self.BOOLEAN_TYPE:
 					try:

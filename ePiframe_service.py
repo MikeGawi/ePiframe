@@ -21,6 +21,7 @@ class service(daemon):
 	__webthread = None
 	__statsthread = None
 	__event = None
+	__plugthreads = []
 	
 	__SERVICE_LOG_IND = "--------ePiframe Service: "
 	__SERVICE_LOG_STARTED = __SERVICE_LOG_IND + "STARTED"
@@ -63,6 +64,11 @@ class service(daemon):
 			self.__webthread = Thread(target = self.webthread)
 			self.__webthread.start()
 
+		for plug in self.__backend.get_plugins().plugin_service_thread():
+			thread = Thread(target = plug.add_service_thread, args=(self, self.__backend, ))
+			self.__plugthreads.append(thread)
+			thread.start()
+		
 		if not args:
 			self.__sched.run()
 		

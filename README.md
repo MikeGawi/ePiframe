@@ -2,26 +2,24 @@
 
 # ePiframe
 
-Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame with Google Photos and/or local storage (and more), weather information, Telegram Bot, Web User Interface and API.
+Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame with Google Photos and/or local storage (and more), weather information, Telegram Bot, Web User Interface, API and plugins.
 
 ## Main features
 
-* Pulls photos (videos are ignored) from one or more albums in Google Photos and/or from local folder and automatically prepares them for attached display
+* Pulls photos (supports all formats including RAW, videos are ignored) from one or more albums in Google Photos (shared between users who can modify the content) and/or from local folder and automatically prepares them for attached display (automatic conversion to black-and-white with 6 different presets, color inversion, limited palette, etc. and various background colors)
 * Non-HDMI e-Paper Waveshare SPI or any other HDMI, Composite displays supported
-* Works with Desktop or CLI (console) OS versions
+* With e-Paper display photo is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
+* Works with Desktop or CLI (console) OS versions and even for Raspberry Pi Zero W (wireless) and offline Raspberry Pi Zero (when using local source) + Raspberry Pi OS Lite
+* Autonomic device, once configured can be left headless with system service supervising whole process that is auto recovering and auto starting by itself
 * Simple activation for Google Photos access from ePiframe device (with guide) or any other device with Python
 * No additional storage for Google Photos source or 3rd party software is required as only one and current photo is downloaded and processed per frame update
 * When using local source it is possible to sync photos from almost all cloud/image hosting providers using 3rd party software
-* Updating after time interval with option to change time per photo (by *hot word* in photo description)
-* Off hours per different days
-* Photo filtering (by creation date, number of images)
-* Showing randomly, descendingly or ascendingly by creation date
-* Automatic conversion to black-and-white with 6 different presets, color inversion and various background colors 
+* Updating after time interval with option to change time per photo (by *hot word* in photo description) and off hours per different days
+* Photo filtering (by creation date, number of images), showing randomly, descendingly or ascendingly
 * For vertical or horizontal frame position
-* Can be controlled from Telegram Bot, embedded WebUI or API
-* Can display weather information
-* Can improve displayed photos on the fly, i.e. normalization, contrast and brightness settings, gamma correction, etc.
-* Even for Raspberry Pi Zero W (wireless) and offline Raspberry Pi Zero (when using local source) + Raspberry Pi OS Lite
+* Can be controlled from Telegram Bot, embedded WebUI or API and can display weather information
+* Can improve displayed photos on the fly (with powerful [ImageMagick](https://imagemagick.org/) on board), i.e. normalization, contrast and brightness settings, gamma correction, etc.
+* Extensible, customizable and open for 3rd party add-ons with [ePiframe plugins](#plugins)
 
 <p align="center">
 	<img src ="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/frame.gif">
@@ -31,7 +29,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 * **Local source** - (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
 * **HDMI screens support** - ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
-* **WebUI Dark Theme** - (optional) dark mode for Web User Interface [#43](https://github.com/MikeGawi/ePiframe/issues/43)
+* **ePiframe Plugins** - (optional) install (or create yourself) custom [plugins](#plugins) to enhance ePiframe functions [#??](https://github.com/MikeGawi/ePiframe/issues/??)
 
 ## Hardware required
 
@@ -59,30 +57,15 @@ Or you can 3D print a nice standing frame back with case for your Raspberry Pi a
 
 [Thing files](https://www.thingiverse.com/thing:4727060)
 
-## Advantages
-
-* Photo frame on Raspberry Pi Zero, Zero W (or WH) pulling photos from Google Photos albums (shared between users who can modify the content) and/or local source 
-* Autonomic device, once configured can be left headless
-* Supports HDMI, Composite and SPI (e-Paper) outputs and can adapt photos to the display (black & white, limited pallete, etc.)
-* With e-Paper display photo is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
-* Powerful [ImageMagick](https://imagemagick.org/) on board to convert photos on the fly and adjust them to the display. No matter what quality and what size they are
-* Supports all image formats including RAW
-* Currently displayed photo can be removed from the album but ePiframe will remember where to continue
-* System service supervising whole process that is auto recovering and auto starting by itself
-* Fully customizable: from photos and how they are displayed (presets, different backgrounds or completely change [ImageMagick conversion](https://legacy.imagemagick.org/Usage/quantize/)), to display size and frame (buy one, print it or create/decorate it yourself)
-
 ePiframe is a very nice handmade gift idea: create an album that whole family can edit, decorate frame (e.g. [decoupage](https://en.wikipedia.org/wiki/Decoupage)) or print it, print family signatures or baby drawings on the back, put some wishes picture on the e-Paper display before handing it and many more. 
 
 ## Installation
 
 Installation, configuration and API documentation can be found <font size="+2"><b>[HERE](https://github.com/MikeGawi/ePiframe/blob/master/INSTALL.md)</b></font>
 
-## Future plans
-	
-ePiframe to-do list for 2022:
-* **A surprise feature, something big that will take some time to implement** - in progress
+### Plugins
 
-Stay tuned!
+ePiframe supports custom plugins that can be created by anyone and can enhance *ALL* ePiframe functions (or even more). Check [ePiframe_plugin](https://github.com/MikeGawi/ePiframe_plugin) for more information, documentation, examples, tutorial and available plugins list.
 
 ## Resources
 	
