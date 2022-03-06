@@ -29,7 +29,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 * **Local source** - (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
 * **HDMI screens support** - ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
-* **ePiframe Plugins** - (optional) install (or create yourself) custom [plugins](#plugins) to enhance ePiframe functions [#??](https://github.com/MikeGawi/ePiframe/issues/??)
+* **ePiframe Plugins** - (optional) install (or create yourself) custom [plugins](#plugins) to enhance ePiframe functions [#54](https://github.com/MikeGawi/ePiframe/issues/54)
 
 ## Hardware required
 
