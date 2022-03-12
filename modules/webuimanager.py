@@ -54,6 +54,8 @@ class webuimanager:
 	__POWEROFF_ACT = 'poweroff'
 	__NEXT_ACT = 'next'
 	
+	__ORDER_LABEL = "Execution Order"
+	
 	class site_bind:
 		def __init__ (self, url, func, methods = ['GET'], defaults = None):
 			self.url = url
@@ -462,48 +464,61 @@ class webuimanager:
 	@login_required
 	def plugins(self):
 		if len(self.__backend.get_plugins().get_plugins()) > 0:		
-			curr_plugin = [x for x in self.__backend.get_plugins().get_plugins() if x.name == request.args.get('plugin')][0] if request.args.get('plugin') else self.__backend.get_plugins().get_plugins()[0]
-			config = curr_plugin.config
-			settings = request.args.get('variable') if request.args.get('variable') else config.get_sections()[0]
-			props = config.get_section_properties(settings)
+			if not request.args.get('plugin') == self.__ORDER_LABEL:
+				curr_plugin = [x for x in self.__backend.get_plugins().get_plugins() if x.name == request.args.get('plugin')][0] if request.args.get('plugin') else self.__backend.get_plugins().get_plugins()[0]
+				config = curr_plugin.config
+				settings = request.args.get('variable') if request.args.get('variable') else config.get_sections()[0]
+				props = config.get_section_properties(settings)
 
-			if request.method == 'POST':
-				for n in props:
-					if config.get_property(n).get_type() != configprop.BOOLEAN_TYPE:
-						if request.form.get(n) != None:
-							config.set(n, str(request.form.get(n)))
-					else:
-						config.set(n, '1' if str(request.form.get(n)) == 'y' else '0')			
-				s = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
-				if s:
-					propname = s.group(0).replace('-<[','').replace(']>-','')
-					config.set(propname, str(config.get_default(propname)))
-				elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-					try:
-						config.verify_warnings()
-					except Warning as e:
-						flash(str(e))
-						pass
-					try:
-						config.verify_exceptions()
-						config.save()
-					except Exception:
-						session.pop('_flashes', None)
-						pass		
-				elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+				if request.method == 'POST':
 					for n in props:
-						config.set(n, str(config.get_default(n)))
-				elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
-					config.read_config()
-				return redirect("{}?plugin={}&variable={}".format(request.base_url, curr_plugin.name, settings))
+						if config.get_property(n).get_type() != configprop.BOOLEAN_TYPE:
+							if request.form.get(n) != None:
+								config.set(n, str(request.form.get(n)))
+						else:
+							config.set(n, '1' if str(request.form.get(n)) == 'y' else '0')			
+					s = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
+					if s:
+						propname = s.group(0).replace('-<[','').replace(']>-','')
+						config.set(propname, str(config.get_default(propname)))
+					elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
+						try:
+							config.verify_warnings()
+						except Warning as e:
+							flash(str(e))
+							pass
+						try:
+							config.verify_exceptions()
+							config.save()
+						except Exception:
+							session.pop('_flashes', None)
+							pass		
+					elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+						for n in props:
+							config.set(n, str(config.get_default(n)))
+					elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
+						config.read_config()
+					return redirect("{}?plugin={}&variable={}".format(request.base_url, curr_plugin.name, settings))
 
-			reset_needed = False		
-			for i in props:
-				if config.get_property(i).get_resetneeded():
-					reset_needed = True
-					break
+				reset_needed = False		
+				for i in props:
+					if config.get_property(i).get_resetneeded():
+						reset_needed = True
+						break
 		
-			template = render_template(self.__PLUGINS_HTML, info="", plugin_name=curr_plugin.name, sett_name=settings, plugins=[x.name for x in self.__backend.get_plugins().get_plugins()], form=self.__build_settings(config, props), navlabels=config.get_sections(), reset_needed=reset_needed, version=constants.EPIFRAME_VERSION)
+				template = render_template(self.__PLUGINS_HTML, info="", order = "", plugin_name=curr_plugin.name, sett_name=settings, plugins=[x.name for x in self.__backend.get_plugins().get_plugins()] + [self.__ORDER_LABEL], form=self.__build_settings(config, props), navlabels=config.get_sections(), reset_needed=reset_needed, version=constants.EPIFRAME_VERSION)
+			else:
+				order = self.__backend.get_plugins().read_order()
+				if request.method == 'POST':
+					if request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
+						self.__backend.get_plugins().save_order(request.form.get('list_order').split(','))
+					elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+						order.sort()
+						self.__backend.get_plugins().save_order(order)
+					return redirect("{}?plugin={}".format(request.base_url, self.__ORDER_LABEL))
+					
+				template = render_template(self.__PLUGINS_HTML, info="", order = order, plugin_name=self.__ORDER_LABEL, sett_name="", plugins=[x.name for x in self.__backend.get_plugins().get_plugins()] + [self.__ORDER_LABEL], form=None, navlabels="", reset_needed=False, version=constants.EPIFRAME_VERSION)
+				
 		else:
 			template = render_template(self.__PLUGINS_HTML, info='<ul><li>There are no <b>ePiframe</b> plugins installed! </li><li>Go to <a href="https://github.com/MikeGawi/ePiframe_plugin" target="_blank">ePiframe_plugin</a> site to find something for You!</li></ul>')
 		return template

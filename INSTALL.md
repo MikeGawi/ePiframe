@@ -18,6 +18,7 @@
 			* [WebUI Users](#webui-users)
 			* [API](#api)
       	* [Plugins](#plugins)
+			* [Plugins execution order](#plugins-execution-order)
    * [Update](#update)
       * [Update Automatically](#update-automatically)
       * [Update Manually](#update-manually)
@@ -283,6 +284,10 @@ It is possible to control ePiframe from a simple API and even secure it with aut
 ### Plugins
 
 ePiframe supports custom plugins that can be created by anyone and can enhance *ALL* ePiframe functions (or even more). Check [ePiframe_plugin](https://github.com/MikeGawi/ePiframe_plugin) for more information, documentation, examples, tutorial and available plugins list.
+
+#### Plugins execution order
+
+Some plugins, especially the ones that do visual changes to the photo, can overlap each other, e.g. a frame can be drawn on the information displayed on the photo. To avoid that it is possible to manually change the plugins execution order in the *plugins* folder *order.cfg* file, that will be populated after the first ePiframe run with new plugins. You can manually change the lines to adapt the order for the configuration or do that in *Plugins-Execution Order* menu in ePiframe WebUI.
 
 ## Update
 ### Update Automatically

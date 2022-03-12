@@ -2,6 +2,7 @@
 {% block title %}Plugins{% endblock %}
 {% block head %}
   {{ super() }}
+	<script src="{{ url_for('static', filename='js/Sortable.min.js') }}"></script>
 {% endblock %}
 {% block content %}
 
@@ -14,7 +15,6 @@
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavMain" aria-controls="navbarNavMain" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-
 	  	<div class="collapse navbar-collapse" id="navbarNavMain">
 			<ul class="navbar-nav mr-auto">
 		  	{% for lab in plugins %}
@@ -25,6 +25,7 @@
 			</ul>
 	  	</div>
 	</nav>
+{% if not order %}
   	<nav class="navbar navbar-expand-sm navbar-dark bg-secondary bg-gradient">
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
@@ -40,9 +41,10 @@
 			</ul>
 	  	</div>
 	</nav>
-	
+{% endif %}
 	<div class="p-2">
 		<form method="POST" action="" id="setform">
+			{% if not order %}
 			{{ form.hidden_tag() }}
 			{% for field in form if field.widget.input_type != 'hidden' %}
 				<div class="row g-2 p-1 align-items-center"> 
@@ -65,12 +67,27 @@
 					<div class="col-auto"><div class="text-left px-0 text-danger" style="font-size:12px"><strong>Service restart needed after changing these settings!</strong></div></div>
 				</div>
 			{% endif %}
-			<div class="row g-2 p-1">
+				<div class="row g-2 p-1">
 				<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>			
 				<div class="col-auto"><button class="btn btn-secondary" name='CANCEL' id='CANCEL' value='CANCEL'>Cancel</button></div>
 				<div class="col-auto flex-fill"></div>
 				<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset All To Defaults</button></div>
-			</div>		
+			</div>
+			{% else %}
+				<div class="p-2">Drag and drop list items to change plugins execution order:</div>
+				<input type="hidden" id="list_order" name="list_order" value="" />
+				<div id="orderList" class="px-3 py-2 small list-group">
+				{% for line in order %}
+					<div class="list-group-item row p-2"><i class="bi bi-arrow-down-up mx-1"></i>{{line}}</div>
+				{% endfor %}
+				</div>
+				<div class="row g-2 p-1">
+				<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>			
+				<div class="col-auto"><button class="btn btn-secondary" name='CANCEL' id='CANCEL' value='CANCEL'>Cancel</button></div>
+				<div class="col-auto flex-fill"></div>
+				<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset Order</button></div>
+			</div>
+			{% endif %}		
 		</form>
 	</div>
 
@@ -96,6 +113,10 @@
 		});
 
 		$(".plugins-menu").addClass("link-light");
+		
+		if(document.getElementById("orderList")){
+			Sortable.create(orderList, { animation:150, ghostClass:"list-group-item-primary" });
+		}
 	</script>
 	<script>
 		 $('#DEFAULTS').on('click', function () {
@@ -107,7 +128,15 @@
 		});
 		
 		 $('#SAVE').on('click', function () {
-			if (confirm('Are you sure you want to save all changes?')) {        
+			if (confirm('Are you sure you want to save all changes?')) {
+				if(document.getElementById("orderList")){
+					var array = Array();
+					$(".list-group-item").each(function () {
+						array.push($(this).text());
+					});
+					$('#list_order').val(array.join(","));
+				}
+				
 				return true;
 			} else {
 				return false;		

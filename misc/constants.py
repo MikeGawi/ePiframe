@@ -2,7 +2,7 @@ import itertools
 
 class constants:
 
-	EPIFRAME_VERSION = 'v1.5.0'
+	EPIFRAME_VERSION = 'v1.6.0'
 	EPIFRAME_SECRET = 'ePiframeSecretlyLovesYourPhotos'
 	
 	#minimal needed python version
