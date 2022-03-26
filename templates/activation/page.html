@@ -61,7 +61,7 @@
 						</div>
 					</div>{% endif %}
 					{% if type == 'code' %}<form action="{{ url_for('generate') }}" id="code_form" method="POST" class="d-flex justify-content-center px-2 mt-2">
-						<label for="code" class="px-1 text-nowrap form-label mx-1">Access code:</label>
+						<label for="code" class="px-1 text-nowrap form-label mx-1">URL:</label>
 						<input class="form-control form-control-sm mx-1" type="text" name="code">
 						<button class='btn-primary btn-sm btn text-nowrap px-1 mx-1' type="submit" form="code_form">Generate Token</button>
 					</form>{% endif %}

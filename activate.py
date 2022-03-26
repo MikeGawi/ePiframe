@@ -36,7 +36,7 @@ __PAGES = 	{
 	15 : { __TYPE : __TEXT_TYPE, __PIC : '14.png', __TITLE : 'Download credentials', __TEXT : 'You have created OAuth client for Your <b>ePiframe</b>! <br>Click on <i>DOWNLOAD JSON</i> to download JSON formatted credentials file' },
 	16 : { __TYPE : __TEXT_TYPE, __PIC : '15.png', __TITLE : 'Find credentials', __TEXT : 'You can always get it from the <i>Credentials</i> dashboard by clicking download icon in <i>Actions</i> column of Your desired Client ID' },
 	17 : { __TYPE : __UPLOAD_TYPE, __PIC : None, __TITLE : 'Upload credentials', __TEXT : 'Now upload the JSON credentials file by dropping it or choosing <i>[Upload File]</i> option. <br>Any existing credentials file will be backed up' },
-	18 : { __TYPE : __CODE_TYPE, __PIC : None, __TITLE : 'Generate token', __TEXT : 'Almost done! Go to <br><a href="{}" class="text-wrap text-break" target="_blank">{}</a> <br>and authenticate with Your <b>ePiframe</b> Google account You have created project and credentials for. <br>After successfull authentication You will get an <i>Access code</i>, copy it and paste it in the field below. <br>Click on <i>[Generate Token]</i>. Any existing token file will be backed up' },
+	18 : { __TYPE : __CODE_TYPE, __PIC : None, __TITLE : 'Generate token', __TEXT : 'Almost done! Go to <br><a href="{}" class="text-wrap text-break" target="_blank">{}</a> <br>and authenticate with Your <b>ePiframe</b> Google account You have created project and credentials for. <br>After successfull authentication <u>You will get an error (but that is ok)</u>, copy the whole address that is not reachable and paste it below. <br>Click on <i>[Generate Token]</i>. Any existing token file will be backed up' },
 	19 : { __TYPE : __TEXT_TYPE, __PIC : None, __TITLE : 'Success', __TEXT : '<h4>All done!</h4> You have successfully activated Google Photos credentials and token for Your <b>ePiframe</b>! <br>Test Your frame and have fun!' }
 }
 
@@ -49,12 +49,13 @@ def striphtml(data):
 def get_auth_url():
 	global flow
 	flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(__CRED_FILE, scopes=['https://www.googleapis.com/auth/photoslibrary.readonly'])
-	flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
+	flow.redirect_uri = 'http://localhost:1/'
 	authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
 	return str(authorization_url)
 
 def gen_token(code):
-	if not code or not flow: raise Exception()
+	code = re.search(r"code=(.*)&", code).group(0).replace('code=','').replace('&','')	
+	if not code or not flow: raise Exception()	
 	flow.fetch_token(code=code)
 	credentials = flow.credentials
 	googleapiclient.discovery.build('photoslibrary', 'v1', credentials=credentials, static_discovery=False)			
@@ -69,7 +70,7 @@ def generate():
 			return redirect(str(len(__PAGES.keys())))
 		except Exception as e:
 			if hasattr(e, 'message') and getattr(e, 'message', str(e)): flash('Error: {}'.format(e))
-			flash('Error: The code should be an exact copy of the generated Access code and should not be empty!')
+			flash('Error: The URL should be an exact copy of the generated URL and should not be empty!')
 			flash('If something is still wrong then try to re-upload the credentials and try again')
 			return redirect(str(page))
 
@@ -176,10 +177,10 @@ if __name__ == "__main__":
 			try:
 				print("* Visit page:")
 				print(auth_url)
-				print("and authenticate with Your ePiframe Google account You have created project and credentials for. After successfull authentication You will get an Access code, copy it and paste below.")
-				code = input('Access code: ')
+				print("and authenticate with Your ePiframe Google account You have created project and credentials for. After successfull authentication You will get an error (but that is ok), copy the whole address that is not reachable and paste it below.")
+				code = input('URL: ')
 				gen_token(code)
 				break
 			except Exception as e:
-				print ('Error: The code should be an exact copy of the generated Access code and should not be empty!')
+				print ('Error: The URL should be an exact copy of the generated URL and should not be empty!')
 		print("*** " + striphtml(__PAGES[len(__PAGES)]['text']))
