@@ -346,21 +346,6 @@ def main():
 
 					indmanager.set_id(photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER))	
 
-					if bool(config.getint('interval_mult')):
-						#if photo comment contains hotword then multiply interval by it's value and photo will be displayed longer
-						intervalman = intervalmanager(config.get('interval_mult_file'))
-						if not '--no-skip' in [x.lower() for x in sys.argv]:
-							intervalman.remove()
-						try:
-							if not '--no-skip' in [x.lower() for x in sys.argv]:
-								if photo[constants.PHOTOS_SOURCE_LABEL] == constants.GOOGLE_PHOTOS_SOURCE:							
-									comment = str(photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER))
-								else:
-									err, comment = convertmanager().get_image_comment(config.get('convert_bin_path'), photo[constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER])
-								intervalman.save_interval(comment, config.get('interval_mult_hotword'), config.getint('interval_max_mult'))
-						except Exception:
-							pass
-
 					for oldfile in glob.glob(os.path.join(config.get('photo_convert_path'), config.get('photo_download_name')) + '.*'): os.remove(oldfile)
 
 					logging.log ("Getting next photo...")
@@ -403,6 +388,21 @@ def main():
 						logging.log ("Fail! File was not retrieved! : {}".format(str(ret)))
 					else:
 						logging.log ("Success!")
+						
+						if bool(config.getint('interval_mult')):
+							#if photo comment contains hotword then multiply interval by it's value and photo will be displayed longer
+							intervalman = intervalmanager(config.get('interval_mult_file'))
+							if not '--no-skip' in [x.lower() for x in sys.argv]:
+								intervalman.remove()
+							try:
+								if not '--no-skip' in [x.lower() for x in sys.argv]:
+									if photo[constants.PHOTOS_SOURCE_LABEL] == constants.GOOGLE_PHOTOS_SOURCE:							
+										comment = str(photoman.get_photo_attribute(photo, constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER))
+									else:
+										err, comment = convertmanager().get_image_comment(config.get('convert_bin_path'), filename)
+									intervalman.save_interval(comment, config.get('interval_mult_hotword'), config.getint('interval_max_mult'))
+							except Exception:
+								pass
 
 						#save index of current photo for next run
 						try:
