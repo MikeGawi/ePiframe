@@ -47,7 +47,7 @@ function install_pips {
 	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="--upgrade pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
 				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
 				  ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask>=2.0.2" ["Flask-WTF"]="flask-wtf==1.0.0" \
-				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
+				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0" ["Werkzeug"]="werkzeug~=2.0.0")
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
 		if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Telebot" ]; then 
