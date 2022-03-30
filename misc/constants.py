@@ -94,7 +94,8 @@ class constants:
 		'image/ico' : 'ico',
 		'image/icon' : 'ico',
 		'image/x-icon' : 'ico',
-		'image/bmp' : 'bmp'
+		'image/bmp' : 'bmp',
+		'image/heif' : ['heic', 'heif']
 	}
 	
 	MIME_START = 'image/'
