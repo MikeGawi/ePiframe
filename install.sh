@@ -46,11 +46,11 @@ function install_pips {
 	echo -e '\n\033[0;30mInstalling Python components\033[0m'
 	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="--upgrade pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
 				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
-				  ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask>=2.0.2" ["Flask-WTF"]="flask-wtf==1.0.0" \
-				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0" ["Werkzeug"]="werkzeug~=2.0.0")
+				  ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask>=2.1.0 werkzeug==2.0.3" ["Flask-WTF"]="flask-wtf==1.0.0" \
+				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
 	for pip in "${!pips[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
-		if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Telebot" ]; then 
+		if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Flask" ] || [ "$pip" == "Telebot" ]; then 
 			out=`sudo -H pip3 -q install -I ${pips[$pip]} 2>&1 > /dev/null`
 		else 
 			out=`sudo -H pip3 -q install -I "${pips[$pip]}" 2>&1 > /dev/null`
@@ -61,7 +61,7 @@ function install_pips {
 			sleep 5
 		else
 			echo -e '\033[0;31merror!\033[0m'
-			if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Telebot" ]; then 
+			if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Flask" ] || [ "$pip" == "Telebot" ]; then 
 				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I '${pips[$pip]}' manually and run the script again\033[0m"
 			else			
 				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I ${pips[$pip]} manually and run the script again\033[0m"
