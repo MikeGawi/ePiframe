@@ -20,6 +20,9 @@ class convertmanager:
 	__GET_PHOTO_SIZE_CODE = '{} ' + __FILE_MARK + ' -format "%w,%h" info:'
 	__GET_PHOTO_FORMAT_CODE = '{} ' + __FILE_MARK + ' -format "%m" info:'
 	__GET_PHOTO_COMMENT_CODE = '{} ' + __FILE_MARK + ' -format "%c" info:'
+	__GET_PHOTO_EXIF_CODE = '{} ' + __FILE_MARK + ' -quiet -format "%[EXIF:Orientation]" info:'
+	
+	__PHOTO_ORIENT_CODE = '{} ' + __FILE_MARK + ' -auto-orient ' + __FILE_MARK
 	
 	#Don't use blur! Blur will kill Raspberry Pi Zero.
 	#Resizing to huge and then scaling to small will add some blur and it's 10x faster than blur operation.
@@ -118,6 +121,12 @@ class convertmanager:
 		out, err = self.__subproc(self.__convert_option(origwidth, origheight, target, config, hdmi), srcfile)		
 		return err
 	
+	def orient_image (self, bin:str, file:str, firstframe:str):
+		e, orient = self.get_image_orientation(bin, file, firstframe)
+		err = None
+		if orient: out, err = self.__subproc(self.__PHOTO_ORIENT_CODE.format(bin), file)
+		return err
+	
 	def get_image_size (self, bin:str, srcfile:str, firstframe:str):
 		out, err = self.__subproc(self.__GET_PHOTO_SIZE_CODE.format(bin), srcfile+firstframe)		
 		wh = str(out.decode()).replace('"','').split(',') if out else ''
@@ -129,6 +138,11 @@ class convertmanager:
 		out, err = self.__subproc(self.__GET_PHOTO_FORMAT_CODE.format(bin), srcfile+firstframe)		
 		m = str(out.decode()).replace('"','') if out else ''
 		return err, m
+	
+	def get_image_orientation (self, bin:str, srcfile:str, firstframe:str):
+		out, err = self.__subproc(self.__GET_PHOTO_EXIF_CODE.format(bin), srcfile+firstframe)		
+		o = str(out.decode()).replace('"','') if out else ''
+		return err, o
 	
 	def get_image_comment (self, bin:str, srcfile:str):
 		out, err = self.__subproc(self.__GET_PHOTO_COMMENT_CODE.format(bin), srcfile)		

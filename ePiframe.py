@@ -489,6 +489,17 @@ def main():
 
 def convert (_filename, _targetFilename, _config, _plugins, _logging, _photo):
 	ret = False
+	
+	if bool(_config.getint('auto_orientation')):
+		_logging.log ("Auto-orientate the photo...")	
+		err = convertmanager().orient_image(_config.get('convert_bin_path'), _filename, constants.FIRST_FRAME_GIF)
+
+		if err != None:
+			_logging.log ("Fail! {}".format(str(err)))
+			raise
+		else:
+			_logging.log ("Success!")
+	
 	filename_pre = os.path.join(os.path.split(_filename)[0], 'pre_'+os.path.split(_filename)[1])
 	try: 
 		shutil.copy(_filename, filename_pre)
