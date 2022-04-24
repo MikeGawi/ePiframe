@@ -5,8 +5,8 @@ class convertmanager:
 	
 	__ERROR_VALUE_TEXT = 'Configuration background_color should be one of {}'
 	
-	__INVERT_FLAG = "-negate"
-	__ROTATE_CODE = '-rotate {}'
+	__INVERT_FLAG = "-negate "
+	__ROTATE_CODE = '-rotate {} '
 	__BACK_COLORS = ["white", "black", "photo"]
 	__GRAYSCALE_FLAG = "-colorspace Gray "
 	__COLORS_FLAG = "-colors {} "
@@ -74,8 +74,10 @@ class convertmanager:
 		if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1: option = 1
 		
 		#space at the end as those flag are optional
-		negate = self.__INVERT_FLAG + " " if config.getint('invert_colors') == 1 else ''
-		rotate = self.__ROTATE_CODE.format(config.getint('rotation')) + " " if config.getint('horizontal') == 0 else ''		
+		negate = self.__INVERT_FLAG if config.getint('invert_colors') == 1 else ''
+		rotate = self.__ROTATE_CODE.format(config.getint('rotation')) if config.getint('horizontal') == 0 else ''	
+		
+		if config.getint('horizontal') == 1 and config.getint('turned') == 1: rotate = self.__ROTATE_CODE.format(180)
 		
 		back = back.strip().lower()		
 				
