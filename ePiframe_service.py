@@ -146,10 +146,14 @@ class service(daemon):
 				self.__NUMBER_OF_NOTIF = 0
 				self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
 				
+				self.__backend.display_power_config(True)
+				
 				par = params if params != self.__backend.get_empty_params() else str()
 				args = (self.__script + par.split()) if par else self.__script
 				subprocess.Popen(args)
-			else:		
+			else:
+				self.__backend.display_power_config(False)
+				
 				if self.__NUMBER_OF_NOTIF == 0: self.__backend.log(self.__SERVICE_LOG_SLEEPING, silent=True)
 				self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1)%10
 				sleep = True

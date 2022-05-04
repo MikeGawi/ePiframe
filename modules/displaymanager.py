@@ -17,7 +17,13 @@ class displaymanager:
 	__DISPLAY_VALUES = ['SPI', 'HDMI']
 	
 	__ERROR_SVALUE_TEXT = 'Configuration display_type should be one of {}'
-
+	
+	
+	__DISPLAY_POWER = "display_power"
+	__DISPLAY_POWER_CODE = "sudo vcgencmd " + __DISPLAY_POWER + " {} 2> /dev/null"
+	__DISPLAY_POWER_OFF = "0"
+	__DISPLAY_POWER_ON = "1"	
+	
 	def __init__ (self, display:str, distype='', binary='', vt=1):
 		self.__usehdmi = self.is_hdmi(distype)
 		self.__binary = binary
@@ -82,3 +88,11 @@ class displaymanager:
 	@classmethod		
 	def is_hdmi (self, val):
 		return True if val and val.lower() == self.__DISPLAY_VALUES[1].lower() else False
+	
+	@classmethod		
+	def control_display_power (self, onoff):
+		os.popen(self.__DISPLAY_POWER_CODE.format(self.__DISPLAY_POWER_ON if onoff else self.__DISPLAY_POWER_OFF))
+			
+	@classmethod		
+	def get_display_power (self):
+		return os.popen(self.__DISPLAY_POWER_CODE.format("")).read().strip().replace(self.__DISPLAY_POWER, '').replace('=', '') or self.__DISPLAY_POWER_OFF

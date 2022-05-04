@@ -124,7 +124,9 @@ class webuimanager:
 			self.site_bind('/api/get_log', self.stream),
 			self.site_bind('/api/upload_photo', self.upload_photo, methods=['POST']),
 			self.site_bind('/api/action=', self.tools_functions),
-			self.site_bind('/api/action=<action>', self.tools_functions)
+			self.site_bind('/api/action=<action>', self.tools_functions),
+			self.site_bind('/api/display_power=', self.display_control),
+			self.site_bind('/api/display_power=<action>', self.display_control)
 		]
 		
 		for plug in self.__backend.get_plugins().plugin_api():	self.API += plug.extend_api(self, self.__usersman, self.__backend)
@@ -357,6 +359,18 @@ class webuimanager:
 				elif action == self.__POWEROFF_ACT: self.__backend.poweroff()
 				else: res = jsonify(error="Action Unknown!")
 			else: res = jsonify(error="No Action!")
+		else: res = jsonify(error="Method Not Allowed!")
+		return res
+	
+	@login_required
+	def display_control(self, action=str()):
+		res = jsonify(status="OK")
+		if request.method == 'GET':
+			if action:
+				if action.lower() in ['0', 'false', 'off'] : self.__backend.display_power(False)
+				elif action.lower() in ['1', 'true', 'on'] : self.__backend.display_power(True)
+				else: res = jsonify(error="Action Unknown!")
+			else: res = jsonify(state=self.__backend.get_display_power())
 		else: res = jsonify(error="Method Not Allowed!")
 		return res
 

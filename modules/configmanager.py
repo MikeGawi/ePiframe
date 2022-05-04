@@ -40,6 +40,7 @@ class configmanager(configbase):
 			configprop('interval_max_mult', self, dependency='interval_mult', minvalue=1, prop_type=configprop.INTEGER_TYPE),
 			configprop('start_times', self, delimiter=',', prop_type=configprop.STRINGLIST_TYPE, length=7, special=configprop.special(timermanager.verify, ['start_times', 'stop_times'])),
 			configprop('stop_times', self, delimiter=',', prop_type=configprop.STRINGLIST_TYPE, length=7, special=configprop.special(timermanager.verify, ['start_times', 'stop_times'])),
+			configprop('control_display_power', self, prop_type=configprop.BOOLEAN_TYPE, dependency=['display_type', displaymanager.get_hdmi()]),
 			configprop('allow_triggers', self, prop_type=configprop.BOOLEAN_TYPE),
 			configprop('convert_option', self, prop_type=configprop.INTEGER_TYPE, possible=convertmanager.get_convert_options(), dependency=['display_type', displaymanager.get_spi()]),
 			configprop('image_width', self, minvalue=1, prop_type=configprop.INTEGER_TYPE),

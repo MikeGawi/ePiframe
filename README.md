@@ -14,7 +14,8 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 * Simple activation for Google Photos access from ePiframe device (with guide) or any other device with Python
 * No additional storage for Google Photos source or 3rd party software is required as only one and current photo is downloaded and processed per frame update
 * When using local source it is possible to sync photos from almost all cloud/image hosting providers using 3rd party software
-* Updating after time interval with option to change time per photo (by *hot word* in photo description) and off hours per different days
+* Updating after time interval with option to change time per photo (by *hot word* in photo description)
+* Configurable off hours (and HDMI display power control) per different days
 * Photo filtering (by creation date, number of images), showing randomly, descendingly or ascendingly
 * For vertical or horizontal frame position
 * Can be controlled from Telegram Bot, embedded WebUI or API and can display weather information

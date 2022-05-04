@@ -6,6 +6,7 @@ import modules.configmanager as confman
 from modules.weathermanager import weathermanager
 import modules.pidmanager as pidman
 import modules.pluginsmanager as pluginsman
+from modules.displaymanager import displaymanager
 from misc.constants import constants
 from misc.logs import logs
 
@@ -253,3 +254,12 @@ class backendmanager:
 		
 	def start_sys_cmd (self, cmd):
 		return os.popen(cmd).read()
+	
+	def get_display_power (self):
+		return displaymanager.get_display_power()
+	
+	def display_power (self, onoff):
+		displaymanager.control_display_power(onoff)	
+	
+	def display_power_config (self, onoff):
+		if displaymanager.is_hdmi(self.__config.get('display_type')) and self.__config.getint('control_display_power'): self.display_power(onoff)

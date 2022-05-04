@@ -122,6 +122,45 @@ Response or error in JSON format.
 * ```Action Unknown!``` - when action value is unknown
 * ```No Action!``` - when no action value was provided
 
+## Control display power
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/display_power=<onoff>``` | GET | where ```<onoff>``` should be one of</br><ul><li>```0``` - power off display</li><li>```1``` - power on display</li><li>empty - show current display power state</li></ul> |
+
+Controls ePiframe display power ePiframe - only for HDMI displays. **No confirmation is needed!**
+
+**Examples:**
+* ```/api/display_power=0``` - power off display
+* ```/api/display_power=1``` - power on display
+* ```/api/display_power=``` - show current display power state
+
+etc.
+
+**Returns:**
+
+Response or error in JSON format.
+
+```
+{ "status":"OK" }
+```
+
+For ```/api/display_power=```, e.g.:
+
+```
+{ "state":"0" }
+```
+
+**Errors:**
+
+```
+{ "error":"<error message>" }
+```
+
+* ```Action Unknown!``` - when action value is unknown
+* ```No Action!``` - when no action value was provided
+
+
 ## Upload Photo
 
 | Command | Type | Parameters |
