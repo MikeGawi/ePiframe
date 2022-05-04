@@ -128,7 +128,7 @@ Response or error in JSON format.
 |--|--|--|
 | ```/api/display_power=<onoff>``` | GET | where ```<onoff>``` should be one of</br><ul><li>```0``` - power off display</li><li>```1``` - power on display</li><li>empty - show current display power state</li></ul> |
 
-Controls ePiframe display power ePiframe - only for HDMI displays. **No confirmation is needed!**
+Controls ePiframe display power - only for HDMI displays. **No confirmation is needed!**
 
 **Examples:**
 * ```/api/display_power=0``` - power off display
@@ -158,8 +158,6 @@ For ```/api/display_power=```, e.g.:
 ```
 
 * ```Action Unknown!``` - when action value is unknown
-* ```No Action!``` - when no action value was provided
-
 
 ## Upload Photo
 
