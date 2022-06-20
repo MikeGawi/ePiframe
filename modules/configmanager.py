@@ -97,7 +97,7 @@ class configmanager(configbase):
 		#end
 		
 	def check_system (self):
-		ret = False;
+		ret = False
 		
 		process = subprocess.Popen(self.__SPI_CHECK1, shell=True, stdout=subprocess.PIPE)
 		process.wait()

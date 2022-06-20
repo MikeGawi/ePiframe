@@ -17,12 +17,12 @@ class configbase(ABC):
 	
 	SETTINGS = []
 	
-	def __init__ (self, path:str, defpath:str, outerclass = None):
+	def __init__ (self, path:str, defpath:str, outerclass = None):		
 		self.config = configparser.ConfigParser()
 		self.__path = path
 		self.__defpath = defpath
 		self.__load_default_file()
-		self.read_config()
+		save = self.read_config()
 		self.main_class = outerclass
 		
 		self.__COMMENTS = {}
@@ -46,7 +46,7 @@ class configbase(ABC):
 		for prop in self.SETTINGS:
 			prop.convert()
 			
-		self.save()
+		if save: self.save()
 	
 	def get_path(self):
 		return self.__path
@@ -62,6 +62,7 @@ class configbase(ABC):
 		pass
 	
 	def read_config(self):
+		ret = False
 		if not os.path.exists(self.__path):
 			shutil.copy(self.__defpath, self.__path)
 		
@@ -78,7 +79,9 @@ class configbase(ABC):
 		for sect in self.def_config.sections():
 			for prop in list(dict(self.def_config.items(sect)).keys()):
 				try:
-					if not self.config.has_section(sect): self.config.add_section(sect)
+					if not self.config.has_section(sect): 
+						self.config.add_section(sect)
+						ret = True
 					self.config.get(sect, prop)
 				except Exception:
 					val = str()
@@ -87,14 +90,14 @@ class configbase(ABC):
 					except Exception:
 						pass
 					self.config.set(sect, prop, val if val else self.def_config.get(sect, prop))
+					ret = True
 					pass
 				
 		self.__CONFIG_STRING = {}
 		for sect in self.def_config.sections():
 			for prop in list(dict(self.def_config.items(sect)).keys()):
 				self.__CONFIG_STRING[prop] = sect
-				
-		self.save()
+		return ret
 				
 	def get (self, name:str):
 		ret = ''
