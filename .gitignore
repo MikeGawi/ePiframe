@@ -130,3 +130,5 @@ dmypy.json
 
 # assets
 assets/
+
+.idea/
