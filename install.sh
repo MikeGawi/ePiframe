@@ -30,7 +30,7 @@ function install_apts {
 				  ["LibAtlas"]="libatlas-base-dev" ["Python 3"]="python3" ["Pip 3"]="python3-pip" ["FBImageviewer"]="fbi")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"
-		out=`sudo apt-get install -y -qq ${apts[$apt]} 2>&1 > /dev/null`
+		out=$(sudo apt-get install -y -qq "${apts[$apt]}" 2>&1 > /dev/null)
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
@@ -43,33 +43,52 @@ function install_apts {
 }
 
 function install_pips {
-	echo -e '\n\033[0;30mInstalling Python components\033[0m'
-	declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="--upgrade pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
-				  ["Google components"]="--upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
-				  ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask>=2.1.0 werkzeug==2.0.3" ["Flask-WTF"]="flask-wtf==1.0.0" \
-				  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
-	for pip in "${!pips[@]}"; do
-		printf '\e[1;37m%-30s\e[m' "Installing $pip:"
-		if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Flask" ] || [ "$pip" == "Telebot" ]; then 
-			out=`sudo -H pip3 -q install -I ${pips[$pip]} 2>&1 > /dev/null`
-		else 
-			out=`sudo -H pip3 -q install -I "${pips[$pip]}" 2>&1 > /dev/null`
-		fi
-		
-		if [ -z "$out" ]; then
-			echo -e '\033[1;32mcheck!\033[0m'
-			sleep 5
-		else
-			echo -e '\033[0;31merror!\033[0m'
-			if [ "$pip" == "Google components" ] || [ "$pip" == "Pandas" ] || [ "$pip" == "Flask" ] || [ "$pip" == "Telebot" ]; then 
-				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I '${pips[$pip]}' manually and run the script again\033[0m"
-			else			
-				echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I ${pips[$pip]} manually and run the script again\033[0m"
-			fi
-			echo -e "\033[0;31m$out\033[0m"			
-			exit 1
-		fi
-	done
+        echo -e '\n\033[0;30mInstalling Python components\033[0m'
+        declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==8.4.0" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
+                                  ["Google components"]="google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
+                                  ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask==2.1.0" ["Flask-WTF"]="flask-wtf==1.0.0" \
+                                  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
+        declare -a order;
+        order+=( "Requests" )
+        order+=( "Telebot" )
+        order+=( "Dateutil" )
+        order+=( "Pillow" )
+        order+=( "ConfigParser" )
+        order+=( "Google components" )
+        order+=( "SPI Libs" )
+        order+=( "Pandas" )
+        order+=( "Flask" )
+        order+=( "Flask-WTF" )
+        order+=( "WTForms" )
+        order+=( "Flask-Login" )
+
+        for i in "${order[@]}"; do
+                pip=${pips[$i]}
+                printf '\e[1;37m%-30s\e[m' "Installing $i:"
+                if [ "$i" == "Google components" ] || [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ]; then
+                        out=$(sudo -H pip3 -q install -I --upgrade $pip 2>&1 > /dev/null)
+                else
+                        out=$(sudo -H pip3 -q install -I "$pip" 2>&1 > /dev/null)
+                fi
+
+                if [ -z "$out" ]; then
+                        echo -e '\033[1;32mcheck!\033[0m'
+                        sleep 5
+                else
+                        echo -e '\033[0;31merror!\033[0m'
+                        if [ "$i" == "Google components" ] || [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ]; then
+                                echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I --upgrade $pip manually and run the script again\033[0m"
+                        else
+                                echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I '$pip' manually and run the script again\033[0m"
+
+                        fi
+                        echo -e "\033[0;31m$out\033[0m"
+                        exit 1
+                fi
+        done
+
+        sudo -H pip3 -q uninstall --yes werkzeug > /dev/null 2>&1
+        sudo -H pip3 -q install --no-cache-dir -I 'werkzeug==2.0.3' > /dev/null 2>&1
 }
 
 function check_pi {
@@ -84,16 +103,16 @@ function check_spi {
 	echo -e '\n\033[0;30mChecking/enabling SPI support\033[0m'
 	printf '\e[1;37m%-30s\e[m' "Enabling SPI:"
 	
-	spi1=`lsmod | grep spi_`
-	spi2=`ls -l /dev/spidev* 2> /dev/null`
-	spi3=`raspi-config nonint get_spi`
+	spi1=$(lsmod | grep spi_)
+	spi2=$(ls -l /dev/spidev* 2> /dev/null)
+	spi3=$(raspi-config nonint get_spi)
 
-	if [ -z "$sp1" ] && [ -z "$spi2" ] && [ $spi3 -eq 1 ]; then
+	if [ -z "$spi1" ] && [ -z "$spi2" ] && [ "$spi3" -eq 1 ]; then
 		sudo raspi-config nonint do_spi 0
 		sudo sed -i "s/#dtparam=spi=/dtparam=spi=/g" /boot/config.txt
 	fi
 	
-	if [ `raspi-config nonint get_spi` -eq 0 ]; then
+	if [ "$(raspi-config nonint get_spi)" -eq 0 ]; then
 		echo -e '\033[1;32mcheck!\033[0m'
 	else
 		echo -e '\033[0;31merror!\033[0m'
@@ -122,7 +141,7 @@ function display_libs {
 	for i in "${order[@]}"
 	do
 		printf '\e[1;37m%-30s\e[m' "$i:"
-		out=`${cmds[$i]} 2>&1`
+		out=$(${cmds[$i]} 2>&1)
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
@@ -154,7 +173,7 @@ function epi_code {
 	for i in "${order[@]}"
 	do
 		printf '\e[1;37m%-30s\e[m' "$i:"
-		out=`${cmds[$i]} 2>&1 > /dev/null`
+		out=$(${cmds[$i]} 2>&1 > /dev/null)
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
@@ -169,7 +188,7 @@ function epi_code {
 function install_service {
 	declare -A cmds
 	cmds["Copying"]='sudo cp misc/ePiframe.service.org ePiframe.service'
-	pwdesc=$(echo $1'/' | sed 's_/_\\/_g')
+	pwdesc=$(echo "$1"'/' | sed 's_/_\\/_g')
 	cmds["Configuring"]="sudo sed -i s/EPIEPIEPI/$pwdesc/g ePiframe.service"
 	cmds["Installing"]="sudo systemctl --quiet enable $1/ePiframe.service"
 	
@@ -181,7 +200,7 @@ function install_service {
 	for i in "${order[@]}"
 	do
 		printf '\e[1;37m%-30s\e[m' "$i:"
-		out=`${cmds[$i]} 2>&1 > /dev/null`
+		out=$(${cmds[$i]} 2>&1 > /dev/null)
 		
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
@@ -257,8 +276,8 @@ fi
 if [ "$1" = "--update" ]; then
 	echo -e "\n\033[0;30mUpdating ePiframe!\033[0m"
 	
-	server_version=`wget --connect-timeout=3 -q -O - https://raw.githubusercontent.com/MikeGawi/ePiframe/master/misc/constants.py 2>/dev/null | grep EPIFRAME_VERSION`
-	local_version=`grep EPIFRAME_VERSION misc/constants.py`
+	server_version=$(wget --connect-timeout=3 -q -O - https://raw.githubusercontent.com/MikeGawi/ePiframe/master/misc/constants.py 2>/dev/null | grep EPIFRAME_VERSION)
+	local_version=$(grep EPIFRAME_VERSION misc/constants.py)
 	
 	if [ "$server_version" = "$local_version" ]; then
 		echo -e '\n\033[0;31mYou already have the latest version of ePiframe.\033[0m'		
@@ -274,9 +293,9 @@ if [ "$1" = "--update" ]; then
 fi
 
 if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ]; then
-	out=`sudo systemctl is-enabled ePiframe.service 2> /dev/null`
+	out=$(sudo systemctl is-enabled ePiframe.service 2> /dev/null)
 
-	if [ ! -z "$out" ]; then
+	if [ -n "$out" ]; then
 			sudo systemctl stop ePiframe.service
 			sudo systemctl disable ePiframe.service
 	fi
@@ -287,7 +306,7 @@ if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ]; then
 	fi
 fi
 
-echo -e "\n\033[0;30mStarted `date`\033[0m"
+echo -e "\n\033[0;30mStarted $(date)\033[0m"
 check_pi
 printf '\e[1;37m%-30s\e[m' "Is root:"
 if [[ $EUID -eq 0 ]];
@@ -304,13 +323,13 @@ install_pips
 check_spi
 
 if [ "$1" = "--update" ]; then
-	path=`pwd`
+	path=$(pwd)
 	
 	mkdir -p backup
 	
 	if [ -f "config.cfg" ]; then
 		cp config.cfg backup/config.cfg.bak
-		cp config.cfg backup/config-$(date +"%Y%m%d-%H%M%S").cfg.bak
+		cp config.cfg backup/config-"$(date +"%Y%m%d-%H%M%S")".cfg.bak
 		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg and a copy with timestamp as well) in backup folder\033[0m'
 	else	
 		while true; do
@@ -345,16 +364,16 @@ else
 		path="/home/pi/ePiframe"
 	fi
 	sudo mkdir -p "$path"
-	cd $path
+	cd $path || exit
 fi
 
 epi_code
 display_libs
 
-out=`sudo systemctl is-enabled ePiframe.service 2> /dev/null`
+out=$(sudo systemctl is-enabled ePiframe.service 2> /dev/null)
 
 echo -e '\n\033[0;30mInstalling ePiframe service\033[0m'
-if [ ! -z "$out" ]; then
+if [ -n "$out" ]; then
 	while true; do
 		read -p $'\n\e[1;37mThere is an ePiframe.service enabled already. Do You want to remove it? [Y/n]\e[0m' -n 1 -r -e yn
 		case "${yn:-Y}" in
@@ -389,4 +408,4 @@ fi
 sudo chown -R pi:pi $path
 sudo chmod +x $path/*.py
 
-echo -e "\n\033[0;30mEnded `date`\033[0m"
+echo -e "\n\033[0;30mEnded $(date)\033[0m"
