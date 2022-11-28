@@ -62,7 +62,7 @@ Move to [next steps](#next-steps)
 
 * Install APTs:
 ```
-sudo apt-get install imagemagick webp dcraw libatlas-base-dev python3 python3-pip RPi.GPIO fbi
+sudo apt-get install imagemagick webp rrdtool dcraw libatlas-base-dev python3 python3-pip RPi.GPIO fbi
 ```
 * Install PIPs:
 ```
@@ -126,7 +126,7 @@ ePiframe can pull photos from a local folder (or subfolders recursively) specifi
 
 **_NOTE_** - Local Source can be the only one or one of the photo sources enabled along with other possible options.
 
-The script will check the configured location looking for images according to extensions (case insensitive). It will also collect the modification time used for photo sorting and filtering.
+The script will check the configured location looking for images according to extensions (case-insensitive). It will also collect the modification time used for photo sorting and filtering.
 
 ### Cloud sync
 
@@ -267,7 +267,7 @@ To configure:
 
 #### WebUI Users
 
-It is possible to secure Web User Interface of ePiframe with usernames and passwords. You need to create an user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line).
+It is possible to secure Web User Interface of ePiframe with usernames and passwords. You need to create a user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line).
 
 **_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successfull authentication. Deleting all users will unblock it for everyone.
 
@@ -360,7 +360,7 @@ Move to [next steps](#next-steps-1)
 
 ### Display
 
-Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays but now it supports any HDMI (there are also e-Paper HDMI displays) or Composite screens. [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) is used for that and it works with Desktop or CLI (console) OS versions. 
+Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays, but now it supports any HDMI (there are also e-Paper HDMI displays) or Composite screens. [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) is used for that, and it works with Desktop or CLI (console) OS versions. 
 
 To configure:
 * Enable HDMI in configuration and set screen width and height
@@ -401,7 +401,7 @@ If problem still occurs, please create an issue here.
 
 ## Service control
 
-ePiframe comes with a system service that is fully autonomic, automatic and self-recovering. It can be left completely unsupervised but it is possible to control it if needed, the same way as every service in Linux:
+ePiframe comes with a system service that is fully autonomic, automatic and cls-recovering. It can be left completely unsupervised, but it is possible to control it if needed, the same way as every service in Linux:
 ```
 #stop
 sudo systemctl stop ePiframe.service

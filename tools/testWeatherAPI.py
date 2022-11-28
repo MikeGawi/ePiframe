@@ -11,7 +11,7 @@ LON_CORDS = -74.0060
 print("ePiframe - e-Paper Raspberry Pi Photo Frame - OpenWeather API check tool.")
 print("This tool will help test OpenWeather API call for ePiframe.")
 
-if "--help" not in [x.lower() for x in sys.argv]:
+if "--help" not in [argument.lower() for argument in sys.argv]:
     API_KEY = input("Enter API key from openweathermap.org: ")
     print("API key = " + str(API_KEY))
 
@@ -36,12 +36,12 @@ if "--help" not in [x.lower() for x in sys.argv]:
     )
 
     try:
-        ret = requests.get(url, timeout=5)
-        ret.raise_for_status()
-    except Exception as exc:
-        print("Couldn't retrieve weather data! {}".format(exc))
-        ret = None
+        return_value = requests.get(url, timeout=5)
+        return_value.raise_for_status()
+    except Exception as exception:
+        print(f"Couldn't retrieve weather data! {exception}")
+        return_value = None
 
-    if ret:
+    if return_value:
         print("-=+*Success! Data retrieved with given credentials:")
-        print(json.dumps(ret.json(), indent=2, sort_keys=True))
+        print(json.dumps(return_value.json(), indent=2, sort_keys=True))

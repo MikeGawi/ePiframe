@@ -1,96 +1,157 @@
-import os, importlib
+from __future__ import annotations
+
+import os
+import importlib
 from glob import glob
+from typing import List
+from misc.logs import Logs
+from modules.base.pluginbase import PluginBase
+from typing import TYPE_CHECKING
 
-class pluginsmanager:
+if TYPE_CHECKING:
+    from modules.configmanager import ConfigManager
+    from modules.pidmanager import PIDManager
 
-	__PLUGINS_DIR = 'plugins/'
-	__PLUGIN_NAME = '_plugin.py'
-	__PLUGIN_CLASS = '_plugin'
-	__PLUGINS = []
-	__ORDER_FILE = __PLUGINS_DIR + 'order.cfg'
-	
-	def __init__(self, path, pidmgr, logging, config):
-		self.__config = config		
-		self.__pidmgr = pidmgr
-		self.__logging = logging
-		self.__globalpath = path
-		
-		self.discover()
 
-	def read_order(self):
-		order = []
-		if os.path.exists(self.__ORDER_FILE):
-			with open(self.__ORDER_FILE) as f:
-				order = f.readlines()	
-		return [o.strip() for o in order]
+class PluginsManager:
 
-	def save_order(self, order):
-		with open(self.__ORDER_FILE, 'w') as f:
-			for o in order:
-				f.write(o + '\n')
+    __PLUGINS_DIR = "plugins/"
+    __PLUGIN_NAME = "_plugin.py"
+    __PLUGIN_CLASS = "_plugin"
+    __PLUGINS = []
+    __ORDER_FILE = __PLUGINS_DIR + "order.cfg"
 
-	def discover(self):
-		self.__PLUGINS = []
-		lists = glob(self.__PLUGINS_DIR + '**/' + self.__PLUGIN_NAME)
-		modules = []	
-		if lists and len(lists) > 0:
-			for el in lists: 
-				mod = os.path.dirname(el).replace('/', '.')
-				modules.append(mod)
-			modules.sort()	
-			order = self.read_order()
+    def __init__(
+        self, path: str, pid_manager: PIDManager, logging: Logs, config: ConfigManager
+    ):
+        self.__config = config
+        self.__pid_manager = pid_manager
+        self.__logging = logging
+        self.__global_path = path
 
-			zipped = []
-			loc=len(modules)+1
-			for p in modules:
-				if p in order:
-					pos=0
-					for o in order:
-						if p == o:
-							zipped.append(pos)
-							break
-						pos+=1
-				else:
-					zipped.append(loc)
-					loc+=1
-			sorty = [x for y,x in sorted(zip(zipped, modules))]	
-			self.save_order(sorty)	
-			for mod in sorty:
-				module = importlib.import_module(mod + '.' + self.__PLUGIN_CLASS)
-				self.__PLUGINS.append (module.plugin(os.path.join(os.path.realpath(self.__globalpath), os.path.dirname(el)), self.__pidmgr, self.__logging, self.__config))
-			
-	def get_plugins(self):
-		return self.__PLUGINS
-	
-	def get_enabled(self):
-		return [x for x in self.__PLUGINS if x.is_enabled()]
-	
-	def plugin_source (self):
-		return [p for p in self.get_enabled() if p.is_function_used('add_photo_source')]
-	
-	def get_plugin_source (self):
-		return [p for p in self.get_enabled() if p.SOURCE]
-	
-	def plugin_source_get_file (self, plugin):
-		return plugin.is_function_used('add_photo_source_get_file')
-	
-	def plugin_photos_list (self):
-		return [p for p in self.get_enabled() if p.is_function_used('change_photos_list')]
-	
-	def plugin_preprocess (self):
-		return [p for p in self.get_enabled() if p.is_function_used('preprocess_photo')]
-		
-	def plugin_postprocess (self):
-		return [p for p in self.get_enabled() if p.is_function_used('postprocess_photo')]
-	
-	def plugin_api (self):
-		return [p for p in self.get_enabled() if p.is_function_used('extend_api')]
-	
-	def plugin_website (self):
-		return [p for p in self.get_enabled() if p.is_function_used('add_website')]
-	
-	def plugin_action (self):
-		return [p for p in self.get_enabled() if p.is_function_used('add_action')]
-	
-	def plugin_service_thread (self):
-		return [p for p in self.get_enabled() if p.is_function_used('add_service_thread')]
+        self.discover()
+
+    def read_order(self) -> List[str]:
+        orders = []
+        if os.path.exists(self.__ORDER_FILE):
+            with open(self.__ORDER_FILE) as file:
+                orders = file.readlines()
+        return [order.strip() for order in orders]
+
+    def save_order(self, orders: List[str]):
+        with open(self.__ORDER_FILE, "w") as file:
+            for order in orders:
+                file.write(order + "\n")
+
+    def discover(self):
+        self.__PLUGINS = []
+        lists = glob(self.__PLUGINS_DIR + "**/" + self.__PLUGIN_NAME)
+        modules = []
+        elements = {}
+        if lists and len(lists) > 0:
+            for element in lists:
+                path = os.path.dirname(element).replace("/", ".")
+                modules.append(path)
+                elements[path] = element
+            modules.sort()
+            orders = self.read_order()
+
+            zipped = []
+            location = len(modules) + 1
+            for plugin in modules:
+                if plugin in orders:
+                    position = 0
+                    for order in orders:
+                        if plugin == order:
+                            zipped.append(position)
+                            break
+                        position += 1
+                else:
+                    zipped.append(location)
+                    location += 1
+            sorted_elements = [
+                module for zipped_module, module in sorted(zip(zipped, modules))
+            ]
+            self.save_order(sorted_elements)
+            for modules in sorted_elements:
+                module = importlib.import_module(modules + "." + self.__PLUGIN_CLASS)
+                self.__PLUGINS.append(
+                    module.Plugin(
+                        os.path.join(
+                            os.path.realpath(self.__global_path),
+                            os.path.dirname(elements[modules]),
+                        ),
+                        self.__pid_manager,
+                        self.__logging,
+                        self.__config,
+                    )
+                )
+
+    def get_plugins(self) -> List[PluginBase]:
+        return self.__PLUGINS
+
+    def get_enabled(self) -> List[PluginBase]:
+        return [plugin for plugin in self.__PLUGINS if plugin.is_enabled()]
+
+    def plugin_source(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("add_photo_source")
+        ]
+
+    def get_plugin_source(self) -> List[PluginBase]:
+        return [plugin for plugin in self.get_enabled() if plugin.SOURCE]
+
+    @staticmethod
+    def plugin_source_get_file(plugin: PluginBase) -> bool:
+        return plugin.is_function_used("add_photo_source_get_file")
+
+    def plugin_photos_list(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("change_photos_list")
+        ]
+
+    def plugin_preprocess(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("preprocess_photo")
+        ]
+
+    def plugin_postprocess(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("postprocess_photo")
+        ]
+
+    def plugin_api(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("extend_api")
+        ]
+
+    def plugin_website(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("add_website")
+        ]
+
+    def plugin_action(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("add_action")
+        ]
+
+    def plugin_service_thread(self) -> List[PluginBase]:
+        return [
+            plugin
+            for plugin in self.get_enabled()
+            if plugin.is_function_used("add_service_thread")
+        ]

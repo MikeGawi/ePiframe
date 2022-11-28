@@ -6,9 +6,9 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 ## Main features
 
-* Pulls photos (supports all formats including RAW, videos are ignored) from one or more albums in Google Photos (shared between users who can modify the content) and/or from local folder and automatically prepares them for attached display (automatic conversion to black-and-white with 6 different presets, color inversion, limited palette, etc. and various background colors)
+* Pull photos (supports all formats including RAW, videos are ignored) from one or more albums in Google Photos (shared between users who can modify the content) and/or from local folder and automatically prepares them for attached display (automatic conversion to black-and-white with 6 different presets, color inversion, limited palette, etc. and various background colors)
 * Non-HDMI e-Paper Waveshare SPI or any other HDMI, Composite displays supported
-* With e-Paper display photo is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have back light - so no blank frames
+* With e-Paper display photo is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have backlight - so no blank frames
 * Works with Desktop or CLI (console) OS versions and even for Raspberry Pi Zero W (wireless) and offline Raspberry Pi Zero (when using local source) + Raspberry Pi OS Lite
 * Autonomic device, once configured can be left headless with system service supervising whole process that is auto recovering and auto starting by itself
 * Simple activation for Google Photos access from ePiframe device (with guide) or any other device with Python
@@ -44,7 +44,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 ### Frame
 
-You can use any photo frame for your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi onto it. Also a good passe-partout piece should frame your display and cover all unwanted elements. 
+You can use any photo frame for your ePiframe and cut the back to make place for the display connector and glue Raspberry Pi onto it. Also, a good passe-partout piece should frame your display and cover all unwanted elements. 
 
 Or you can 3D print a nice standing frame back with case for your Raspberry Pi and even passe-partout and assemble it with bought photo frame like I did here:
 

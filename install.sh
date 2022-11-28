@@ -87,8 +87,8 @@ function install_pips {
                 fi
         done
 
-        sudo -H pip3 -q uninstall --yes werkzeug > /dev/null 2>&1
-        sudo -H pip3 -q install --no-cache-dir -I 'werkzeug==2.0.3' > /dev/null 2>&1
+sudo -H pip3 -q uninstall --yes werkzeug > /dev/null 2>&1
+sudo -H pip3 -q install --no-cache-dir -I 'werkzeug==2.0.3' > /dev/null 2>&1
 }
 
 function check_pi {
