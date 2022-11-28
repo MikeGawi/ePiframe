@@ -1,63 +1,69 @@
-import time, os
+import gzip
 import logging
-import zlib, gzip
-from time import strftime
-from datetime import datetime 
-from time import gmtime
+import os
+import time
+from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+from time import gmtime
+from time import strftime
 
-class logs:
-	
-	def __init__(self, path=""):
-		if path:
-			self.__path = path
 
-			pathos = Path(path)
-			pathos.parent.mkdir(parents=True, exist_ok=True) 
+class Logs:
+    def __init__(self, path=""):
+        if path:
+            self.__path = path
 
-			self.__logger = logging.getLogger("ePiframe")
-			self.__logger.setLevel(logging.INFO)
+            pathos = Path(path)
+            pathos.parent.mkdir(parents=True, exist_ok=True)
 
-			handler = TimedRotatingFileHandler(path, when="midnight", interval=1, backupCount=6)
+            self.__logger = logging.getLogger("ePiframe")
+            self.__logger.setLevel(logging.INFO)
 
-			def namer(name):
-				return name + ".gz"
+            handler = TimedRotatingFileHandler(
+                path, when="midnight", interval=1, backupCount=6
+            )
 
-			def rotator(source, dest):
-				with open(source, "rb") as sf:
-					data = sf.read()
-					with gzip.open(dest, "wb") as df:
-						df.write(data)
-				os.remove(source)
+            def namer(name):
+                return name + ".gz"
 
-			handler.rotator = rotator
-			handler.namer = namer
-		
-			self.__logger.addHandler(handler)
-		else:
-			self.__path = ""
-	
-	@classmethod
-	def show_log (self, text:str):
-		timeObj = datetime.now().strftime("%Y-%m-%d %H:%M:%S :")
-		print(timeObj, text)
+            def rotator(source, destination):
+                with open(source, "rb") as sf:
+                    data = sf.read()
+                    with gzip.open(destination, "wb") as df:
+                        df.write(data)
+                os.remove(source)
 
-	@classmethod		
-	def start_time (self):    
-		return (time.time())
+            handler.rotator = rotator
+            handler.namer = namer
 
-	@classmethod
-	def end_time (self):
-		return (time.time())
+            self.__logger.addHandler(handler)
+        else:
+            self.__path = ""
 
-	@classmethod
-	def execution_time (self, startTime, endTime):
-		return (strftime(" %H:%M:%S",gmtime(int('{:.0f}'.format(float(str((endTime - startTime))))))))
-	
-	def log (self, text:str, silent = False):
-		timeObj = datetime.now().strftime("%Y-%m-%d %H:%M:%S :")
-		if not silent:
-			print(timeObj, text)
-		if self.__path:
-			self.__logger.info(timeObj + " " + text)
+    @staticmethod
+    def show_log(text: str):
+        time_obj = datetime.now().strftime("%Y-%m-%d %H:%M:%S :")
+        print(time_obj, text)
+
+    @staticmethod
+    def start_time() -> float:
+        return time.time()
+
+    @staticmethod
+    def end_time() -> float:
+        return time.time()
+
+    @staticmethod
+    def execution_time(start_time: float, end_time: float):
+        return strftime(
+            " %H:%M:%S",
+            gmtime(int("{:.0f}".format(float(str((end_time - start_time)))))),
+        )
+
+    def log(self, text: str, silent: bool = False):
+        time_obj = datetime.now().strftime("%Y-%m-%d %H:%M:%S :")
+        if not silent:
+            print(time_obj, text)
+        if self.__path:
+            self.__logger.info(time_obj + " " + text)

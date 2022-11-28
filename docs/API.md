@@ -13,7 +13,7 @@ e.g.:
 192.168.0.123:8080/api/get_image?api_key=1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p&original&thumb
 ```
 
-**_NOTE_** - When there are no users in the database API key can be ommited but then everyone can control the frame.
+**_NOTE_** - When there are no users in the database API key can be omitted but then everyone can control the frame.
 
 **_NOTE_** - Header authentication (basic) with API key (Base64 encoding allowed) is also possible.
 
@@ -54,7 +54,7 @@ JSON format:
 * ```mem``` - allocated memory percentage status (with % sign at the end)
 * ```service``` - ePiframe service status: _Running_ or _Not running!_
 * ```state``` - ePiframe state: _Idle_ or _Busy_
-* ```temp``` - current core temperature in Celcius (C) or Fahrenheit (F) according to units configuration (with degree sign at the end)
+* ```temp``` - current core temperature in Celsius (C) or Fahrenheit (F) according to units configuration (with degree sign at the end)
 * ```update``` - date and time of the next frame update in format: _YYYY-MM-DD_ (not visible when the same day) _at hh:mm:ss_ (next line) _in d days m mins s secs_ (days not visible when less than one day)
 * ```uptime``` - device running time
 * ```version``` - version of ePiframe

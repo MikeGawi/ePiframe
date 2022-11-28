@@ -132,3 +132,16 @@ dmypy.json
 assets/
 
 .idea/
+/pre_origphoto.*
+/misc/users.db
+/token.pickle
+/origphoto.*
+/index
+/credentials.json
+/time
+/pid
+/list
+/static/data/*.rrd
+/origphoto_thumb.*
+/photo.bmp
+/photo_thumb.jpg

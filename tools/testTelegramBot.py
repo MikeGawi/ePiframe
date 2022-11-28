@@ -10,7 +10,7 @@ DEBUG = False
 print("ePiframe - e-Paper Raspberry Pi Photo Frame - Telegram bot check tool.")
 print("This tool will help test Telegram bot for ePiframe.")
 
-if "--help" not in [x.lower() for x in sys.argv]:
+if "--help" not in [argument.lower() for argument in sys.argv]:
     TOKEN = input("Enter token key for Your bot: ")
     print("TOKEN = " + str(TOKEN))
     print(
@@ -36,11 +36,7 @@ if "--help" not in [x.lower() for x in sys.argv]:
 
         @bot.message_handler(commands=["start", "help"])
         def send_welcome(message):
-            print(
-                "'{}' message received from chat id {}".format(
-                    message.text, message.chat.id
-                )
-            )
+            print(f"'{message.text}' message received from chat id {message.chat.id}")
             if DEBUG:
                 print(message)
             bot.reply_to(
@@ -50,11 +46,7 @@ if "--help" not in [x.lower() for x in sys.argv]:
 
         @bot.message_handler(func=lambda message: True)
         def echo_all(message):
-            print(
-                "'{}' message received from chat id {}".format(
-                    message.text, message.chat.id
-                )
-            )
+            print(f"'{message.text}' message received from chat id {message.chat.id}")
             if DEBUG:
                 print(message)
             bot.reply_to(message, message.text)
@@ -71,9 +63,7 @@ if "--help" not in [x.lower() for x in sys.argv]:
         )
         def echo_data(message):
             print(
-                "Data '{}' received from chat id {}".format(
-                    message.content_type, message.chat.id
-                )
+                f"Data '{message.content_type}' received from chat id {message.chat.id}"
             )
             if DEBUG:
                 print(message)
@@ -84,5 +74,5 @@ if "--help" not in [x.lower() for x in sys.argv]:
         print("Success!")
         print("Start writing to Your bot and bot will reply, CTRL+C to quit")
         bot.infinity_polling()
-    except Exception as exc:
-        print("Error when setting up bot! {}".format(exc))
+    except Exception as exception:
+        print(f"Error when setting up bot! {exception}")

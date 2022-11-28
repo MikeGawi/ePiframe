@@ -18,14 +18,10 @@ def hello_world():
 print("ePiframe - e-Paper Raspberry Pi Photo Frame - WebUI test tool.")
 print("This tool will help test WebUI port and IP run for ePiframe.")
 
-if "--help" not in [x.lower() for x in sys.argv]:
+if "--help" not in [argument.lower() for argument in sys.argv]:
     while True:
         ip = (
-            input(
-                "Enter IP address [Leave empty for {} (under public IP address)]:".format(
-                    IP
-                )
-            )
+            input(f"Enter IP address [Leave empty for {IP} (under public IP address)]:")
             or IP
         )
 
@@ -42,10 +38,7 @@ if "--help" not in [x.lower() for x in sys.argv]:
         print(
             "Any port below 5000 will need root privilleges - start script with 'sudo'"
         )
-        port = (
-            input("Enter port number (1-65535) [Leave empty for {}]:".format(PORT))
-            or PORT
-        )
+        port = input(f"Enter port number (1-65535) [Leave empty for {PORT}]:") or PORT
 
         try:
             int(port)
