@@ -66,7 +66,7 @@ sudo apt-get install imagemagick webp rrdtool dcraw libatlas-base-dev python3 py
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install -I requests python-dateutil 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 pillow==9.0.1 pyTelegramBotAPI==4.1.1 'flask==2.1.3' werkzeug==2.0.3 flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
+sudo -H pip3 install -I requests python-dateutil 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 pillow==9.2.0 pyTelegramBotAPI==4.1.1 'flask<2.2.0' werkzeug==2.0.3 flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
@@ -273,7 +273,7 @@ It is possible to secure Web User Interface of ePiframe with usernames and passw
 
 #### API
 
-It is possible to control ePiframe from a simple API and even secure it with authentication keys. It is not needed to have the key but in case You need to secure API calls create an user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line). Every user has an API key generated automatically which You then get in the same command tool.
+It is possible to control ePiframe from a simple API and even secure it with authentication keys. It is not needed to have the key but in case You need to secure API calls create a user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line). Every user has an API key generated automatically which You then get in the same command tool.
 
 **_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successfull authentication or API key authentication. Deleting all users will unblock it for everyone.
 
