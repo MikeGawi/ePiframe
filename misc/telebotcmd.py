@@ -37,7 +37,7 @@ class TelebotCmd:
     LONGER_MSG = "Will be displayed {} time(s) longer"
     LONGER2_MSG = "\nMultiplication sum up if already set"
 
-    ALL = "-".join([k for k in locals().values() if "/" in k and "?" not in k])
+    ALL = "-".join([key for key in locals().values() if "/" in key and "?" not in key])
 
     UPLOAD_PHOTO_TAG = "upload_photo"
     UPLOAD_PHOTO_FILEID_TAG = "FILEID"

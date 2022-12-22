@@ -7,14 +7,14 @@ import socket
 class Connection:
     @staticmethod
     def check_internet(url: str, timeout: int) -> str:
-        ret = None
+        return_value = None
 
         try:
             requests.get(url, timeout=timeout)
-        except requests.ConnectionError as exc:
-            ret = str(exc)
+        except requests.ConnectionError as exception:
+            return_value = str(exception)
 
-        return ret
+        return return_value
 
     @staticmethod
     def download_file(
@@ -27,11 +27,11 @@ class Connection:
         if response.status_code == code:
             filename = os.path.join(destination_folder, file_name)
 
-            with open(filename, "wb") as f:
+            with open(filename, "wb") as file:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
-                        f.write(chunk)
-                f.close()
+                        file.write(chunk)
+                file.close()
 
         return response.status_code
 
@@ -45,7 +45,7 @@ class Connection:
 
     @staticmethod
     def port_check(port):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(2)  # Timeout in case of port not open
-        if not s.connect_ex((port[0], int(port[1]))) == 0:
+        socket_object = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket_object.settimeout(2)  # Timeout in case of port not open
+        if not socket_object.connect_ex((port[0], int(port[1]))) == 0:
             raise Exception(f"Port {port[1]} is not open!")

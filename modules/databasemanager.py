@@ -53,18 +53,18 @@ class DatabaseManager:
                     self.__dbconnection.commit()
 
     def __commit(self, query: str, fields: str = ""):
-        cur = self.__dbconnection.cursor()
+        cursor = self.__dbconnection.cursor()
         if fields:
-            cur.executemany(query, fields)
+            cursor.executemany(query, fields)
         else:
-            cur.execute(query, "")
+            cursor.execute(query, "")
         self.__dbconnection.commit()
 
     def __get(self, query: str, fields: str = "") -> list:
-        cur = self.__dbconnection.cursor()
-        cur.execute(query, fields)
+        cursor = self.__dbconnection.cursor()
+        cursor.execute(query, fields)
         self.__dbconnection.commit()
-        return cur.fetchall()
+        return cursor.fetchall()
 
     @staticmethod
     def __change_many(fields):
@@ -73,9 +73,11 @@ class DatabaseManager:
     @staticmethod
     def __to_strings(fields) -> List[str]:
         values = []
-        for i, e in enumerate(fields):
+        for iterator, enumerator in enumerate(fields):
             values.append(
-                "'{}'".format(e) if isinstance(e, str) and e != Constants.DB_NULL else e
+                "'{}'".format(enumerator)
+                if isinstance(enumerator, str) and enumerator != Constants.DB_NULL
+                else enumerator
             )
         return values
 

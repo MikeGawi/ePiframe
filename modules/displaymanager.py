@@ -78,9 +78,9 @@ class DisplayManager:
 
     @classmethod
     def verify_display(cls, value: str):
-        if value not in [k for k in cls.__DISPLAY_VALUES]:
+        if value not in [key for key in cls.__DISPLAY_VALUES]:
             raise Exception(
-                cls.__ERROR_VALUE_TEXT.format([k for k in cls.__DISPLAY_VALUES])
+                cls.__ERROR_VALUE_TEXT.format([key for key in cls.__DISPLAY_VALUES])
             )
 
     @classmethod

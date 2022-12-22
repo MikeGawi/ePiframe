@@ -100,20 +100,25 @@ class Constants:
     FIRST_FRAME_GIF = "[0]"
 
     TYPE_TO_EXTENSION = dict(
-        (k, v[0] if isinstance(v, list) else v) for k, v in EXTEN.items()
+        (key, value[0] if isinstance(value, list) else value)
+        for key, value in EXTEN.items()
     )
     EXTENSION_TO_TYPE = dict(
         [
-            y
-            for x in [
-                itertools.product(v if isinstance(v, list) else [v], [k])
-                for k, v in EXTEN.items()
+            type
+            for extension in [
+                itertools.product(value if isinstance(value, list) else [value], [key])
+                for key, value in EXTEN.items()
             ]
-            for y in x
+            for type in extension
         ]
     )
     EXTENSIONS = sum(
-        [x if isinstance(x, list) else [x] for x in list(EXTEN.values())], []
+        [
+            extension if isinstance(extension, list) else [extension]
+            for extension in list(EXTEN.values())
+        ],
+        [],
     )
 
     NOMATCH_INDICATOR_STRING = "no match"

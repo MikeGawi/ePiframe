@@ -28,10 +28,10 @@ class Logs:
                 return name + ".gz"
 
             def rotator(source, destination):
-                with open(source, "rb") as sf:
-                    data = sf.read()
-                    with gzip.open(destination, "wb") as df:
-                        df.write(data)
+                with open(source, "rb") as source_file:
+                    data = source_file.read()
+                    with gzip.open(destination, "wb") as destination_file:
+                        destination_file.write(data)
                 os.remove(source)
 
             handler.rotator = rotator

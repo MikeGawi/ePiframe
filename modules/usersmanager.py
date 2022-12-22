@@ -37,7 +37,7 @@ class UsersManager:
                 )
 
     def __get_column(self, name: str):
-        return next(x[0] for x in self.__schema if x[1] == name)
+        return next(column[0] for column in self.__schema if column[1] == name)
 
     def __to_object(self, rows) -> List[User]:
         result = []
@@ -79,8 +79,8 @@ class UsersManager:
         )
 
     def login_needed(self) -> bool:
-        us = self.get()
-        return us and len(us) > 0 or False
+        user = self.get()
+        return user and len(user) > 0 or False
 
     @staticmethod
     def __add_salt(password: str, salt: str = "") -> (str, str):
@@ -144,8 +144,8 @@ class UsersManager:
                 )
             else:
                 raise Exception(self.__NO_USER_ERROR)
-        except Exception as e:
-            raise e
+        except Exception as exception:
+            raise exception
 
     def check(self, username: str, password: str):
         ids = self.get_by_username(username)
