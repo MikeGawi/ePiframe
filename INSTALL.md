@@ -66,7 +66,7 @@ sudo apt-get install imagemagick webp rrdtool dcraw libatlas-base-dev python3 py
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install -I requests python-dateutil 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 pillow==9.2.0 pyTelegramBotAPI==4.1.1 'flask<2.2.0' werkzeug==2.0.3 flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
+sudo -H pip3 install -I requests python-dateutil 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 pillow==9.3.0 pyTelegramBotAPI==4.1.1 'flask<2.2.0' werkzeug==2.0.3 flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:

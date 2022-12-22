@@ -44,7 +44,7 @@ function install_apts {
 
 function install_pips {
         echo -e '\n\033[0;30mInstalling Python components\033[0m'
-        declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==9.2.0" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
+        declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==9.3.0" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
                                   ["Google components"]="google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
                                   ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask<2.2.0" ["Flask-WTF"]="flask-wtf==1.0.0" \
                                   ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")

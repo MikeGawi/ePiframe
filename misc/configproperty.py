@@ -67,24 +67,30 @@ class ConfigProperty:
         self.__convert = convert
 
         is_break = False
-        for sect in self.__config_manager.def_config.sections():
+        for section in self.__config_manager.def_config.sections():
             if is_break:
                 break
-            for prop in list(dict(self.__config_manager.def_config.items(sect)).keys()):
-                if prop == name:
+            for property_name in list(
+                dict(self.__config_manager.def_config.items(section)).keys()
+            ):
+                if property_name == name:
                     if (
                         self.__type == self.BOOLEAN_TYPE
                         or self.__type == self.INTEGER_TYPE
                     ):
-                        val = self.__config_manager.def_config.get(sect, prop)
-                        if val:
-                            self.__default = int(val)
+                        value = self.__config_manager.def_config.get(
+                            section, property_name
+                        )
+                        if value:
+                            self.__default = int(value)
                         else:
-                            self.__default = val
+                            self.__default = value
                         is_break = True
                         break
                     else:
-                        self.__default = self.__config_manager.def_config.get(sect, prop)
+                        self.__default = self.__config_manager.def_config.get(
+                            section, property_name
+                        )
                         is_break = True
                         break
 
@@ -229,7 +235,7 @@ class ConfigProperty:
 
                 if self.__possible:
                     if not self.__config_manager.get(self.__name) in [
-                        str(x) for x in self.__possible
+                        str(value) for value in self.__possible
                     ]:
                         raise Exception(
                             self.POSSIBLE_ERROR_MSG.format(self.__name, self.__possible)
@@ -238,16 +244,25 @@ class ConfigProperty:
                 if self.__check_function:
                     try:
                         self.__check_function(self.__config_manager.get(self.__name))
-                    except Exception as e:
-                        raise Exception(self.CHECK_ERROR_MSG.format(self.__name, e))
+                    except Exception as exception:
+                        raise Exception(
+                            self.CHECK_ERROR_MSG.format(self.__name, exception)
+                        )
 
                 if self.__special:
                     try:
                         self.__special.function(
-                            [self.__config_manager.get(n) for n in self.__special.arguments]
+                            [
+                                self.__config_manager.get(function)
+                                for function in self.__special.arguments
+                            ]
                         )
-                    except Exception as e:
+                    except Exception as exception:
                         if self.__special.exception_type == self.Special.EXCEPTION_TYPE:
-                            raise Exception(self.CHECK_ERROR_MSG.format(self.__name, e))
+                            raise Exception(
+                                self.CHECK_ERROR_MSG.format(self.__name, exception)
+                            )
                         else:
-                            raise Warning(self.CHECK_WARN_MSG.format(self.__name, e))
+                            raise Warning(
+                                self.CHECK_WARN_MSG.format(self.__name, exception)
+                            )

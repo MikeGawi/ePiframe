@@ -223,14 +223,14 @@ class ConfigBase(ABC):
                 property_name.validate()
             except Warning:
                 pass
-            except Exception as e:
-                raise e
+            except Exception as exception:
+                raise exception
 
     def verify_warnings(self):
         for property_name in self.SETTINGS:
             try:
                 property_name.validate()
-            except Warning as e:
-                raise e
+            except Warning as warning:
+                raise warning
             except Exception:
                 pass
