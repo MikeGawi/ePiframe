@@ -1,107 +1,100 @@
-import sys
+from __future__ import annotations
+
 import os
-import importlib
-from PIL import Image
+from typing import TYPE_CHECKING
 
-library_directory = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib"
-)
+from misc.constants import Constants
+from modules.base.displaybase import DisplayBase
+from misc.pimoronidisplay import PimoroniDisplay
+from misc.wavesharedisplay import WaveshareDisplay
 
-if os.path.exists(library_directory):
-    sys.path.append(library_directory)
-
-
-# !!! more displays on https://github.com/waveshare/e-Paper
+if TYPE_CHECKING:
+    from modules.configmanager import ConfigManager
 
 
 class DisplayManager:
-    __PROCESS_NAME = "fbi"
-    __DISPLAY_PHOTO_CODE = "sudo killall -SIGKILL {} > /dev/null 2>&1;sudo {} -vt {} -noverbose -a {} > /dev/null 2>&1"
-    __DISPLAY_VALUES = ["SPI", "HDMI"]
+    __DISPLAY_HDMI = "HDMI"
+    __DISPLAY_SPI = "SPI"
+    __DISPLAY_VALUES = [__DISPLAY_SPI, __DISPLAY_HDMI]
 
     __ERROR_VALUE_TEXT = "Configuration display_type should be one of {}"
+    __ERROR_VALUE_TEXT_EPAPER = "Configuration epaper_type should be one of {}"
+    __ERROR_VALUE_TEXT_COLOR = "Configuration Display_color should be one of {}"
 
     __DISPLAY_POWER = "display_power"
     __DISPLAY_POWER_CODE = "sudo vcgencmd " + __DISPLAY_POWER + " {} 2> /dev/null"
     __DISPLAY_POWER_OFF = "0"
     __DISPLAY_POWER_ON = "1"
 
-    def __init__(
-        self, display: str, display_type: str = "", binary: str = "", vt: int = 1
-    ):
-        self.__use_hdmi = self.is_hdmi(display_type)
-        self.__binary = binary
-        self.__vt = vt
-        self.__display = display
+    __PIMORONI_EPAPER = "Pimoroni"
+    __WAVESHARE_EPAPER = "Waveshare"
+    __EPAPER_TYPES = [__WAVESHARE_EPAPER, __PIMORONI_EPAPER]
 
-        if not self.__use_hdmi:
-            # it's like : from waveshare_epd import 'display'
-            module = importlib.import_module("waveshare_epd." + display)
+    def __init__(self, config: ConfigManager):
+        self.__use_hdmi = self.is_hdmi(config.get("display_type"))
+        self.__config = config
 
-            self.__epd = module.EPD()
-            self.__epd.init()
-
-    def clear(self):
-        if not self.__use_hdmi:
-            self.__epd.Clear()
-
-    def power_off(self):
-        if not self.__use_hdmi:
-            self.__epd.sleep()
+        if self.__use_hdmi:
+            self.__display = DisplayBase(config)
+        elif config.get("display_type").lower() == self.__PIMORONI_EPAPER.lower():
+            self.__display = PimoroniDisplay(config)
+        else:
+            self.__display = WaveshareDisplay(config)
 
     def show_image(self, photo_path: str):
-        if not self.__use_hdmi:
-            try:
-                # uncomment if experiencing image shadowing
-                # self.clear()
-                image = Image.open(photo_path)
-                self.__epd.display(self.__epd.getbuffer(image))
-                self.power_off()
-            except KeyboardInterrupt:
-                self.__epd.epdconfig.module_exit()
-                raise
-        else:
-            os.popen(
-                self.__DISPLAY_PHOTO_CODE.format(
-                    self.__PROCESS_NAME, self.__binary, self.__vt, photo_path
-                )
-            )
+        self.__display.show_image(photo_path)
 
     def get_display(self) -> str:
-        return self.__display
+        return self.__display.get_display()
 
     def get_vt(self) -> int:
-        return self.__vt
+        return self.__display.get_vt()
 
     def is_display_hdmi(self) -> bool:
         return self.__use_hdmi
 
     @classmethod
     def verify_display(cls, value: str):
-        if value not in [key for key in cls.__DISPLAY_VALUES]:
-            raise Exception(
-                cls.__ERROR_VALUE_TEXT.format([key for key in cls.__DISPLAY_VALUES])
-            )
+        if value not in [key.lower() for key in cls.__DISPLAY_VALUES]:
+            raise Exception(cls.__ERROR_VALUE_TEXT.format(cls.__DISPLAY_VALUES))
+
+    @classmethod
+    def verify_epaper(cls, value: str):
+        if value not in [key.lower() for key in cls.__EPAPER_TYPES]:
+            raise Exception(cls.__ERROR_VALUE_TEXT_EPAPER.format(cls.__EPAPER_TYPES))
+
+    @classmethod
+    def verify_color(cls, value: str):
+        if value not in [key.lower() for key in Constants.COLOR_VALUES]:
+            raise Exception(cls.__ERROR_VALUE_TEXT_COLOR.format(Constants.COLOR_VALUES))
 
     @classmethod
     def get_displays(cls) -> list:
         return cls.__DISPLAY_VALUES
 
     @classmethod
+    def get_epapers(cls) -> list:
+        return cls.__EPAPER_TYPES
+
+    @classmethod
+    def get_pimoroni(cls) -> str:
+        return cls.__PIMORONI_EPAPER
+
+    @classmethod
+    def get_colors(cls) -> list:
+        return Constants.COLOR_VALUES
+
+    @classmethod
     def get_hdmi(cls) -> str:
-        return cls.__DISPLAY_VALUES[1]
+        return cls.__DISPLAY_HDMI
 
     @classmethod
     def get_spi(cls) -> str:
-        return cls.__DISPLAY_VALUES[0]
+        return cls.__DISPLAY_SPI
 
     @classmethod
     def is_hdmi(cls, value: str) -> bool:
-        return (
-            True
-            if value and value.lower() == cls.__DISPLAY_VALUES[1].lower()
-            else False
-        )
+        return True if value and value.lower() == cls.__DISPLAY_HDMI.lower() else False
 
     @classmethod
     def control_display_power(cls, on_off: bool):
@@ -121,3 +114,7 @@ class DisplayManager:
             .replace("=", "")
             or cls.__DISPLAY_POWER_OFF
         )
+
+    @classmethod
+    def should_convert(cls, colors_schema: str) -> bool:
+        return colors_schema.lower() == Constants.COLOR_BW.lower()

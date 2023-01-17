@@ -6,8 +6,8 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 ## Main features
 
-* Pull photos (supports all formats including RAW, videos are ignored) from one or more albums in Google Photos (shared between users who can modify the content) and/or from local folder and automatically prepares them for attached display (automatic conversion to black-and-white with 6 different presets, color inversion, limited palette, etc. and various background colors)
-* Non-HDMI e-Paper Waveshare SPI or any other HDMI, Composite displays supported
+* Pull photos (supports all formats including RAW, videos are ignored) from one or more albums in Google Photos (shared between users who can modify the content) and/or from local folder and automatically prepares them for attached display (automatic conversion to black-and-white or multicolor e-Paper with 6 different presets, color inversion, limited palette, etc. and various background colors)
+* Non-HDMI e-Paper Waveshare/Pimoroni (black-and-white or multicolor) and SPI or any other HDMI, Composite displays supported
 * With e-Paper display photo is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have backlight - so no blank frames
 * Works with Desktop or CLI (console) OS versions and even for Raspberry Pi Zero W (wireless) and offline Raspberry Pi Zero (when using local source) + Raspberry Pi OS Lite
 * Autonomic device, once configured can be left headless with system service supervising whole process that is auto recovering and auto starting by itself
@@ -31,6 +31,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 * **Local source** - (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
 * **HDMI screens support** - ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
 * **ePiframe Plugins** - (optional) install (or create yourself) custom [plugins](#plugins) to enhance ePiframe functions [#54](https://github.com/MikeGawi/ePiframe/issues/54)
+* **Pimoroni and multicolor displays** - support for Pimoroni Inky displays and all Waveshare (multicolor too) displays [#73](https://github.com/MikeGawi/ePiframe/issues/73)
 
 ## Hardware required
 
@@ -38,7 +39,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 * A Raspberry Pi with standard GPIO 40 pins (for e-Paper HAT). Models Zero (offline - when using local source), Zero W and Zero WH supported
 * [microSD card for Raspberry Pi OS](https://www.raspberrypi.com/documentation/computers/getting-started.html#sd-cards), 4GB minimum
-* [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm) (7.5 inch black and white with RasPi HAT was used but probably all B&W will work out-of-the-box, the rest as well but with small modifications) or any other HDMI, Composite display
+* [e-Paper Waveshare SPI display](https://www.waveshare.com/product/raspberry-pi/displays/e-paper.htm), [e-ink Pimoroni Inky display](https://shop.pimoroni.com/search?q=inky&product_type=Raspberry%20Pi%20Addon) or any other HDMI, Composite display
 * Raspberry Pi power supply (for e-Paper display 5V/3A is preferred as it is usually powered from RasPi HAT)
 * Photo frame
 
@@ -72,4 +73,4 @@ ePiframe supports custom plugins that can be created by anyone and can enhance *
 	
 This project uses:
 
-[Google Photos API](https://developers.google.com/photos/library/guides/overview) :white_small_square: [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper) :white_small_square: [Pandas Dataframe](https://pandas.pydata.org/) :white_small_square: [ImageMagick](https://imagemagick.org/) :white_small_square: [OpenWeather API](https://openweathermap.org/api) :white_small_square: [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) :white_small_square: [Flask](https://flask.palletsprojects.com/) :white_small_square: [WTForms](https://wtforms.readthedocs.io/) :white_small_square: [FlaskWTF](https://flask-wtf.readthedocs.io/) :white_small_square: [Flask-Login](https://flask-login.readthedocs.io/) :white_small_square: [Bootstrap](https://getbootstrap.com/) :white_small_square: [bootstrap-dark-5](https://vinorodrigues.github.io/bootstrap-dark-5/) :white_small_square: [jQuery](https://jquery.com/) :white_small_square: [Dropzone.js](https://www.dropzone.dev/js/) :white_small_square: [SQLite](https://www.sqlite.org) :white_small_square: [RRDtool](https://oss.oetiker.ch/rrdtool/) :white_small_square: [javascriptRRD](http://javascriptrrd.sourceforge.net/) :white_small_square: [Flot](http://www.flotcharts.org/) :white_small_square: [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) :white_small_square: [Sortable](https://github.com/SortableJS/Sortable)
+[Google Photos API](https://developers.google.com/photos/library/guides/overview) :white_small_square: [Official Waveshare e-Paper libraries](https://github.com/waveshare/e-Paper) :white_small_square: [Pandas Dataframe](https://pandas.pydata.org/) :white_small_square: [ImageMagick](https://imagemagick.org/) :white_small_square: [OpenWeather API](https://openweathermap.org/api) :white_small_square: [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) :white_small_square: [Flask](https://flask.palletsprojects.com/) :white_small_square: [WTForms](https://wtforms.readthedocs.io/) :white_small_square: [FlaskWTF](https://flask-wtf.readthedocs.io/) :white_small_square: [Flask-Login](https://flask-login.readthedocs.io/) :white_small_square: [Bootstrap](https://getbootstrap.com/) :white_small_square: [bootstrap-dark-5](https://vinorodrigues.github.io/bootstrap-dark-5/) :white_small_square: [jQuery](https://jquery.com/) :white_small_square: [Dropzone.js](https://www.dropzone.dev/js/) :white_small_square: [SQLite](https://www.sqlite.org) :white_small_square: [RRDtool](https://oss.oetiker.ch/rrdtool/) :white_small_square: [javascriptRRD](http://javascriptrrd.sourceforge.net/) :white_small_square: [Flot](http://www.flotcharts.org/) :white_small_square: [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) :white_small_square: [Sortable](https://github.com/SortableJS/Sortable)  :white_small_square: [Official Pimoroni e-Paper libraries](https://github.com/pimoroni/inky)

@@ -28,6 +28,9 @@
       * [Next steps](#next-steps-1)
    * [Configuration](#configuration)
       * [Display](#display)   
+        * [Waveshare](#waveshare)   
+        * [Pimoroni](#pimoroni)   
+        * [HDMI](#hdmi)   
    * [Command line](#command-line)
    * [Debugging](#debugging)
    * [Service control](#service-control)
@@ -66,7 +69,7 @@ sudo apt-get install imagemagick webp rrdtool dcraw libatlas-base-dev python3 py
 ```
 * Install PIPs:
 ```
-sudo -H pip3 install -I requests python-dateutil 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 pillow==9.3.0 pyTelegramBotAPI==4.1.1 'flask<2.2.0' werkzeug==2.0.3 flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
+sudo -H pip3 install -I requests python-dateutil smbus2 'configparser>=5.0.0' pandas==1.2.0 numpy==1.20 spidev==3.5 pillow==9.3.0 pyTelegramBotAPI==4.1.1 'flask<2.2.0' werkzeug==2.0.3 flask-wtf==1.0.0 flask-login==0.5.0 'wtforms>=3.0.0'
 sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 * Download ePiframe ZIP file (or use [git](https://github.com/MikeGawi/ePiframe)) and extract it to *path*:
@@ -85,6 +88,15 @@ wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip
 unzip -q waveshare.zip
 cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .
 rm -r e-Paper-master/ waveshare.zip
+sudo chown -R pi ..
+```
+* Download Pimoroni ZIP file (or use [git](https://github.com/pimoroni/inky)) and extract all RasPi Pimoroni display libraries to *lib* inside *path*:
+```
+cd <path>
+wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O pimoroni.zip
+unzip -q pimoroni.zip
+cp -r inky-master/library/inky/ lib/
+rm -r inky-master/ pimoroni.zip
 sudo chown -R pi ..
 ```
 * Enable SPI support:
@@ -360,10 +372,27 @@ Move to [next steps](#next-steps-1)
 
 ### Display
 
-Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays, but now it supports any HDMI (there are also e-Paper HDMI displays) or Composite screens. [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) is used for that, and it works with Desktop or CLI (console) OS versions. 
+Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays, but now it supports Pimoroni inky e-paper any HDMI (there are also e-Paper HDMI displays) or Composite screens. [FBI framebuffer imageviewer](https://github.com/kraxel/fbida) is used for that, and it works with Desktop or CLI (console) OS versions. 
 
-To configure:
-* Enable HDMI in configuration and set screen width and height
+#### Waveshare
+
+* Enable SPI (display_type) in configuration and set screen width and height
+* Set e-Paper type to Waveshare (epaper_type) and color schema (epaper_color), e.g. BW, 7 colors, BW+Yellow, etc.
+* Set Waveshare display package name (display) from [Waveshare codes](https://github.com/waveshare/e-Paper) that was previously tested (and worked), e.g. epd7in5_V2, epd5in65f, epd5in83bc, etc.
+* Test ePiframe from SSH with ```sudo ./ePiframe.py```
+* If all good then ePiframe service will work now with the display
+
+#### Pimoroni
+
+* Enable SPI (display_type) in configuration and set screen width and height
+* Set e-Paper type to Pimoroni (epaper_type) and color schema (epaper_color), e.g. BW, 7 colors, BW+Yellow, etc.
+* Set Pimoroni display package name (display) from [Pimoroni codes](https://github.com/pimoroni/inky) that was previously tested (and worked), e.g. phat, what, inky_uc8159, inky_ssd1683, etc.
+* Test ePiframe from SSH with ```sudo ./ePiframe.py```
+* If all good then ePiframe service will work now with the display
+
+#### HDMI
+
+* Enable HDMI (display_type) in configuration and set screen width and height
 * Set up if photo should be converted to grayscale and/or limit the color pallete with colors number setting
 * Check manually if the image appears with ```sudo fbi -vt <virtual terminal> -a <photo name>``` (Escape leaves imageviewer), where _virtual terminal_ is the number >= 0 (1 by default) that represents the terminal to be used. Usually the default setting should work but on some OS other values should be checked.  
 * Set up TTY option in configuration to the working virtual terminal number
