@@ -5,6 +5,9 @@ import subprocess
 from typing import List, Optional
 from typing import TYPE_CHECKING
 
+from misc.constants import Constants
+from modules.displaymanager import DisplayManager
+
 if TYPE_CHECKING:
     from modules.configmanager import ConfigManager
 
@@ -14,7 +17,7 @@ class ConvertManager:
 
     __INVERT_FLAG = "-negate "
     __ROTATE_CODE = "-rotate {} "
-    __BACK_COLORS = ["white", "black", "photo"]
+    __BACK_COLORS = [Constants.BACK_WHITE, Constants.BACK_WHITE, Constants.BACK_PHOTO]
     __GRAYSCALE_FLAG = "-colorspace Gray "
     __COLORS_FLAG = "-colors {} "
 
@@ -133,10 +136,10 @@ class ConvertManager:
         back = back.strip().lower()
 
         if back not in self.__BACK_COLORS:
-            back = self.__BACK_COLORS[0]
+            back = Constants.BACK_WHITE
 
-        if back == "photo":
-            back = self.__BACK_COLORS[0]
+        if back == Constants.BACK_PHOTO:
+            back = Constants.BACK_WHITE
             # this takes more time to progress
             aspect_ratio = int(original_width) / int(original_height)
             new_height = max(int(width / aspect_ratio), height)
@@ -209,10 +212,10 @@ class ConvertManager:
         thumb2nd,
         width,
     ):
-        if hdmi:
+        if hdmi or not DisplayManager.should_convert(config.get("epaper_color")):
             colors = (
                 self.__COLORS_FLAG.format(config.getint("colors_num"))
-                if config.get("colors_num")
+                if config.get("colors_num") and hdmi
                 else ""
             )
             return_value = self.__HDMI_CODE.format(

@@ -47,7 +47,7 @@ function install_pips {
         declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==9.3.0" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
                                   ["Google components"]="google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
                                   ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask<2.2.0" ["Flask-WTF"]="flask-wtf==1.0.0" \
-                                  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0")
+                                  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0" ["SMBus"]="smbus2")
         declare -a order;
         order+=( "Requests" )
         order+=( "Telebot" )
@@ -55,6 +55,7 @@ function install_pips {
         order+=( "Pillow" )
         order+=( "ConfigParser" )
         order+=( "Google components" )
+        order+=( "SMBus" )
         order+=( "SPI Libs" )
         order+=( "Pandas" )
         order+=( "Flask-WTF" )
@@ -121,7 +122,7 @@ function check_spi {
 	fi
 }
 
-function display_libs {
+function display_libs_waveshare {
 	declare -A cmds
 	cmds["Preparing"]='sudo rm -rf e-Paper-master/ waveshare.zip'
 	cmds["Downloading"]='sudo wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O waveshare.zip 2>&1 | grep -i "failed\|error"'
@@ -136,7 +137,40 @@ function display_libs {
 	order+=( "Copying" )
 	order+=( "Cleanup" )
 
-	echo -e '\n\033[0;30mInstalling Waveshare displays libraries\033[0m'
+	echo -e '\n\033[0;30mInstalling Waveshare display libraries\033[0m'
+
+	for i in "${order[@]}"
+	do
+		printf '\e[1;37m%-30s\e[m' "$i:"
+		out=$(${cmds[$i]} 2>&1)
+		if [ -z "$out" ]; then
+			echo -e '\033[1;32mcheck!\033[0m'
+		else
+			echo -e '\033[0;31merror!\033[0m'
+			echo -e "\033[0;31m$out\033[0m"
+			echo -e "\033[1;37mPlease try to manually start command ${cmds[$i]}\033[0m"
+			exit 1
+		fi
+	done
+}
+
+
+function display_libs_pimoroni {
+	declare -A cmds
+	cmds["Preparing"]='sudo rm -rf inky-master/ pimoroni.zip'
+	cmds["Downloading"]='sudo wget -q https://github.com/waveshare/e-Paper/archive/master.zip -O pimoroni.zip 2>&1 | grep -i "failed\|error"'
+	cmds["Unpacking"]='sudo unzip -q pimoroni.zip'
+	cmds["Copying"]='sudo cp -r inky-master/library/inky/ lib/'
+	cmds["Cleanup"]='sudo rm -r inky-master/ pimoroni.zip'
+
+	declare -a order;
+	order+=( "Preparing" )
+	order+=( "Downloading" )
+	order+=( "Unpacking" )
+	order+=( "Copying" )
+	order+=( "Cleanup" )
+
+	echo -e '\n\033[0;30mInstalling Pimoroni display libraries\033[0m'
 
 	for i in "${order[@]}"
 	do
@@ -368,7 +402,8 @@ else
 fi
 
 epi_code
-display_libs
+display_libs_waveshare
+display_libs_pimoroni
 
 out=$(sudo systemctl is-enabled ePiframe.service 2> /dev/null)
 

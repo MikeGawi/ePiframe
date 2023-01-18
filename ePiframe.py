@@ -676,12 +676,7 @@ def convert_file(
 
 def send_to_display(config: ConfigManager, logging: Logs, target_filename: str):
     logging.log("Sending to display...")
-    display_manager = DisplayManager(
-        config.get("display"),
-        config.get("display_type"),
-        config.get("fbi_bin_path"),
-        int(config.get("tty")),
-    )
+    display_manager = DisplayManager(config)
     try:
         display_manager.show_image(target_filename)
     except Exception as exception:
@@ -767,12 +762,7 @@ def test_display(config: ConfigManager, logging: Logs):
     if not os.path.exists(target_filename):
         raise Exception(f"No file: {target_filename}!")
     logging.log("Sending to display...")
-    display_manager = DisplayManager(
-        config.get("display"),
-        config.get("display_type"),
-        config.get("fbi_bin_path"),
-        int(config.get("tty")),
-    )
+    display_manager = DisplayManager(config)
     try:
         display_manager.show_image(target_filename)
     except Exception as exception:

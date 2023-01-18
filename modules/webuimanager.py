@@ -581,7 +581,7 @@ class WebUIManager:
                         FloatField(
                             self.__adapt_name(config, property),
                             widget=NumberInput(
-                                min=prop.get_min(), max=prop.get_max(), step="any"
+                                min=prop.get_min(), max=prop.get_max(), step="0.1"
                             ),
                             default=config.get_default(property),
                             render_kw=render,

@@ -177,13 +177,13 @@ class ConfigBase(ABC):
         proper = self.get_property(name)
         return proper.get_possible()
 
-    def get_comment(self, name: str):
+    def get_comment(self, name: str) -> str:
         try:
             return self.__COMMENTS[name]
         except Exception:
             raise Exception(self.__ERROR_PARSE.format(name))
 
-    def get_property(self, name: str):
+    def get_property(self, name: str) -> ConfigProperty:
         try:
             return_value = next(
                 (

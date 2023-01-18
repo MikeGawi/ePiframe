@@ -175,7 +175,8 @@ class ConfigProperty:
                 elif self.__type == self.FLOAT_TYPE:
                     try:
                         if not isinstance(
-                            float(self.__config_manager.get(self.__name)), numbers.Real
+                            float(self.__config_manager.get(self.__name)),
+                            numbers.Real,
                         ):
                             raise Exception()
                     except Exception:
@@ -190,7 +191,7 @@ class ConfigProperty:
                             )
 
                     if self.__maxvalue is not None:
-                        if float(self.__config_manager.getint(self.__name)) > float(
+                        if float(self.__config_manager.get(self.__name)) > float(
                             self.__maxvalue
                         ):
                             raise Exception(

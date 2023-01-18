@@ -3,7 +3,7 @@ import itertools
 
 class Constants:
 
-    EPIFRAME_VERSION = "v1.8.0"
+    EPIFRAME_VERSION = "v1.9.0"
     EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
 
     # minimal needed python version
@@ -144,3 +144,22 @@ class Constants:
     USERS_ACTIONS_TAG = "--------Users management: "
 
     STATS_STEP = 10
+
+    COLOR_BW = "BW"
+    COLOR_BWY = "BW+Yellow"
+    COLOR_BWR = "BW+Red"
+    COLOR_4C = "4 colors"
+    COLOR_7C = "7 colors"
+    COLOR_OTHER = "Other"
+    COLOR_VALUES = [
+        COLOR_BW,
+        COLOR_BWR,
+        COLOR_BWY,
+        COLOR_4C,
+        COLOR_7C,
+        COLOR_OTHER,
+    ]
+
+    BACK_WHITE = "white"
+    BACK_BLACK = "black"
+    BACK_PHOTO = "photo"

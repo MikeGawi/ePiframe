@@ -66,7 +66,25 @@ class ConfigManager(ConfigBase):
                 "display_type", self, possible=DisplayManager.get_displays()
             ),
             ConfigProperty(
+                "epaper_type",
+                self,
+                possible=DisplayManager.get_epapers(),
+                dependency=["display_type", DisplayManager.get_spi()],
+            ),
+            ConfigProperty(
+                "epaper_color",
+                self,
+                possible=DisplayManager.get_colors(),
+                dependency=["display_type", DisplayManager.get_spi()],
+            ),
+            ConfigProperty(
                 "display", self, dependency=["display_type", DisplayManager.get_spi()]
+            ),
+            ConfigProperty(
+                "clear_display",
+                self,
+                dependency=["display_type", DisplayManager.get_spi()],
+                prop_type=ConfigProperty.BOOLEAN_TYPE,
             ),
             ConfigProperty(
                 "tty",
@@ -79,7 +97,7 @@ class ConfigManager(ConfigBase):
                 "slide_interval",
                 self,
                 minvalue=180,
-                prop_type=ConfigProperty.FLOAT_TYPE,
+                prop_type=ConfigProperty.INTEGER_TYPE,
             ),
             ConfigProperty(
                 "interval_mult", self, prop_type=ConfigProperty.BOOLEAN_TYPE
@@ -184,6 +202,14 @@ class ConfigManager(ConfigBase):
                 minvalue=-100,
                 maxvalue=100,
                 prop_type=ConfigProperty.INTEGER_TYPE,
+            ),
+            ConfigProperty(
+                "pimoroni_saturation",
+                self,
+                minvalue=0.0,
+                maxvalue=0.99,
+                prop_type=ConfigProperty.FLOAT_TYPE,
+                dependency=["epaper_type", DisplayManager.get_pimoroni()],
             ),
             ConfigProperty(
                 "background_color",
