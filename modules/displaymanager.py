@@ -36,7 +36,7 @@ class DisplayManager:
 
         if self.__use_hdmi:
             self.__display = DisplayBase(config)
-        elif config.get("display_type").lower() == self.__PIMORONI_EPAPER.lower():
+        elif config.get("epaper_type").lower() == self.__PIMORONI_EPAPER.lower():
             self.__display = PimoroniDisplay(config)
         else:
             self.__display = WaveshareDisplay(config)
