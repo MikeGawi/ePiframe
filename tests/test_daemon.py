@@ -1,6 +1,5 @@
 import os
 import time
-
 import pytest
 from tests.helpers.helpers import remove_file
 
