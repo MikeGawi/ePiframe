@@ -12,10 +12,8 @@ class AlbumManager:
         # search for albums
         if names:
             album_names = names.split(",")
-            # remove duplicates
-            album_names = list(set(album_names))
 
-            for name in album_names:
+            for name in set(album_names):
                 if name.strip():
                     album = dataframe_albums[dataframe_albums[header] == name.strip()]
                     if not album.empty:
