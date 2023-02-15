@@ -44,10 +44,7 @@ class RandomManager:
 
         sample = randoms.sample()
         index = sample.index.values[0]
-        if f"id_{index+1}" == last_id:
-            print ("lolo")
         self.__data.at[index, self.__COLUMN_NAME] = 1
-
 
         if not no_save:
             self.__save()
