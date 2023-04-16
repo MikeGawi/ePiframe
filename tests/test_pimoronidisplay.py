@@ -1,9 +1,7 @@
 import importlib
 import os
 from unittest.mock import patch
-
 import pytest
-
 from misc.configproperty import ConfigProperty
 from misc.constants import Constants
 from misc.pimoronidisplay import PimoroniDisplay

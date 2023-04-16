@@ -17,7 +17,7 @@ class ConvertManager:
 
     __INVERT_FLAG = "-negate "
     __ROTATE_CODE = "-rotate {} "
-    __BACK_COLORS = [Constants.BACK_WHITE, Constants.BACK_WHITE, Constants.BACK_PHOTO]
+    __BACK_COLORS = [Constants.BACK_BLACK, Constants.BACK_WHITE, Constants.BACK_PHOTO]
     __GRAYSCALE_FLAG = "-colorspace Gray "
     __COLORS_FLAG = "-colors {} "
 
