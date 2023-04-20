@@ -493,6 +493,7 @@ def test_message_photo(requests_mocker):
     remove_file(file_name)
     requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
     backend = MockedBackendManager()
+    backend.set_pid(False)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
             content_type=TelebotCmd.PHOTO_TAG,
@@ -518,12 +519,37 @@ def test_message_photo(requests_mocker):
     os.remove(file_name)
 
 
+def test_message_photo_nok(requests_mocker):
+    file_name = "test_upload_file.jpg"
+    file_content = b"12345"
+    remove_file(file_name)
+    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    backend = MockedBackendManager()
+    backend.set_pid(True)
+    with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
+        msg = MockedMessage(
+            content_type=TelebotCmd.PHOTO_TAG,
+            text="file_content",
+            chat=MockedChat(1),
+            photo_id=MockedPhotoId(photo_info=MockedPhotoPath(file_content)),
+        )
+        TelebotManager(backend)
+        bot.handle_messages([msg])
+
+    assert output == chat_response + [
+        "pid_file_exists",
+        "send_message Frame update already in progress",
+        "Try again later to 1",
+    ]
+
+
 def test_message_photo_error(requests_mocker):
     file_name = "test_upload_file.jpg"
     file_content = "rubbish"
     remove_file(file_name)
     requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
     backend = MockedBackendManager()
+    backend.set_pid(False)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
             content_type=TelebotCmd.PHOTO_TAG,

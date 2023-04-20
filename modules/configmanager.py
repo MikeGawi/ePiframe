@@ -1,15 +1,17 @@
 import subprocess
+from typing import List
+
+from misc.configproperty import ConfigProperty
+from misc.connection import Connection
+from modules.base.configbase import ConfigBase
+from modules.convertmanager import ConvertManager
+from modules.displaymanager import DisplayManager
 from modules.filteringmanager import FilteringManager
+from modules.localsourcemanager import LocalSourceManager
+from modules.telebotmanager import TelebotManager
 from modules.timermanager import TimerManager
 from modules.weathermanager import WeatherManager
 from modules.weatherstampmanager import WeatherStampManager
-from modules.telebotmanager import TelebotManager
-from modules.convertmanager import ConvertManager
-from modules.localsourcemanager import LocalSourceManager
-from modules.displaymanager import DisplayManager
-from modules.base.configbase import ConfigBase
-from misc.configproperty import ConfigProperty
-from misc.connection import Connection
 
 
 class ConfigManager(ConfigBase):
@@ -323,32 +325,39 @@ class ConfigManager(ConfigBase):
     def legacy_convert(self):
         # legacy exceptional backward handling for converting one property to another property under different name
         # and the ones that convert could not handle
-        legacy = [
-            type(
-                "",
-                (),
-                {
-                    "old": ["Album settings", "sort_desc"],
-                    "new": ["Filtering", "sorting"],
-                    "convert": FilteringManager.get_descending,
-                },
-            )
+        class Setting:
+            def __init__(self, section: str, name):
+                self.section = section
+                self.name = name
+
+        class Legacy:
+            def __init__(self, old: Setting, new: Setting, convert):
+                self.old = old
+                self.new = new
+                self.convert = convert
+
+        legacy: List[Legacy] = [
+            Legacy(
+                Setting("Album settings", "sort_desc"),
+                Setting("Filtering", "sorting"),
+                FilteringManager.get_descending,
+            ),
         ]
 
         for setting in legacy:
             try:
-                if not self.config.has_section(setting.new[0]):
-                    self.config.add_section(setting.new[0])
-                val = self.config.get(setting.old[0], setting.old[1])
-                self.config.set(setting.new[0], setting.new[1], setting.convert(val))
+                if not self.config.has_section(setting.new.section):
+                    self.config.add_section(setting.new.section)
+                val = self.config.get(setting.old.section, setting.old.name)
+                self.config.set(
+                    setting.new.section, setting.new.name, setting.convert(val)
+                )
             except Exception:
                 pass
 
     # end
 
     def check_system(self):
-        return_value = False
-
         process = subprocess.Popen(
             self.__SPI_CHECK1, shell=True, stdout=subprocess.PIPE
         )
@@ -361,7 +370,4 @@ class ConfigManager(ConfigBase):
         process.wait()
         out2, error2 = process.communicate()
 
-        if not error and out2:
-            return_value = True
-
-        return return_value
+        return not error and out2 and not error2 and out
