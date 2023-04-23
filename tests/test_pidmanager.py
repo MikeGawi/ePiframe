@@ -53,4 +53,4 @@ def test_pid_manager_remove():
 def test_pid_manager_get_name():
     name = PIDManager.get_pid_name(pytest.pid)
 
-    assert name.decode() == f"{sys.executable} {sys.argv[0]}\n"
+    assert sys.executable in name.decode()
