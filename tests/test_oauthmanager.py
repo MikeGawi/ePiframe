@@ -1,5 +1,4 @@
 import os.path
-from unittest.mock import patch
 from google_auth_oauthlib import flow
 from googleapiclient import discovery
 from misc.constants import Constants

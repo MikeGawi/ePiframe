@@ -1,6 +1,8 @@
+import shutil
+
 import pytest
 from modules.weatherstampmanager import WeatherStampManager
-from tests.helpers.helpers import not_raises
+from tests.helpers.helpers import not_raises, remove_file
 
 
 def test_get_positions():
@@ -31,3 +33,20 @@ def test_verify_color_ok():
 def test_verify_color_nok():
     with pytest.raises(Exception):
         WeatherStampManager.verify_color("")
+
+
+def test_compose():
+    shutil.copy("tests/assets/waveshare.bmp", "tests/assets/waveshare_test.bmp")
+    with not_raises(Exception):
+        WeatherStampManager(
+            "tests/assets/waveshare_test.bmp",
+            800,
+            480,
+            True,
+            20,
+            "BLACK",
+            0,
+            90,
+        ).compose(20, "metric", "01d")
+
+    remove_file("tests/assets/waveshare_test.bmp")
