@@ -1,6 +1,7 @@
 import pytest
 from modules.base.pluginbase import PluginBase
 from tests.helpers.capturing import Capturing
+from tests.helpers.helpers import not_raises
 
 
 def test_enabled():
@@ -222,6 +223,20 @@ class PluginMock(PluginBase, object):
 
     def add_service_thread(self, service, backend):
         print("add_service_thread")
+
+
+def test_run_plugin():
+    plugin = PluginOverrideMock("path", None, None, None)
+    with not_raises(Exception):
+        plugin.add_action(None, None, None)
+        plugin.add_photo_source(None, None, None, None)
+        plugin.add_photo_source_get_file(None, None, None, None, None, None, None)
+        plugin.add_service_thread(None, None)
+        plugin.add_website(None, None, None)
+        plugin.change_photos_list(None, None, None, None, None, None, None)
+        plugin.preprocess_photo(None, None, None, None, None, None, None)
+        plugin.postprocess_photo(None, None, None, None, None, None, None, None, None)
+        plugin.extend_api(None, None, None)
 
 
 class PluginOverrideMock(PluginBase):

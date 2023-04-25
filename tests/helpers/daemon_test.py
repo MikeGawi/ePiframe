@@ -9,8 +9,7 @@ from misc.daemon import Daemon
 
 class DaemonTest(Daemon):
     def run(self, args=None):
-        while True:
-            time.sleep(60)
+        time.sleep(10)
 
 
 if __name__ == "__main__":

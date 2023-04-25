@@ -68,10 +68,6 @@ class MockedBackendManager:
         print("get_download_file")
         return "test_upload_file"
 
-    def download_file(self, path):
-        print(f"download_file {path}")
-        return path
-
     def refresh_frame(self):
         print("refresh_frame")
 

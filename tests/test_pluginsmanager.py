@@ -1,7 +1,7 @@
 from unittest import mock
 from unittest.mock import PropertyMock
 from modules.pluginsmanager import PluginsManager
-from tests.helpers.helpers import remove_file
+from tests.helpers.helpers import remove_file, not_raises
 
 order_file = "tests/plugins/order.cfg"
 
@@ -86,6 +86,31 @@ def test_get_file():
     assert manager.plugin_source_get_file(manager.get_plugins()[0]) is True
     assert manager.plugin_source_get_file(manager.get_plugins()[1]) is False
 
+
+def test_run_plugins():
+    manager = get_manager()
+    with not_raises(Exception):
+        manager.get_plugins()[0].add_action(None, None, None)
+        manager.get_plugins()[0].add_photo_source(None, None, None, None)
+        manager.get_plugins()[0].add_photo_source_get_file(
+            None, None, None, None, None, None, None
+        )
+        manager.get_plugins()[0].add_service_thread(None, None)
+        manager.get_plugins()[0].add_website(None, None, None)
+        manager.get_plugins()[0].change_photos_list(
+            None, None, None, None, None, None, None
+        )
+        manager.get_plugins()[0].preprocess_photo(
+            None, None, None, None, None, None, None
+        )
+        manager.get_plugins()[0].postprocess_photo(
+            None, None, None, None, None, None, None, None, None
+        )
+        manager.get_plugins()[0].extend_api(None, None, None)
+
+        manager.get_plugins()[1].add_photo_source(None, None, None, None)
+
+        manager.get_plugins()[2].add_photo_source(None, None, None, None)
 
 def test_read_order():
     manager = get_manager()

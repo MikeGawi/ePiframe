@@ -120,7 +120,7 @@ class BackendManager:
         multiplication = 1
 
         try:
-            multiplication = self.get_interval()
+            multiplication = self.get_interval() or 1
             if multiplication <= 0:
                 multiplication = 1
         except Exception:
@@ -222,15 +222,12 @@ class BackendManager:
     def get_current_file(self) -> str:
         return_value = None
         if os.path.exists(
-            os.path.join(
+            path := os.path.join(
                 self.__config.get("photo_convert_path"),
                 self.__config.get("photo_convert_filename"),
             )
         ):
-            return_value = os.path.join(
-                self.__config.get("photo_convert_path"),
-                self.__config.get("photo_convert_filename"),
-            )
+            return_value = path
         return return_value
 
     def get_filename_if_exists(self, filename: str) -> str:
@@ -305,8 +302,9 @@ class BackendManager:
 
         return result
 
-    def calc_to_f(self, temp) -> str:
-        result = self.__NOTHING
+    @classmethod
+    def calc_to_f(cls, temp) -> str:
+        result = cls.__NOTHING
         try:
             result = str(round(float(temp) * 1.8 + 32, 1))
         except Exception:
