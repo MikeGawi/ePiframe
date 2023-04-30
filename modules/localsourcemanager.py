@@ -7,14 +7,17 @@ import datetime
 
 
 class LocalSourceManager:
-    def __init__(self, directory, recursive, extensions):
+    def __init__(self, directory: str, recursive: bool, extensions: List[str]):
         self.__directory = directory if not directory.endswith("/") else directory[0:-1]
         self.__scope = "/**/*." if recursive else "/*."
         self.__extensions = extensions
 
     @staticmethod
     def __format_timestamp(time_stamp) -> str:
-        return datetime.datetime.fromtimestamp(time_stamp).strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+        return (
+            datetime.datetime.fromtimestamp(time_stamp).strftime("%Y-%m-%dT%H:%M:%S")
+            + "Z"
+        )
 
     def get_files(self) -> List[str]:
         return list(
@@ -30,7 +33,9 @@ class LocalSourceManager:
     def get_dates(self, files_list: List[str]) -> List[str]:
         return [self.__format_timestamp(os.stat(file).st_mtime) for file in files_list]
 
-    def get_local_photos(self, id_label: str, creation_label: str, source_label: str, source: str):
+    def get_local_photos(
+        self, id_label: str, creation_label: str, source_label: str, source: str
+    ):
         photos = pd.DataFrame()
 
         files = self.get_files()

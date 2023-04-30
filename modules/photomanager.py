@@ -19,14 +19,14 @@ class PhotoManager:
         self.__album = album
 
         # get media items
-        dataframe_meta = album.get_data().mediaMetadata.apply(pd.Series)
+        dataframe_meta = album.get_data()[media_metadata_header].apply(pd.Series)
 
         # build all items table
         all_elements = pd.concat(
             [
                 album.get_data().drop(media_metadata_header, axis=1),
                 dataframe_meta.drop(photo_header, axis=1),
-                dataframe_meta.photo.apply(pd.Series),
+                dataframe_meta[photo_header].apply(pd.Series),
             ],
             axis=1,
         )

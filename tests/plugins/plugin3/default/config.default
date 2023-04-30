@@ -1,0 +1,5 @@
+[General]
+
+# Set 1 to enable plugin, 0 to disable.
+# Default: 1 (enabled)
+is_enabled=1

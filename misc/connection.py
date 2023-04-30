@@ -42,10 +42,3 @@ class Connection:
             ip,
         ):
             raise Exception("Not a valid IP address!")
-
-    @staticmethod
-    def port_check(port):
-        socket_object = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socket_object.settimeout(2)  # Timeout in case of port not open
-        if not socket_object.connect_ex((port[0], int(port[1]))) == 0:
-            raise Exception(f"Port {port[1]} is not open!")

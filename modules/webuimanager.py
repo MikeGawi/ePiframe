@@ -246,7 +246,7 @@ class WebUIManager:
         return self.__backend.get_config()
 
     @staticmethod
-    def __adapt_name(config: config_manager.ConfigManager, name: str) -> str:
+    def adapt_name(config: config_manager.ConfigManager, name: str) -> str:
         return (
             "- " if config.get_property(name).get_dependency() else str()
         ) + name.replace("_", " ").title()
@@ -263,7 +263,6 @@ class WebUIManager:
                     self.__users_manager.check(username, password)
                     login_user(self.load_user(username), remember=remember)
                 except Exception:
-                    pass
                     flash("Please check your login details and try again!")
             else:
                 flash("Please fill in all required data!")
@@ -542,7 +541,7 @@ class WebUIManager:
                         MyForm,
                         property,
                         SelectField(
-                            self.__adapt_name(config, property),
+                            self.adapt_name(config, property),
                             default=config.get_default(property),
                             choices=prop.get_possible(),
                             render_kw=render,
@@ -554,7 +553,7 @@ class WebUIManager:
                         MyForm,
                         property,
                         StringField(
-                            self.__adapt_name(config, property),
+                            self.adapt_name(config, property),
                             default=config.get_default(property),
                             description=config.get_comment(property),
                             render_kw=render,
@@ -566,7 +565,7 @@ class WebUIManager:
                         MyForm,
                         property,
                         IntegerField(
-                            self.__adapt_name(config, property),
+                            self.adapt_name(config, property),
                             widget=NumberInput(min=prop.get_min(), max=prop.get_max()),
                             default=config.get_default(property),
                             render_kw=render,
@@ -579,7 +578,7 @@ class WebUIManager:
                         MyForm,
                         property,
                         FloatField(
-                            self.__adapt_name(config, property),
+                            self.adapt_name(config, property),
                             widget=NumberInput(
                                 min=prop.get_min(), max=prop.get_max(), step="0.1"
                             ),
@@ -593,7 +592,7 @@ class WebUIManager:
                     MyForm,
                     property,
                     StringField(
-                        self.__adapt_name(config, property),
+                        self.adapt_name(config, property),
                         default=config.get_default(property),
                         render_kw=render,
                         description=config.get_comment(property),
@@ -607,7 +606,7 @@ class WebUIManager:
                     MyForm,
                     property,
                     BooleanField(
-                        self.__adapt_name(config, property),
+                        self.adapt_name(config, property),
                         default=config.get_default(property),
                         false_values=self.__FALSE_VALS,
                         description=config.get_comment(property),
@@ -619,7 +618,7 @@ class WebUIManager:
                     MyForm,
                     property,
                     StringField(
-                        self.__adapt_name(config, property),
+                        self.adapt_name(config, property),
                         default=config.get_default(property),
                         render_kw=render,
                         description=config.get_comment(property),
@@ -630,7 +629,7 @@ class WebUIManager:
                     MyForm,
                     property,
                     StringField(
-                        self.__adapt_name(config, property),
+                        self.adapt_name(config, property),
                         default=config.get_default(property),
                         render_kw=render,
                         description=config.get_comment(property),
@@ -641,7 +640,7 @@ class WebUIManager:
                     MyForm,
                     property,
                     StringField(
-                        self.__adapt_name(config, property),
+                        self.adapt_name(config, property),
                         widget=PasswordInput(hide_value=False),
                         default=config.get_default(property),
                         description=config.get_comment(property),

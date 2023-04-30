@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+import datetime
 from itertools import cycle, islice
 from typing import List
 
@@ -14,10 +14,10 @@ class TimerManager:
         self.__end_times = end_times
 
     def should_i_work_now(self) -> bool:
-        now = datetime.now()
+        now = datetime.datetime.now()
 
         day_of_week = now.weekday()
-        yesterday = (datetime.now() - timedelta(1)).weekday() - 1
+        yesterday = (datetime.datetime.now() - datetime.timedelta(1)).weekday() - 1
 
         return_value = False
 
@@ -49,10 +49,12 @@ class TimerManager:
         return return_value
 
     def when_i_work_next(self) -> datetime:
-        now = datetime.now()
+        now = datetime.datetime.now()
         day_of_week = now.weekday()
 
-        return_value = datetime.now(datetime.now().astimezone().tzinfo)
+        return_value = datetime.datetime.now(
+            datetime.datetime.now().astimezone().tzinfo
+        )
         now_tab = islice(cycle(self.__start_times), day_of_week, None)
 
         if (
@@ -60,12 +62,12 @@ class TimerManager:
             or now.time()
             > self.get_time_from_string(self.__end_times[day_of_week].strip()).time()
         ):
-            return_value += timedelta(1)
+            return_value += datetime.timedelta(1)
 
         while True:
             value = next(now_tab)
             if value == self.__NO_TIME_MARK:
-                return_value += timedelta(1)
+                return_value += datetime.timedelta(1)
             else:
                 return_value = return_value.replace(
                     hour=self.get_time_from_string(value).hour,
@@ -78,7 +80,7 @@ class TimerManager:
 
     @classmethod
     def get_time_from_string(cls, time: str) -> datetime:
-        return datetime.strptime(time, cls.__DATE_MASK)
+        return datetime.datetime.strptime(time, cls.__DATE_MASK)
 
     @classmethod
     def verify(cls, times: List[str]):

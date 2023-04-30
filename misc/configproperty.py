@@ -81,10 +81,7 @@ class ConfigProperty:
                         value = self.__config_manager.def_config.get(
                             section, property_name
                         )
-                        if value:
-                            self.__default = int(value)
-                        else:
-                            self.__default = value
+                        self.__default = int(value) if value and value.isdigit() else value
                         is_break = True
                         break
                     else:

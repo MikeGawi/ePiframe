@@ -24,7 +24,7 @@ class PIDManager:
         except Exception:
             self.remove()
 
-        return pid
+        return int(pid)
 
     def save(self):
         with open(self.__path, "w") as file:
@@ -35,8 +35,8 @@ class PIDManager:
         if os.path.exists(self.__path):
             os.remove(self.__path)
 
-    def get_pid(self):
-        return self.__pid
+    def get_pid(self) -> int:
+        return int(self.__pid)
 
     @staticmethod
     def get_pid_name(pid: int) -> AnyStr:

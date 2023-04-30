@@ -1,6 +1,6 @@
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/logo.png">
 
-# ePiframe
+# ePiframe <img src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/badge.svg">
 
 Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame with Google Photos and/or local storage (and more), weather information, Telegram Bot, Web User Interface, API and plugins.
 
@@ -8,7 +8,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 * Pull photos (supports all formats including RAW, videos are ignored) from one or more albums in Google Photos (shared between users who can modify the content) and/or from local folder and automatically prepares them for attached display (automatic conversion to black-and-white or multicolor e-Paper with 6 different presets, color inversion, limited palette, etc. and various background colors)
 * Non-HDMI e-Paper Waveshare/Pimoroni (black-and-white or multicolor) and SPI or any other HDMI, Composite displays supported
-* With e-Paper display photo is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have backlight - so no blank frames
+* With e-Paper display photovg is shown even if power (or network) is down as e-Paper takes power only during refresh and doesn't have backlight - so no blank frames
 * Works with Desktop or CLI (console) OS versions and even for Raspberry Pi Zero W (wireless) and offline Raspberry Pi Zero (when using local source) + Raspberry Pi OS Lite
 * Autonomic device, once configured can be left headless with system service supervising whole process that is auto recovering and auto starting by itself
 * Simple activation for Google Photos access from ePiframe device (with guide) or any other device with Python

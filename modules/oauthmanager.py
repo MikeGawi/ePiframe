@@ -8,7 +8,7 @@ from google.auth.transport.requests import Request
 
 class OAuthManager:
     __service: Optional[Any]
-    __credentials: Any
+    __credentials: Any = None
     __items = []
 
     def manage_pickle(self, pickle_file: str, credentials_file: str, scopes: str):

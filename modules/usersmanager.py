@@ -6,7 +6,7 @@ from misc.logs import Logs
 from misc.user import User
 import crypt
 import hashlib
-from getpass import getpass
+import getpass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -28,12 +28,12 @@ class UsersManager:
         # populate api key for old users
         users = self.get()
         if users and len(users):
-            for i in [u.id for u in users if not u.api]:
+            for item in [user.id for user in users if not user.api]:
                 self.__databasemanager.update(
                     Constants.USERS_TABLE_NAME,
                     Constants.USERS_TABLE_API_HEADER,
                     f"'{str(self.__gen_api())}'",
-                    Constants.USERS_TABLE_ID_HEADER + " IS " + str(i),
+                    Constants.USERS_TABLE_ID_HEADER + " IS " + str(item),
                 )
 
     def __get_column(self, name: str):
@@ -183,7 +183,7 @@ class UsersManager:
 
     def __password(self, username: str, title: str) -> str:
         while True:
-            password = getpass(title)
+            password = getpass.getpass(title)
             try:
                 self.check(username, password)
                 break
@@ -196,8 +196,8 @@ class UsersManager:
     @staticmethod
     def __new_password(title: str, title_confirm: str) -> str:
         while True:
-            new_password = getpass(title)
-            new_password2 = getpass(title_confirm)
+            new_password = getpass.getpass(title)
+            new_password2 = getpass.getpass(title_confirm)
             if new_password == new_password2:
                 break
             print("Passwords are not the same!")
