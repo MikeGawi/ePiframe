@@ -1,9 +1,6 @@
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/logo.png">
 
-<img align="left" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/badge.svg">
-
-
-# ePiframe
+# ePiframe <img src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/badge.svg">
 
 Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame with Google Photos and/or local storage (and more), weather information, Telegram Bot, Web User Interface, API and plugins.
 
