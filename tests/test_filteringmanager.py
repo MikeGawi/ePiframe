@@ -22,10 +22,10 @@ def test_verify_sorting_ok():
 def test_verify_sorting_nok():
     with pytest.raises(Exception) as exception:
         FilteringManager.verify_sorting("non_existing_sorting")
-        assert (
-            str(exception)
-            == f"Configuration sorting should be one of {FilteringManager.get_sorting()}"
-        )
+    assert (
+        str(exception.value)
+        == f"Configuration sorting should be one of {FilteringManager.get_sorting()}"
+    )
 
 
 def test_get_descending():
@@ -77,9 +77,9 @@ def test_verify_times_nok():
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with pytest.raises(Exception) as exception:
         FilteringManager.verify_times([now, past])
-        assert (
-            str(exception) == "Configuration photos_from time is older than photos_to!"
-        )
+    assert (
+        str(exception.value) == "Configuration photos_from time is older than photos_to!"
+    )
 
 
 def test_sort_none():

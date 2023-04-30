@@ -19,7 +19,10 @@ class Config:
         "slide_interval": "600",
         "use_telebot": "1",
         "use_web": "1",
+        "web_host": "0.0.0.0",
+        "web_port": "80",
         "show_stats": "1",
+        "dark_theme": "1",
     }
 
     def __init__(self, arg1, arg2):

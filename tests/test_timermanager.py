@@ -95,7 +95,7 @@ def test_when_i_work_nok(patch_datetime_now):
     timer_manager = TimerManager(times, times)
     with pytest.raises(Exception) as exception:
         timer_manager.when_i_work_next()
-        assert str(exception) == "OverflowError: date value out of range"
+    assert str(exception.value) == "date value out of range"
 
 
 def test_when_i_work_mark(patch_datetime_now):

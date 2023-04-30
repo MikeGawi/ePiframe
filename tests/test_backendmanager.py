@@ -572,9 +572,6 @@ class MockedIntervalManager:
     def remove(self):
         print("IntervalManager_remove")
 
-    def save_interval(self, interval: str, hot_word: str, max_value: int):
-        print(f"IntervalManager_save_interval {interval=} {hot_word=} {max_value=}")
-
 
 class MockedTimerManager:
     def __init__(self, start_times: List[str], end_times: List[str]):
@@ -586,7 +583,3 @@ class MockedTimerManager:
     def should_i_work_now(self) -> bool:
         print("TimerManager_should_i_work_now")
         return True
-
-    def when_i_work_next(self) -> datetime:
-        print("TimerManager_when_i_work_next")
-        return datetime.datetime.now()

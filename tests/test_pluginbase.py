@@ -135,9 +135,6 @@ class PluginMock(PluginBase, object):
         def getint(self, name: str):
             return True
 
-    def get_config(self):
-        return self.config
-
     def add_photo_source(
         self,
         id_label: str,
@@ -253,9 +250,6 @@ class PluginOverrideMock(PluginBase):
         def __init__(self, path: str, path2: str, self_object):
             print(path, path2)
             self.self_object = self_object
-
-        def self_object(self):
-            return self.self_object
 
         def getint(self, name: str):
             return False
