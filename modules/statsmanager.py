@@ -47,36 +47,37 @@ class StatsManager:
                 self.__backend.get_path(), self.__PATH, file + self.__EXTENSION
             )
             if not os.path.exists(path):
-                try:
-                    os.system(
-                        self.__CREATE_CMD.format(
-                            self.__tool,
-                            path,
-                            Constants.STATS_STEP,
-                            " ".join(
-                                [
-                                    self.__DS.format(value)
-                                    for value in self.__FILES[file]
-                                ]
-                            ),
-                            " ".join(
-                                [self.__RRA_IND.format(value) for value in self.__RRA]
-                            ),
-                        )
-                    )
-                except Exception:
-                    pass
+                self.__run_cmd(file, path)
+
+    def __run_cmd(self, file, path):
+        try:
+            os.system(
+                self.__CREATE_CMD.format(
+                    self.__tool,
+                    path,
+                    Constants.STATS_STEP,
+                    " ".join([self.__DS.format(value) for value in self.__FILES[file]]),
+                    " ".join([self.__RRA_IND.format(value) for value in self.__RRA]),
+                )
+            )
+        except Exception:
+            pass
 
     def feed_stats(self):
         for file in self.__CMDS.keys():
             path = os.path.join(
                 self.__backend.get_path(), self.__PATH, file + self.__EXTENSION
             )
-            if os.path.exists(path):
-                out = os.popen(self.__CMDS[file]).read().strip().split()
-                if out and file == "temp" and not self.__backend.is_metric():
-                    out = [self.__backend.calc_to_f("".join(out))]
-                if out:
-                    os.system(
-                        self.__UPDATE_CMD.format(self.__tool, path, ":".join(out))
-                    )
+            self.__feed(file, path)
+
+    def __feed(self, file, path):
+        if os.path.exists(path):
+            out = self.__get_output(file)
+            if out:
+                os.system(self.__UPDATE_CMD.format(self.__tool, path, ":".join(out)))
+
+    def __get_output(self, file):
+        out = os.popen(self.__CMDS[file]).read().strip().split()
+        if out and file == "temp" and not self.__backend.is_metric():
+            out = [self.__backend.calc_to_f("".join(out))]
+        return out

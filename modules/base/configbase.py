@@ -33,35 +33,50 @@ class ConfigBase(ABC):
 
         self.__COMMENTS = {}
         with open(self.__default_path) as file_values:
-            parse = str()
-            for line in file_values:
-                if line.startswith(self.__COMMENT_IND_OK):
-                    parse = (
-                        parse
-                        + (" " if parse else "")
-                        + str.strip(line).replace(
-                            self.__COMMENT_IND_OK, self.__REPLACE_IND
-                        )
-                    )
-                elif (
-                    str.strip(line)
-                    and not line.startswith(self.__SECTION_IND)
-                    and not line.startswith(self.__COMMENT_IND_NOK)
-                ):
-                    self.__COMMENTS[line.split(self.__VALUE_IND)[0]] = str.lstrip(parse)
-                    parse = str()
+            self.__parse(file_values)
 
         self.load_settings()
+        self.__get_properties()
+        self.__convert()
+        self.__save(save)
 
+    def __parse(self, file_values):
+        parse = str()
+        for line in file_values:
+            parse = self.__parse_line(line, parse)
+
+    def __parse_line(self, line, parse):
+        if line.startswith(self.__COMMENT_IND_OK):
+            parse = self.__parse_comment(line, parse)
+        elif (
+            str.strip(line)
+            and not line.startswith(self.__SECTION_IND)
+            and not line.startswith(self.__COMMENT_IND_NOK)
+        ):
+            self.__COMMENTS[line.split(self.__VALUE_IND)[0]] = str.lstrip(parse)
+            parse = str()
+
+        return parse
+
+    def __parse_comment(self, line, parse):
+        return (
+            parse
+            + (" " if parse else "")
+            + str.strip(line).replace(self.__COMMENT_IND_OK, self.__REPLACE_IND)
+        )
+
+    def __get_properties(self):
         for property_name in self.__CONFIG_STRING.keys():
             try:
                 self.get_property(property_name)
             except Exception:
                 self.SETTINGS.append(ConfigProperty(property_name, self))
 
+    def __convert(self):
         for property_name in self.SETTINGS:
             property_name.convert()
 
+    def __save(self, save):
         if save:
             self.save()
 
@@ -92,33 +107,44 @@ class ConfigBase(ABC):
                 self.__CONFIG_STRING[property_name] = section
 
         self.legacy_convert()
+        return_value = self.__read_properties(return_value)
+        self.__CONFIG_STRING = {}
+        self.__load_sections()
+        return return_value
 
+    def __read_properties(self, return_value):
         for section in self.def_config.sections():
             for property_name in list(dict(self.def_config.items(section)).keys()):
-                try:
-                    if not self.config.has_section(section):
-                        self.config.add_section(section)
-                        return_value = True
-                    self.config.get(section, property_name)
-                except Exception:
-                    value = str()
-                    try:
-                        value = self.get(property_name)
-                    except Exception:
-                        pass
-                    self.config.set(
-                        section,
-                        property_name,
-                        value if value else self.def_config.get(section, property_name),
-                    )
-                    return_value = True
-                    pass
+                return_value = self.__read_property(
+                    property_name, return_value, section
+                )
+        return return_value
 
-        self.__CONFIG_STRING = {}
+    def __read_property(self, property_name, return_value, section):
+        try:
+            if not self.config.has_section(section):
+                self.config.add_section(section)
+                return_value = True
+            self.config.get(section, property_name)
+        except Exception:
+            value = str()
+            try:
+                value = self.get(property_name)
+            except Exception:
+                pass
+            self.config.set(
+                section,
+                property_name,
+                value if value else self.def_config.get(section, property_name),
+            )
+            return_value = True
+            pass
+        return return_value
+
+    def __load_sections(self):
         for section in self.def_config.sections():
             for property_name in list(dict(self.def_config.items(section)).keys()):
                 self.__CONFIG_STRING[property_name] = section
-        return return_value
 
     def get(self, name: str) -> str:
         try:
@@ -148,22 +174,46 @@ class ConfigBase(ABC):
         next_iterator = next(iterator)
 
         with open(self.__default_path) as file_lines:
-            for line in file_lines:
-                if (
-                    line.startswith(self.__COMMENT_IND_OK)
-                    or line.startswith(self.__SECTION_IND)
-                    or line.startswith(self.__COMMENT_IND_NOK)
-                    or not str.strip(line)
-                ):
-                    filename = filename + line
-                elif next_iterator in line:
-                    filename += "{}{}{}\n".format(
-                        next_iterator, self.__VALUE_IND, self.get(next_iterator)
-                    )
-                    next_iterator = next(iterator)
-                else:
-                    raise Exception(self.__ERROR_SAVE)
+            filename, next_iterator = self.__save_lines(
+                file_lines, filename, iterator, next_iterator
+            )
 
+        self.__write_file(filename, path)
+
+    def __save_lines(self, file_lines, filename, iterator, next_iterator):
+        for line in file_lines:
+            filename, next_iterator = self.__process_line(
+                filename, iterator, line, next_iterator
+            )
+        return filename, next_iterator
+
+    def __process_line(self, filename, iterator, line, next_iterator):
+        if self.__check_line(line):
+            filename = filename + line
+        elif next_iterator in line:
+            filename, next_iterator = self.__process_next(
+                filename, iterator, next_iterator
+            )
+        else:
+            raise Exception(self.__ERROR_SAVE)
+        return filename, next_iterator
+
+    def __check_line(self, line):
+        return (
+            line.startswith(self.__COMMENT_IND_OK)
+            or line.startswith(self.__SECTION_IND)
+            or line.startswith(self.__COMMENT_IND_NOK)
+            or not str.strip(line)
+        )
+
+    def __process_next(self, filename, iterator, next_iterator):
+        filename += "{}{}{}\n".format(
+            next_iterator, self.__VALUE_IND, self.get(next_iterator)
+        )
+        next_iterator = next(iterator)
+        return filename, next_iterator
+
+    def __write_file(self, filename, path):
         with open(path, self.__FILE_WRITE_FLAG) as file_lines:
             file_lines.write(filename)
 

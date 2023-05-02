@@ -88,11 +88,7 @@ class WeatherStampManager:
 
     def compose(self, temp: float, units: str, icon: str):
         image = Image.open(self.__output_file)
-
-        if not self.__horizontal:
-            image = image.transpose(
-                Image.ROTATE_90 if self.__rotation == 90 else Image.ROTATE_270
-            )
+        image = self.__set_horizontal(image)
         width, height = image.size
         draw = ImageDraw.Draw(image)
 
@@ -102,11 +98,7 @@ class WeatherStampManager:
         text_weather = self.__ICONS[icon]
         size_weather = draw.textlength(text_weather, font=weather_font)
 
-        text_temperature = "{}{}{}".format(
-            int(math.ceil(temp)),
-            self.__DEGREES,
-            "C" if WeatherManager.is_metric(units) else "F",
-        )
+        text_temperature = self.__get_text_temperature(temp, units)
         size_temperature = draw.textlength(text_temperature, font=font_temperature)
 
         x = self.__MARGIN
@@ -121,10 +113,7 @@ class WeatherStampManager:
         fill_color = self.__COLORS[self.__color.upper()]
         stroke_color = (self.__COLORS["WHITE"] + self.__COLORS["BLACK"]) - fill_color
 
-        stroke = ImageColor.getcolor(
-            {value: key for key, value in self.__COLORS.items()}[stroke_color],
-            image.mode,
-        )
+        stroke = self.__get_stroke(image, stroke_color)
         fill = ImageColor.getcolor(self.__color, image.mode)
 
         draw.text(
@@ -144,8 +133,32 @@ class WeatherStampManager:
             stroke_fill=stroke,
         )
 
+        image = self.__process_horizontal(image)
+        image.save(self.__output_file)
+
+    def __set_horizontal(self, image):
+        if not self.__horizontal:
+            image = image.transpose(
+                Image.ROTATE_90 if self.__rotation == 90 else Image.ROTATE_270
+            )
+        return image
+
+    def __get_text_temperature(self, temp, units):
+        return "{}{}{}".format(
+            int(math.ceil(temp)),
+            self.__DEGREES,
+            "C" if WeatherManager.is_metric(units) else "F",
+        )
+
+    def __get_stroke(self, image, stroke_color):
+        return ImageColor.getcolor(
+            {value: key for key, value in self.__COLORS.items()}[stroke_color],
+            image.mode,
+        )
+
+    def __process_horizontal(self, image):
         if not self.__horizontal:
             image = image.transpose(
                 Image.ROTATE_270 if self.__rotation == 90 else Image.ROTATE_90
             )
-        image.save(self.__output_file)
+        return image

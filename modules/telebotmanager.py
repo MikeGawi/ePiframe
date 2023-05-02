@@ -51,20 +51,26 @@ class TelebotManager:
 
         if messages:
             for message in messages:
-                chat_id = message.chat.id
-                ids = (
-                    [int(value) for value in self.__backend.get_chat_id().split(",")]
-                    if self.__backend.get_chat_id()
-                    else [chat_id]
-                )
-                if chat_id in ids:
-                    if message.content_type == TelebotCmd.TEXT_TAG:
-                        command = re.sub(r"@.+ ", " ", message.text).split("@")[0]
-                        self.__process_command(chat_id, command)
-                    elif message.content_type == TelebotCmd.PHOTO_TAG:
-                        self.__process_file(chat_id, message)
-                    else:
-                        self.__bot.send_message(chat_id, TelebotCmd.UNSUPPORTED_REP)
+                self.__messages(message)
+
+    def __messages(self, message):
+        chat_id = message.chat.id
+        ids = (
+            [int(value) for value in self.__backend.get_chat_id().split(",")]
+            if self.__backend.get_chat_id()
+            else [chat_id]
+        )
+        self.__process_ids(chat_id, ids, message)
+
+    def __process_ids(self, chat_id, ids, message):
+        if chat_id in ids:
+            if message.content_type == TelebotCmd.TEXT_TAG:
+                command = re.sub(r"@.+ ", " ", message.text).split("@")[0]
+                self.__process_command(chat_id, command)
+            elif message.content_type == TelebotCmd.PHOTO_TAG:
+                self.__process_file(chat_id, message)
+            else:
+                self.__bot.send_message(chat_id, TelebotCmd.UNSUPPORTED_REP)
 
     def __process_file(self, chat_id: Union[int, str], message):
         if self.__backend.pid_file_exists():
@@ -88,36 +94,50 @@ class TelebotManager:
 
     def __process_longer_command(self, chat_id: Union[int, str], command: str):
         if self.__backend.is_interval_mult_enabled():
-            if len(command.split(" ")) == 1:
-                self.__bot.send_message(chat_id, TelebotCmd.LONGER_REP)
-            else:
-                value = command.split(" ")[1]
-                try:
-                    value = int(value)
-                    if value <= 0:
-                        raise
-                    interval = 0
-                    try:
-                        interval = self.__backend.get_interval()
-                    except Exception:
-                        pass
-                    value += 0 if interval < 0 else interval
-                    max_interval = self.__backend.get_max_interval()
-                    value = max_interval if value > max_interval else value
-                    self.__backend.save_interval(value)
-                    self.__bot.send_message(
-                        chat_id,
-                        "{}\n{} ({} is max in configuration){}".format(
-                            TelebotCmd.OK_REP,
-                            TelebotCmd.LONGER_MSG.format(value),
-                            max_interval,
-                            TelebotCmd.LONGER2_MSG if interval > 0 else "",
-                        ),
-                    )
-                except Exception:
-                    self.__bot.send_message(chat_id, TelebotCmd.VALUE_REP)
+            self.__process_interval(chat_id, command)
         else:
             self.__bot.send_message(chat_id, TelebotCmd.LONGER_OFF_REP)
+
+    def __process_interval(self, chat_id: Union[int, str], command: str):
+        if len(command.split(" ")) == 1:
+            self.__bot.send_message(chat_id, TelebotCmd.LONGER_REP)
+        else:
+            value = command.split(" ")[1]
+            self.__process_value(chat_id, value)
+
+    def __process_value(self, chat_id: Union[int, str], value: str):
+        try:
+            value = int(value)
+            if value <= 0:
+                raise
+            interval = self.__get_interval()
+            value += 0 if interval < 0 else interval
+            max_interval = self.__backend.get_max_interval()
+            value = max_interval if value > max_interval else value
+            self.__backend.save_interval(value)
+            self.__send_longer_message(chat_id, interval, max_interval, value)
+        except Exception:
+            self.__bot.send_message(chat_id, TelebotCmd.VALUE_REP)
+
+    def __send_longer_message(
+        self, chat_id: Union[int, str], interval: int, max_interval: int, value: int
+    ):
+        self.__bot.send_message(
+            chat_id,
+            "{}\n{} ({} is max in configuration){}".format(
+                TelebotCmd.OK_REP,
+                TelebotCmd.LONGER_MSG.format(value),
+                max_interval,
+                TelebotCmd.LONGER2_MSG if interval > 0 else "",
+            ),
+        )
+
+    def __get_interval(self) -> int:
+        try:
+            interval = self.__backend.get_interval()
+        except Exception:
+            interval = 0
+        return interval
 
     def __process_command(self, chat_id: Union[int, str], command: str):
         if command == TelebotCmd.CURRENT_CMD:

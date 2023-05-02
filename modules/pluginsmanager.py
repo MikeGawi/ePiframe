@@ -56,36 +56,44 @@ class PluginsManager:
             modules.sort()
             orders = self.read_order()
 
-            zipped = []
-            location = len(modules) + 1
-            for plugin in modules:
-                if plugin in orders:
-                    position = 0
-                    for order in orders:
-                        if plugin == order:
-                            zipped.append(position)
-                            break
-                        position += 1
-                else:
-                    zipped.append(location)
-                    location += 1
+            zipped = self.__get_locations(modules, orders)
             sorted_elements = [
                 module for zipped_module, module in sorted(zip(zipped, modules))
             ]
             self.save_order(sorted_elements)
-            for modules in sorted_elements:
-                module = importlib.import_module(modules + "." + self.__PLUGIN_CLASS)
-                self.__PLUGINS.append(
-                    module.Plugin(
-                        os.path.join(
-                            os.path.realpath(self.__global_path),
-                            os.path.dirname(elements[modules]),
-                        ),
-                        self.__pid_manager,
-                        self.__logging,
-                        self.__config,
-                    )
+            self.__set_order(elements, sorted_elements)
+
+    @staticmethod
+    def __get_locations(modules: list, orders: list[str]) -> list[int]:
+        zipped = []
+        location = len(modules) + 1
+        for plugin in modules:
+            if plugin in orders:
+                position = 0
+                for order in orders:
+                    if plugin == order:
+                        zipped.append(position)
+                        break
+                    position += 1
+            else:
+                zipped.append(location)
+                location += 1
+        return zipped
+
+    def __set_order(self, elements, sorted_elements):
+        for modules in sorted_elements:
+            module = importlib.import_module(modules + "." + self.__PLUGIN_CLASS)
+            self.__PLUGINS.append(
+                module.Plugin(
+                    os.path.join(
+                        os.path.realpath(self.__global_path),
+                        os.path.dirname(elements[modules]),
+                    ),
+                    self.__pid_manager,
+                    self.__logging,
+                    self.__config,
                 )
+            )
 
     def get_plugins(self) -> List[PluginBase]:
         return self.__PLUGINS

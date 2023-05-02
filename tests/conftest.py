@@ -25,6 +25,7 @@ def requests_mocker():
 
 @pytest.fixture()
 @patch("misc.constants.Constants.CONFIG_FILE", Constants.CONFIG_FILE_DEFAULT)
+@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def app_no_login():
     with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
         intervalmanager, "IntervalManager", MockedIntervalManager
@@ -42,6 +43,7 @@ def app_no_login():
 
 
 @pytest.fixture()
+@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def app_no_config():
     with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
         intervalmanager, "IntervalManager", MockedIntervalManager
@@ -60,6 +62,7 @@ def app_no_config():
 
 @pytest.fixture()
 @patch("misc.constants.Constants.CONFIG_FILE", Constants.CONFIG_FILE_DEFAULT)
+@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def app():
     with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
         intervalmanager, "IntervalManager", MockedIntervalManager
@@ -94,6 +97,7 @@ def cleanup(request):
             os.remove(file)
         shutil.rmtree("PATH")
         remove_file("log.test")
+        remove_file("test_users.db")
 
     request.addfinalizer(clean)
 

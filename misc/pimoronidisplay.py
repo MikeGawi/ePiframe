@@ -35,35 +35,42 @@ class PimoroniDisplay(DisplayBase):
         color_schema = self.COLOR_MAP[color] if color in self.COLOR_MAP else ""
         module = importlib.import_module("inky." + self._display)
 
-        if self._display == "phat":
-            self.__inky = (
-                module.InkyPHAT(colour=color_schema)
-                if color_schema
-                else module.InkyPHAT()
-            )
-            self.__palette_filter = self.__get_palette(module)
-        elif self._display == "what":
-            self.__inky = (
-                module.InkyWHAT(colour=color_schema)
-                if color_schema
-                else module.InkyWHAT()
-            )
-            self.__palette_filter = self.__get_palette(module)
-        elif self._display == "inky_ssd1608":
-            self.__inky = (
-                module.Inky(colour=color_schema) if color_schema else module.Inky()
-            )
-            self.__palette_filter = self.__get_palette(module)
-        elif self._display == "inky_uc8159":
-            self.__inky = module.Inky()
-            self.__palette_filter = module.DESATURATED_PALETTE
-        elif self._display == "inky_ssd1683":
-            self.__inky = (
-                module.Inky(colour=color_schema) if color_schema else module.Inky()
-            )
-            self.__palette_filter = self.__get_palette(module)
-        else:
+        displays_dict = {
+            "phat": self.__init_inky_phat,
+            "what": self.__init_inky_what,
+            "inky_ssd1608": self.__init_inky_ssd,
+            "inky_uc8159": self.__init_inky_uc,
+            "inky_ssd1683": self.__init_inky_ssd,
+        }
+
+        display_method = displays_dict.get(self._display, None)
+
+        if not display_method:
             raise Exception(f"No Pimoroni display package {self._display} in lib.inky!")
+
+        display_method.__call__(color_schema, module)
+
+    def __init_inky_phat(self, color_schema, module):
+        self.__inky = (
+            module.InkyPHAT(colour=color_schema) if color_schema else module.InkyPHAT()
+        )
+        self.__palette_filter = self.__get_palette(module)
+
+    def __init_inky_what(self, color_schema, module):
+        self.__inky = (
+            module.InkyWHAT(colour=color_schema) if color_schema else module.InkyWHAT()
+        )
+        self.__palette_filter = self.__get_palette(module)
+
+    def __init_inky_uc(self, color_schema, module):
+        self.__inky = module.Inky()
+        self.__palette_filter = module.DESATURATED_PALETTE
+
+    def __init_inky_ssd(self, color_schema, module):
+        self.__inky = (
+            module.Inky(colour=color_schema) if color_schema else module.Inky()
+        )
+        self.__palette_filter = self.__get_palette(module)
 
     def clear(self):
         self.__inky.set_border(

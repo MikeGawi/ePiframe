@@ -18,12 +18,13 @@ class TimerManager:
 
         day_of_week = now.weekday()
         yesterday = (datetime.datetime.now() - datetime.timedelta(1)).weekday() - 1
-
-        return_value = False
-
         startTab = self.__start_times[day_of_week].strip()
         endTab = self.__end_times[day_of_week].strip()
 
+        return self.__get_value(day_of_week, endTab, now, startTab, yesterday)
+
+    def __get_value(self, day_of_week, endTab, now, startTab, yesterday):
+        return_value = False
         if startTab == self.__NO_TIME_MARK:
             return_value = False
         elif (
@@ -45,7 +46,6 @@ class TimerManager:
             and self.__end_times[day_of_week].strip() == self.__NO_TIME_MARK
         ):
             return_value = True
-
         return return_value
 
     def when_i_work_next(self) -> datetime:
@@ -88,18 +88,25 @@ class TimerManager:
         times2 = times[1].split(cls.__DELIMITER)
 
         for index in range(len(times1)):
-            if not times1[index].strip() == cls.__NO_TIME_MARK:
-                cls.get_time_from_string(times1[index].strip())
-            if not times2[index].strip() == cls.__NO_TIME_MARK:
-                cls.get_time_from_string(times2[index].strip())
+            cls.__verify_times(index, times1, times2)
 
-            if (
-                not times2[index].strip() == cls.__NO_TIME_MARK
-                and not times1[index].strip() == cls.__NO_TIME_MARK
-            ):
-                if cls.get_time_from_string(
-                    times1[index].strip()
-                ) > cls.get_time_from_string(times2[index].strip()):
-                    raise Exception(
-                        "Configuration start_times times are older than stop_times!"
-                    )
+    @classmethod
+    def __verify_times(cls, index, times1, times2):
+        if not times1[index].strip() == cls.__NO_TIME_MARK:
+            cls.get_time_from_string(times1[index].strip())
+        if not times2[index].strip() == cls.__NO_TIME_MARK:
+            cls.get_time_from_string(times2[index].strip())
+        cls.__verify_indices(index, times1, times2)
+
+    @classmethod
+    def __verify_indices(cls, index, times1, times2):
+        if (
+            not times2[index].strip() == cls.__NO_TIME_MARK
+            and not times1[index].strip() == cls.__NO_TIME_MARK
+        ):
+            if cls.get_time_from_string(
+                times1[index].strip()
+            ) > cls.get_time_from_string(times2[index].strip()):
+                raise Exception(
+                    "Configuration start_times times are older than stop_times!"
+                )

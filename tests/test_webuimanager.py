@@ -16,13 +16,14 @@ from tests.helpers.helpers import not_raises
 from tests.test_backendmanager import get_manager
 
 
+@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def test_init():
     with not_raises(Exception):
         WebUIManager(get_manager())
 
 
 def test_menu_entries():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     entries = [
         ("Home", "/", "home-menu", "bi bi-house"),
         ("Logs", "/logs", "logs-menu", "bi bi-activity"),
@@ -39,7 +40,7 @@ def test_menu_entries():
 
 
 def test_websites():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     entries = [
         ("/get_image", ["GET"], None),
         ("/get_status", ["GET"], None),
@@ -69,7 +70,7 @@ def test_websites():
 
 
 def test_api_entries():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     entries = [
         "/api/get_image",
         "/api/get_status",
@@ -86,7 +87,7 @@ def test_api_entries():
 
 
 def test_actions():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     entries = {
         (
             "Next Photo",
@@ -113,23 +114,23 @@ def test_actions():
 
 
 def test_get_app():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     assert str(manager.get_app()) == "<Flask 'modules.webuimanager'>"
 
 
 def test_inject_context():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     assert manager.inject_context()["dark_theme"] is True
     assert manager.inject_context()["menu"] == manager.MENU
 
 
 def test_config():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     assert str(type(manager.config())) == "<class 'tests.helpers.config.Config'>"
 
 
 def test_add_menu_entries():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     before = len(manager.MENU)
     manager.add_menu_entries([WebUIManager.MenuEntry("name", "url", "id", "icon")])
     assert before != len(manager.MENU)
@@ -160,7 +161,7 @@ def test_adapt_name_deps():
 
 
 def test_load_user_nok():
-    manager = WebUIManager(get_manager())
+    manager = get_webui_manager()
     assert not manager.load_user("non_existing_user")
 
 
@@ -171,7 +172,7 @@ def test_load_user_ok():
         return [user]
 
     with patch.object(UsersManager, "get_by_username", mocked_get_user):
-        manager = WebUIManager(get_manager())
+        manager = get_webui_manager()
         assert manager.load_user("name") == user
 
 
@@ -627,3 +628,8 @@ def mock_get_by_api(self, api: str) -> List[User]:
 def web_mocked_system(*args, **kwargs):
     print("".join(args) + "".join(kwargs))
     return WebMockRead()
+
+
+@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
+def get_webui_manager():
+    return WebUIManager(get_manager())

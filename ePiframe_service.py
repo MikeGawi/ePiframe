@@ -65,17 +65,27 @@ class Service(Daemon):
         self.__event = self.__scheduler.enter(
             self.__INITIAL_EVENT_TIME, self.__EVENT_PRIORITY, self.task
         )
+        self.__run_telebot(args)
+        self.__run_web_threads(args)
+        self.__run_plugins()
+        self.__run_scheduler(args)
 
+        while True:
+            time.sleep(self.__WAIT_EVENT_TIME)
+
+    def __run_telebot(self, args):
         if not args or (args and args == self.__TGBOT_ARG):
             self.__telebot_thread = Thread(target=self.telebot_thread)
             self.__telebot_thread.start()
 
+    def __run_web_threads(self, args):
         if not args or (args and args == self.__WEB_ARG):
             self.__stats_thread = Thread(target=self.stats_thread)
             self.__stats_thread.start()
             self.__web_thread = Thread(target=self.web_thread)
             self.__web_thread.start()
 
+    def __run_plugins(self):
         for plug in self.__backend.get_plugins().plugin_service_thread():
             thread = Thread(
                 target=plug.add_service_thread,
@@ -87,11 +97,9 @@ class Service(Daemon):
             self.__plugin_threads.append(thread)
             thread.start()
 
+    def __run_scheduler(self, args):
         if not args:
             self.__scheduler.run()
-
-        while True:
-            time.sleep(self.__WAIT_EVENT_TIME)
 
     def stats_thread(self):
         self.__stats_man = StatsManager(self.__backend)
@@ -148,50 +156,133 @@ class Service(Daemon):
         sleep = False
 
         if self.__backend.is_interval_mult_enabled():
-            try:
-                interval = self.__backend.get_interval()
-            except Exception:
-                pass
-
-            if interval > 0:
-                interval -= 1
-                self.__backend.save_interval(interval)
-                self.__backend.log(self.__SERVICE_LOG_MULT, silent=True)
-            else:
-                self.__backend.remove_interval()
-                interval = -1
+            interval = self.__control_interval(interval)
 
         if interval < 0 or params:
-            if self.__backend.should_i_work_now() or (
-                params and self.__backend.triggers_enabled()
-            ):
-                self.__NUMBER_OF_NOTIF = 0
-                self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
-
-                self.__backend.display_power_config(True)
-
-                par = params if params != self.__backend.get_empty_params() else str()
-                args = (self.__script + par.split()) if par else self.__script
-                subprocess.Popen(args)
-            else:
-                self.__backend.display_power_config(False)
-
-                if self.__NUMBER_OF_NOTIF == 0:
-                    self.__backend.log(self.__SERVICE_LOG_SLEEPING, silent=True)
-                self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1) % 10
-                sleep = True
+            sleep = self.__work(params, sleep)
 
         frame_time = (
             self.__backend.get_slide_interval() if not sleep else self.__WAIT_EVENT_TIME
         )
         self.__backend.update_time()
+        self.__log_next(sleep)
+        self.__event = self.__scheduler.enter(
+            frame_time, self.__EVENT_PRIORITY, self.task
+        )
+
+    def __log_next(self, sleep):
         if not sleep:
             self.__backend.log(
                 self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()), silent=True
             )
-        self.__event = self.__scheduler.enter(
-            frame_time, self.__EVENT_PRIORITY, self.task
-        )
+
+    def __work(self, params, sleep):
+        if self.__backend.should_i_work_now() or (
+            params and self.__backend.triggers_enabled()
+        ):
+            self.__do_work(params)
+        else:
+            sleep = self.__no_work(sleep)
+        return sleep
+
+    def __do_work(self, params):
+        self.__NUMBER_OF_NOTIF = 0
+        self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
+        self.__backend.display_power_config(True)
+        par = params if params != self.__backend.get_empty_params() else str()
+        args = (self.__script + par.split()) if par else self.__script
+        subprocess.Popen(args)
+
+    def __no_work(self, sleep):
+        self.__backend.display_power_config(False)
+        if self.__NUMBER_OF_NOTIF == 0:
+            self.__backend.log(self.__SERVICE_LOG_SLEEPING, silent=True)
+        self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1) % 10
+        sleep = True
+        return sleep
+
+    def __control_interval(self, interval):
+        try:
+            interval = self.__backend.get_interval()
+        except Exception:
+            pass
+        if interval > 0:
+            interval -= 1
+            self.__backend.save_interval(interval)
+            self.__backend.log(self.__SERVICE_LOG_MULT, silent=True)
+        else:
+            self.__backend.remove_interval()
+            interval = -1
+        return interval
+
+
+def control():
+    if len(sys.argv) >= 2 and "--help" not in [arg.lower() for arg in sys.argv]:
+        process_command()
+        sys.exit(0)
+    else:
+        print_help()
+
+
+def process_command():
+    if "start" == sys.argv[1]:
+        start()
+    elif "stop" == sys.argv[1]:
+        daemon.stop()
+    elif "restart" == sys.argv[1]:
+        daemon.restart()
+    else:
+        print("Unknown command")
+        sys.exit(2)
+
+
+def print_help():
+    print("ePiframe daemon service")
+    print("usage: %s start|stop|restart [service]" % sys.argv[0])
+    print("	service  	start only particular service (i.e. web or telegram)")
+    print("			services must be enabled in configuration!")
+    print(
+        "for web: any port number below 5000 needs root privileges to be possible to assign (use sudo "
+        "./ePiframe_service.py ... "
+    )
+    print("")
+    print("")
+    print("Use --debug at the end for debugger info")
+    sys.exit(2)
+
+
+def start():
+    process = subprocess.Popen(["ps", "-efa"], stdout=subprocess.PIPE)
+    process.wait()
+    out, error = process.communicate()
+    if out:
+        process_lines(out)
+    daemon.start(
+        check(),
+        "--debug" in [arg.lower() for arg in sys.argv],
+    )
+
+
+def check():
+    return (
+        "web"
+        if "web" in [arg.lower() for arg in sys.argv]
+        else "telegram"
+        if "telegram" in [arg.lower() for arg in sys.argv]
+        else str()
+    )
+
+
+def process_lines(out):
+    for line in out.splitlines():
+        if str(os.path.basename(__file__)) in str(line):
+            kill_pid(line)
+
+
+def kill_pid(line):
+    pid = int(line.split()[1])
+    if not pid == os.getpid():
+        os.kill(pid, signal.SIGKILL)
 
 
 if __name__ == "__main__":
@@ -199,44 +290,4 @@ if __name__ == "__main__":
         "/tmp/ePiframe-service.pid", os.path.dirname(os.path.realpath(__file__))
     )
 
-    if len(sys.argv) >= 2 and "--help" not in [arg.lower() for arg in sys.argv]:
-        if "start" == sys.argv[1]:
-            process = subprocess.Popen(["ps", "-efa"], stdout=subprocess.PIPE)
-            process.wait()
-            out, error = process.communicate()
-
-            if out:
-                for line in out.splitlines():
-                    if str(os.path.basename(__file__)) in str(line):
-                        pid = int(line.split()[1])
-                        if not pid == os.getpid():
-                            os.kill(pid, signal.SIGKILL)
-            daemon.start(
-                "web"
-                if "web" in [arg.lower() for arg in sys.argv]
-                else "telegram"
-                if "telegram" in [arg.lower() for arg in sys.argv]
-                else str(),
-                "--debug" in [arg.lower() for arg in sys.argv],
-            )
-        elif "stop" == sys.argv[1]:
-            daemon.stop()
-        elif "restart" == sys.argv[1]:
-            daemon.restart()
-        else:
-            print("Unknown command")
-            sys.exit(2)
-        sys.exit(0)
-    else:
-        print("ePiframe daemon service")
-        print("usage: %s start|stop|restart [service]" % sys.argv[0])
-        print("	service  	start only particular service (i.e. web or telegram)")
-        print("			services must be enabled in configuration!")
-        print(
-            "for web: any port number below 5000 needs root privileges to be possible to assign (use sudo "
-            "./ePiframe_service.py ... "
-        )
-        print("")
-        print("")
-        print("Use --debug at the end for debugger info")
-        sys.exit(2)
+    control()
