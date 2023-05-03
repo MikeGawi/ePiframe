@@ -140,73 +140,101 @@ class TelebotManager:
         return interval
 
     def __process_command(self, chat_id: Union[int, str], command: str):
-        if command == TelebotCmd.CURRENT_CMD:
-            self.__bot.send_chat_action(chat_id, TelebotCmd.UPLOAD_PHOTO_TAG)
-            if self.__backend.get_current_file():
-                self.__bot.send_photo(
-                    chat_id,
-                    open(
-                        self.__backend.get_current_file(),
-                        TelebotCmd.UPLOAD_PHOTO_PERM_TAG,
-                    ),
-                )
-            else:
-                self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
-        elif command == TelebotCmd.NEXT_CMD:
-            if self.__backend.pid_file_exists():
-                self.__bot.send_message(chat_id, TelebotCmd.PROGRESS_REP)
-            else:
-                self.__backend.fire_event()
-                self.__bot.send_message(chat_id, TelebotCmd.OK_REP)
-        elif command == TelebotCmd.WHEN_CMD:
-            self.__bot.send_message(
+        commands = {
+            TelebotCmd.CURRENT_CMD: self.__process_current_command,
+            TelebotCmd.NEXT_CMD: self.__process_next_command,
+            TelebotCmd.WHEN_CMD: self.__process_when_command,
+            TelebotCmd.LONGER_CMD.replace(
+                TelebotCmd.OPTION_IND, ""
+            ): self.__process_longer_command,
+            TelebotCmd.PING_CMD: self.__process_ping_command,
+            TelebotCmd.ECHO_CMD.replace(
+                TelebotCmd.OPTION_IND, ""
+            ): self.__process_echo_command,
+            TelebotCmd.ORIGINAL_CMD: self.__process_original_command,
+            TelebotCmd.START_CMD: self.__process_start_command,
+            TelebotCmd.HELP_CMD: self.__process_start_command,
+            TelebotCmd.STATUS_CMD: self.__process_status_command,
+            TelebotCmd.REBOOT_CMD: self.__process_reboot_command,
+        }
+
+        cmd = commands.get(command.split(" ")[0], self.__process_unknown_command)
+        cmd.__call__(chat_id, command)
+
+    def __process_ping_command(self, chat_id: Union[int, str], command: str):
+        return self.__bot.send_message(chat_id, TelebotCmd.PING_REP)
+
+    def __process_current_command(self, chat_id: Union[int, str], command: str):
+        self.__bot.send_chat_action(chat_id, TelebotCmd.UPLOAD_PHOTO_TAG)
+        if self.__backend.get_current_file():
+            self.__bot.send_photo(
                 chat_id,
-                f"{TelebotCmd.NEXT_UPDATE_MSG}\n{self.__backend.get_next_time()}",
-            )
-        elif TelebotCmd.LONGER_CMD.replace(TelebotCmd.OPTION_IND, "") in command:
-            self.__process_longer_command(chat_id, command)
-        elif command == TelebotCmd.PING_CMD:
-            self.__bot.send_message(chat_id, TelebotCmd.PING_REP)
-        elif TelebotCmd.ECHO_CMD.replace(TelebotCmd.OPTION_IND, "") in command:
-            if len(command.split(" ")) == 1:
-                self.__bot.send_message(chat_id, TelebotCmd.ECHO_REP)
-            else:
-                self.__bot.send_message(chat_id, " ".join(command.split()[1:]))
-        elif command == TelebotCmd.ORIGINAL_CMD:
-            if self.__backend.get_original_file():
-                self.__bot.send_chat_action(chat_id, TelebotCmd.UPLOAD_PHOTO_TAG)
-                self.__bot.send_photo(
-                    chat_id,
-                    open(
-                        self.__backend.get_original_file(),
-                        TelebotCmd.UPLOAD_PHOTO_PERM_TAG,
-                    ),
-                )
-            else:
-                self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
-        elif command == TelebotCmd.START_CMD or command == TelebotCmd.HELP_CMD:
-            self.__bot.send_message(
-                chat_id,
-                "*{}*\n\n{}\n{}\n\n{}\n\n{}".format(
-                    TelebotCmd.HELLO_MSG,
-                    TelebotCmd.COMMANDS_MSG,
-                    TelebotCmd.DESCRIPTIONS,
-                    TelebotCmd.UPLOAD_MSG,
-                    TelebotCmd.ALL,
+                open(
+                    self.__backend.get_current_file(),
+                    TelebotCmd.UPLOAD_PHOTO_PERM_TAG,
                 ),
             )
-        elif command == TelebotCmd.STATUS_CMD:
-            result = (
-                self.__backend.start_system_command(self.__STATUS_OS_CMD)
-                if self.__backend.is_metric()
-                else self.__backend.start_system_command(self.__STATUS_OS_CMD_F)
-            )
-            if result:
-                self.__bot.send_message(chat_id, result)
-            else:
-                self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
-        elif command == TelebotCmd.REBOOT_CMD:
-            self.__bot.send_message(chat_id, TelebotCmd.OK_REP)
-            self.__backend.reboot()
         else:
-            self.__bot.send_message(chat_id, TelebotCmd.UNKNOWN_REP)
+            self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
+
+    def __process_next_command(self, chat_id: Union[int, str], command: str):
+        if self.__backend.pid_file_exists():
+            self.__bot.send_message(chat_id, TelebotCmd.PROGRESS_REP)
+        else:
+            self.__backend.fire_event()
+            self.__bot.send_message(chat_id, TelebotCmd.OK_REP)
+
+    def __process_when_command(self, chat_id: Union[int, str], command: str):
+        self.__bot.send_message(
+            chat_id,
+            f"{TelebotCmd.NEXT_UPDATE_MSG}\n{self.__backend.get_next_time()}",
+        )
+
+    def __process_echo_command(self, chat_id: Union[int, str], command: str):
+        if len(command.split(" ")) == 1:
+            self.__bot.send_message(chat_id, TelebotCmd.ECHO_REP)
+        else:
+            self.__bot.send_message(chat_id, " ".join(command.split()[1:]))
+
+    def __process_original_command(self, chat_id: Union[int, str], command: str):
+        if self.__backend.get_original_file():
+            self.__bot.send_chat_action(chat_id, TelebotCmd.UPLOAD_PHOTO_TAG)
+            self.__bot.send_photo(
+                chat_id,
+                open(
+                    self.__backend.get_original_file(),
+                    TelebotCmd.UPLOAD_PHOTO_PERM_TAG,
+                ),
+            )
+        else:
+            self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
+
+    def __process_start_command(self, chat_id: Union[int, str], command: str):
+        self.__bot.send_message(
+            chat_id,
+            "*{}*\n\n{}\n{}\n\n{}\n\n{}".format(
+                TelebotCmd.HELLO_MSG,
+                TelebotCmd.COMMANDS_MSG,
+                TelebotCmd.DESCRIPTIONS,
+                TelebotCmd.UPLOAD_MSG,
+                TelebotCmd.ALL,
+            ),
+        )
+
+    def __process_status_command(self, chat_id: Union[int, str], command: str):
+        result = (
+            self.__backend.start_system_command(self.__STATUS_OS_CMD)
+            if self.__backend.is_metric()
+            else self.__backend.start_system_command(self.__STATUS_OS_CMD_F)
+        )
+        if result:
+            self.__bot.send_message(chat_id, result)
+        else:
+            self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
+
+    def __process_reboot_command(self, chat_id: Union[int, str], command: str):
+        self.__bot.send_message(chat_id, TelebotCmd.OK_REP)
+        self.__backend.reboot()
+
+    def __process_unknown_command(self, chat_id: Union[int, str], command: str):
+        self.__bot.send_message(chat_id, TelebotCmd.UNKNOWN_REP)

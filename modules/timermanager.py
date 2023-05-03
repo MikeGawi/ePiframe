@@ -18,35 +18,60 @@ class TimerManager:
 
         day_of_week = now.weekday()
         yesterday = (datetime.datetime.now() - datetime.timedelta(1)).weekday() - 1
-        startTab = self.__start_times[day_of_week].strip()
-        endTab = self.__end_times[day_of_week].strip()
+        start_tab = self.__start_times[day_of_week].strip()
+        end_tab = self.__end_times[day_of_week].strip()
 
-        return self.__get_value(day_of_week, endTab, now, startTab, yesterday)
+        return self.__get_value(day_of_week, end_tab, now, start_tab, yesterday)
 
-    def __get_value(self, day_of_week, endTab, now, startTab, yesterday):
-        return_value = False
-        if startTab == self.__NO_TIME_MARK:
-            return_value = False
-        elif (
-            now.time() < self.get_time_from_string(startTab).time()
-            and self.__end_times[yesterday].strip() == self.__NO_TIME_MARK
-        ):
-            return_value = True
-        elif (
-            now.time() > self.get_time_from_string(startTab).time()
-            and not self.__end_times[day_of_week].strip() == self.__NO_TIME_MARK
-        ):
-            return_value = (
-                self.get_time_from_string(startTab).time()
-                < now.time()
-                < self.get_time_from_string(endTab).time()
+    def __get_value(self, day_of_week, end_tab, now, start_tab, yesterday):
+        for execute in [
+            self.__check_no_time_mark,
+            self.__check_yesterday,
+            self.__check_day_of_week,
+            self.__check_now,
+        ]:
+            value = execute.__call__(now, start_tab, end_tab, day_of_week, yesterday)
+            if value is not None:
+                break
+
+        return value or False
+
+    def __check_no_time_mark(self, now, start_tab, end_tab, day_of_week, yesterday):
+        return False if start_tab == self.__NO_TIME_MARK else None
+
+    def __check_yesterday(self, now, start_tab, end_tab, day_of_week, yesterday):
+        return (
+            True
+            if (
+                now.time() < self.get_time_from_string(start_tab).time()
+                and self.__end_times[yesterday].strip() == self.__NO_TIME_MARK
             )
-        elif (
-            now.time() > self.get_time_from_string(startTab).time()
-            and self.__end_times[day_of_week].strip() == self.__NO_TIME_MARK
-        ):
-            return_value = True
-        return return_value
+            else None
+        )
+
+    def __check_day_of_week(self, now, start_tab, end_tab, day_of_week, yesterday):
+        return (
+            (
+                self.get_time_from_string(start_tab).time()
+                < now.time()
+                < self.get_time_from_string(end_tab).time()
+            )
+            if (
+                now.time() > self.get_time_from_string(start_tab).time()
+                and not self.__end_times[day_of_week].strip() == self.__NO_TIME_MARK
+            )
+            else None
+        )
+
+    def __check_now(self, now, start_tab, end_tab, day_of_week, yesterday):
+        return (
+            True
+            if (
+                now.time() > self.get_time_from_string(start_tab).time()
+                and self.__end_times[day_of_week].strip() == self.__NO_TIME_MARK
+            )
+            else None
+        )
 
     def when_i_work_next(self) -> datetime:
         now = datetime.datetime.now()

@@ -220,30 +220,37 @@ class UsersManager:
         while loop:
             loop = self.__loop(log, loop, valid)
 
-    def __loop(self, log, loop, valid):
+    def __loop(self, log: Logs, loop: bool, valid: dict) -> bool:
         self.__show_help()
-        self.__choice = input("Enter your choice [1-6]: ")
-        if self.__choice == "1":
-            print(5 * "-", "Adding new user", 5 * "-")
-            self._add_user(log)
-        elif self.__choice == "2":
-            print(5 * "-", "Deleting user", 5 * "-")
-            self._delete_user(log, valid)
-        elif self.__choice == "3":
-            print(5 * "-", "Changing user password", 5 * "-")
-            self._change_password(log)
-        elif self.__choice == "4":
-            print(5 * "-", "Showing user API key", 5 * "-")
-            self._show_api_key()
-        elif self.__choice == "5":
-            print(5 * "-", "Testing user password", 5 * "-")
-            self._test_password()
-        elif self.__choice == "6":
-            print("Exiting...")
-            loop = False
-        else:
+        choice = input("Enter your choice [1-6]: ")
+
+        choices = [
+            "Adding new user",
+            "Deleting user",
+            "Changing user password",
+            "Showing user API key",
+            "Testing user password",
+        ]
+
+        if not choice.isdigit() or int(choice) not in range(1, len(choices) + 2):
             print("Wrong selection. Try again...")
-        return loop
+            return loop
+
+        if int(choice) in range(1, len(choices) + 1):
+            methods = [
+                self._add_user,
+                self._delete_user,
+                self._change_password,
+                self._show_api_key,
+                self._test_password,
+            ]
+
+            print(5 * "-", choices[int(choice) - 1], 5 * "-")
+            methods[int(choice) - 1].__call__(log, valid)
+            return loop
+
+        print("Exiting...")
+        return False
 
     def __show_help(self):
         us = self.get()
@@ -261,18 +268,18 @@ class UsersManager:
         print("6. Exit")
         print(len(title) * "-")
 
-    def _test_password(self):
+    def _test_password(self, log: Logs, valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         self.__result("YOU HAVE LOGGED IN")
 
-    def _show_api_key(self):
+    def _show_api_key(self, log: Logs, valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         user_obj = self.get_by_username(username)[0]
         self.__result(f"USER {username} API KEY: {user_obj.api}", False)
 
-    def _change_password(self, log):
+    def _change_password(self, log: Logs, valid: dict):
         username = self.__user_check()
         current_password = self.__password(username, "Current password: ")
         new_password = self.__new_password(
@@ -283,7 +290,7 @@ class UsersManager:
         log.log(Constants.USERS_ACTIONS_TAG + f"User {username} password changed!")
         self.__result("PASSWORD CHANGED")
 
-    def _delete_user(self, log, valid):
+    def _delete_user(self, log: Logs, valid: dict):
         username = self.__user_check()
         while True:
             choice = (
@@ -300,7 +307,7 @@ class UsersManager:
             else:
                 print("Please respond with 'yes' or 'no' (or 'y' or 'n')")
 
-    def _add_user(self, log):
+    def _add_user(self, log: Logs, valid: dict):
         username = self.__user_check(False)
         password = self.__new_password(
             "Password [empty possible]: ", "Confirm password [empty possible]: "
