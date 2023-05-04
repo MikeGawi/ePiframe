@@ -23,7 +23,14 @@ class TimerManager:
 
         return self.__get_value(day_of_week, end_tab, now, start_tab, yesterday)
 
-    def __get_value(self, day_of_week, end_tab, now, start_tab, yesterday):
+    def __get_value(
+        self,
+        day_of_week: int,
+        end_tab: str,
+        now: datetime,
+        start_tab: str,
+        yesterday: int,
+    ) -> bool:
         for execute in [
             self.__check_no_time_mark,
             self.__check_yesterday,
@@ -36,10 +43,24 @@ class TimerManager:
 
         return value or False
 
-    def __check_no_time_mark(self, now, start_tab, end_tab, day_of_week, yesterday):
+    def __check_no_time_mark(
+        self,
+        now: datetime,
+        start_tab: str,
+        end_tab: str,
+        day_of_week: int,
+        yesterday: int,
+    ) -> bool:
         return False if start_tab == self.__NO_TIME_MARK else None
 
-    def __check_yesterday(self, now, start_tab, end_tab, day_of_week, yesterday):
+    def __check_yesterday(
+        self,
+        now: datetime,
+        start_tab: str,
+        end_tab: str,
+        day_of_week: int,
+        yesterday: int,
+    ) -> bool:
         return (
             True
             if (
@@ -49,7 +70,14 @@ class TimerManager:
             else None
         )
 
-    def __check_day_of_week(self, now, start_tab, end_tab, day_of_week, yesterday):
+    def __check_day_of_week(
+        self,
+        now: datetime,
+        start_tab: str,
+        end_tab: str,
+        day_of_week: int,
+        yesterday: int,
+    ) -> bool:
         return (
             (
                 self.get_time_from_string(start_tab).time()
@@ -63,7 +91,14 @@ class TimerManager:
             else None
         )
 
-    def __check_now(self, now, start_tab, end_tab, day_of_week, yesterday):
+    def __check_now(
+        self,
+        now: datetime,
+        start_tab: str,
+        end_tab: str,
+        day_of_week: int,
+        yesterday: int,
+    ) -> bool:
         return (
             True
             if (

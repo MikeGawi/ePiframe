@@ -80,7 +80,7 @@ class PluginsManager:
                 location += 1
         return zipped
 
-    def __set_order(self, elements, sorted_elements):
+    def __set_order(self, elements: dict, sorted_elements: list):
         for modules in sorted_elements:
             module = importlib.import_module(modules + "." + self.__PLUGIN_CLASS)
             self.__PLUGINS.append(

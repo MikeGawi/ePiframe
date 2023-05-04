@@ -168,7 +168,7 @@ class ConvertManager:
         print(return_value.replace("(", "\(").replace(")", "\)"))
         return return_value
 
-    def __get_rotate(self, config):
+    def __get_rotate(self, config: ConfigManager) -> str:
         rotate = (
             self.__ROTATE_CODE.format(config.getint("rotation"))
             if config.getint("horizontal") == 0
@@ -178,24 +178,24 @@ class ConvertManager:
             rotate = self.__ROTATE_CODE.format(180)
         return rotate
 
-    def __get_back(self, back):
+    def __get_back(self, back: str) -> str:
         if back not in self.__BACK_COLORS:
             back = Constants.BACK_WHITE
         return back
 
-    def __get_auto_gamma(self, value: bool):
+    def __get_auto_gamma(self, value: bool) -> str:
         return self.__AUTO_GAMMA_ENH if value else str()
 
-    def __get_autolevel(self, value: bool):
+    def __get_autolevel(self, value: bool) -> str:
         return self.__AUTO_LEVEL_ENH if value else str()
 
-    def __get_normalize(self, value: bool):
+    def __get_normalize(self, value: bool) -> str:
         return self.__NORMALIZE_ENH if value else str()
 
-    def __get_grayscale(self, value: bool):
+    def __get_grayscale(self, value: bool) -> str:
         return self.__GRAYSCALE_FLAG if value else str()
 
-    def __get_thumb1st(self, config, height, width):
+    def __get_thumb1st(self, config: ConfigManager, height: int, width: int) -> str:
         thumb1st = self.__THUMB_1ST_PART.format(
             width,
             height,
@@ -208,7 +208,7 @@ class ConvertManager:
         )
         return thumb1st
 
-    def __get_thumb2nd(self, config):
+    def __get_thumb2nd(self, config: ConfigManager) -> str:
         thumb2nd = self.__THUMB_2ND_PART.format(
             os.path.join(
                 config.get("photo_convert_path"),
@@ -219,18 +219,18 @@ class ConvertManager:
 
     def _get_convert_code(
         self,
-        back,
-        code,
-        config,
-        hdmi,
-        height,
-        negate,
-        option,
-        rotate,
-        target,
-        thumb1st,
-        thumb2nd,
-        width,
+        back: str,
+        code: str,
+        config: ConfigManager,
+        hdmi: bool,
+        height: int,
+        negate: str,
+        option: int,
+        rotate: str,
+        target: str,
+        thumb1st: str,
+        thumb2nd: str,
+        width: int,
     ):
         if hdmi or not DisplayManager.should_convert(config.get("epaper_color")):
             colors = (
@@ -313,7 +313,7 @@ class ConvertManager:
         return error, width, height
 
     @staticmethod
-    def __process_sizes(width_height):
+    def __process_sizes(width_height: list) -> tuple:
         width = width_height[0] if width_height and len(width_height) > 1 else ""
         height = width_height[1] if width_height and len(width_height) > 1 else ""
         return height, width

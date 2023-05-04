@@ -49,7 +49,7 @@ class StatsManager:
             if not os.path.exists(path):
                 self.__run_cmd(file, path)
 
-    def __run_cmd(self, file, path):
+    def __run_cmd(self, file: str, path: str):
         try:
             os.system(
                 self.__CREATE_CMD.format(
@@ -70,13 +70,13 @@ class StatsManager:
             )
             self.__feed(file, path)
 
-    def __feed(self, file, path):
+    def __feed(self, file: str, path: str):
         if os.path.exists(path):
             out = self.__get_output(file)
             if out:
                 os.system(self.__UPDATE_CMD.format(self.__tool, path, ":".join(out)))
 
-    def __get_output(self, file):
+    def __get_output(self, file: str) -> list:
         out = os.popen(self.__CMDS[file]).read().strip().split()
         if out and file == "temp" and not self.__backend.is_metric():
             out = [self.__backend.calc_to_f("".join(out))]

@@ -253,12 +253,12 @@ class UsersManager:
         return False
 
     def __show_help(self):
-        us = self.get()
+        users = self.get()
         title = 10 * "-" + " ePiframe user management " + 10 * "-"
         print(title)
         print(2 * "-", "Changing anything needs service restart!", 2 * "-")
         print("USERS:")
-        print("\n".join([u.username for u in us]) if us else "<NO USERS!>")
+        print("\n".join([user.username for user in users]) if users else "<NO USERS!>")
         print()
         print("1. Add new user")
         print("2. Delete user")

@@ -2,7 +2,7 @@ import configparser
 import itertools
 import os
 import shutil
-from typing import List
+from typing import List, TextIO
 from misc.configproperty import ConfigProperty
 from abc import ABC, abstractmethod
 
@@ -40,12 +40,12 @@ class ConfigBase(ABC):
         self.__convert()
         self.__save(save)
 
-    def __parse(self, file_values):
+    def __parse(self, file_values: TextIO):
         parse = str()
         for line in file_values:
             parse = self.__parse_line(line, parse)
 
-    def __parse_line(self, line, parse):
+    def __parse_line(self, line: str, parse: str):
         if line.startswith(self.__COMMENT_IND_OK):
             parse = self.__parse_comment(line, parse)
         elif (
@@ -58,7 +58,7 @@ class ConfigBase(ABC):
 
         return parse
 
-    def __parse_comment(self, line, parse):
+    def __parse_comment(self, line: str, parse: str) -> str:
         return (
             parse
             + (" " if parse else "")
@@ -76,7 +76,7 @@ class ConfigBase(ABC):
         for property_name in self.SETTINGS:
             property_name.convert()
 
-    def __save(self, save):
+    def __save(self, save: bool):
         if save:
             self.save()
 
@@ -112,7 +112,7 @@ class ConfigBase(ABC):
         self.__load_sections()
         return return_value
 
-    def __read_properties(self, return_value):
+    def __read_properties(self, return_value: bool) -> bool:
         for section in self.def_config.sections():
             for property_name in list(dict(self.def_config.items(section)).keys()):
                 return_value = self.__read_property(
@@ -120,7 +120,9 @@ class ConfigBase(ABC):
                 )
         return return_value
 
-    def __read_property(self, property_name, return_value, section):
+    def __read_property(
+        self, property_name: str, return_value: bool, section: str
+    ) -> bool:
         try:
             if not self.config.has_section(section):
                 self.config.add_section(section)
@@ -180,14 +182,14 @@ class ConfigBase(ABC):
 
         self.__write_file(filename, path)
 
-    def __save_lines(self, file_lines, filename, iterator, next_iterator):
+    def __save_lines(self, file_lines, filename: str, iterator, next_iterator):
         for line in file_lines:
             filename, next_iterator = self.__process_line(
                 filename, iterator, line, next_iterator
             )
         return filename, next_iterator
 
-    def __process_line(self, filename, iterator, line, next_iterator):
+    def __process_line(self, filename: str, iterator, line: str, next_iterator):
         if self.__check_line(line):
             filename = filename + line
         elif next_iterator in line:
@@ -198,7 +200,7 @@ class ConfigBase(ABC):
             raise Exception(self.__ERROR_SAVE)
         return filename, next_iterator
 
-    def __check_line(self, line):
+    def __check_line(self, line: str) -> bool:
         return (
             line.startswith(self.__COMMENT_IND_OK)
             or line.startswith(self.__SECTION_IND)
@@ -213,7 +215,7 @@ class ConfigBase(ABC):
         next_iterator = next(iterator)
         return filename, next_iterator
 
-    def __write_file(self, filename, path):
+    def __write_file(self, filename: str, path: str):
         with open(path, self.__FILE_WRITE_FLAG) as file_lines:
             file_lines.write(filename)
 
@@ -256,7 +258,7 @@ class ConfigBase(ABC):
     def get_sections(self) -> List[str]:
         return self.config.sections()
 
-    def get_section_properties(self, section) -> list:
+    def get_section_properties(self, section: str) -> list:
         return [
             property_name
             for property_name in self.__CONFIG_STRING.keys()

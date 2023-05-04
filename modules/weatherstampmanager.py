@@ -136,27 +136,27 @@ class WeatherStampManager:
         image = self.__process_horizontal(image)
         image.save(self.__output_file)
 
-    def __set_horizontal(self, image):
+    def __set_horizontal(self, image: Image) -> Image:
         if not self.__horizontal:
             image = image.transpose(
                 Image.ROTATE_90 if self.__rotation == 90 else Image.ROTATE_270
             )
         return image
 
-    def __get_text_temperature(self, temp, units):
+    def __get_text_temperature(self, temp: float, units: str) -> str:
         return "{}{}{}".format(
             int(math.ceil(temp)),
             self.__DEGREES,
             "C" if WeatherManager.is_metric(units) else "F",
         )
 
-    def __get_stroke(self, image, stroke_color):
+    def __get_stroke(self, image: Image, stroke_color) -> ImageColor:
         return ImageColor.getcolor(
             {value: key for key, value in self.__COLORS.items()}[stroke_color],
             image.mode,
         )
 
-    def __process_horizontal(self, image):
+    def __process_horizontal(self, image: Image) -> Image:
         if not self.__horizontal:
             image = image.transpose(
                 Image.ROTATE_270 if self.__rotation == 90 else Image.ROTATE_90

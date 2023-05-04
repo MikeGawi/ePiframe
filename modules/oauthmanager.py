@@ -25,7 +25,9 @@ class OAuthManager:
             self.__refresh_credentials(credentials_file, pickle_file, scopes)
         os.chmod(pickle_file, 0o0666)
 
-    def __refresh_credentials(self, credentials_file, pickle_file, scopes):
+    def __refresh_credentials(
+        self, credentials_file: str, pickle_file: str, scopes: str
+    ):
         if (
             self.__credentials
             and self.__credentials.expired
@@ -38,7 +40,7 @@ class OAuthManager:
         # Save the credentials for the next run
         self.__dump_pickle(pickle_file)
 
-    def __dump_pickle(self, pickle_file):
+    def __dump_pickle(self, pickle_file: str):
         with open(pickle_file, "wb") as token:
             pickle.dump(self.__credentials, token)
 

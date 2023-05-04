@@ -170,19 +170,19 @@ class Service(Daemon):
             frame_time, self.__EVENT_PRIORITY, self.task
         )
 
-    def __log_next(self, sleep):
+    def __log_next(self, sleep: bool):
         if not sleep:
             self.__backend.log(
                 self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()), silent=True
             )
 
-    def __work(self, params, sleep):
+    def __work(self, params, sleep: bool) -> bool:
         if self.__backend.should_i_work_now() or (
             params and self.__backend.triggers_enabled()
         ):
             self.__do_work(params)
         else:
-            sleep = self.__no_work(sleep)
+            sleep = self.__no_work()
         return sleep
 
     def __do_work(self, params):
@@ -193,15 +193,14 @@ class Service(Daemon):
         args = (self.__script + par.split()) if par else self.__script
         subprocess.Popen(args)
 
-    def __no_work(self, sleep):
+    def __no_work(self) -> bool:
         self.__backend.display_power_config(False)
         if self.__NUMBER_OF_NOTIF == 0:
             self.__backend.log(self.__SERVICE_LOG_SLEEPING, silent=True)
         self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1) % 10
-        sleep = True
-        return sleep
+        return True
 
-    def __control_interval(self, interval):
+    def __control_interval(self, interval: int) -> int:
         try:
             interval = self.__backend.get_interval()
         except Exception:
@@ -263,7 +262,7 @@ def start():
     )
 
 
-def check():
+def check() -> str:
     return (
         "web"
         if "web" in [arg.lower() for arg in sys.argv]
@@ -273,13 +272,13 @@ def check():
     )
 
 
-def process_lines(out):
+def process_lines(out: bytes):
     for line in out.splitlines():
         if str(os.path.basename(__file__)) in str(line):
             kill_pid(line)
 
 
-def kill_pid(line):
+def kill_pid(line: bytes):
     pid = int(line.split()[1])
     if not pid == os.getpid():
         os.kill(pid, signal.SIGKILL)
