@@ -721,7 +721,7 @@ class WebUIManager:
         properties = self.__get_section(variable)
 
         if request.method == "POST":
-            self.__set_properties_from_post(properties)
+            self.__set_property_values(self.config(), properties)
             regex = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
             self.__process_post(properties, regex)
             return redirect(request.path)
@@ -736,7 +736,7 @@ class WebUIManager:
 
     def __process_post(self, properties: list, regex):
         if regex:
-            self.__get_property_from_form(regex)
+            self.get_property_from_form(self.config(), regex)
         elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
             self.__verify_settings()
         elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
@@ -744,25 +744,10 @@ class WebUIManager:
         elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
             self.config().read_config()
 
-    def __set_properties_from_post(self, properties: list):
-        for property_name in properties:
-            if (
-                self.config().get_property(property_name).get_type()
-                != ConfigProperty.BOOLEAN_TYPE
-            ):
-                if request.form.get(property_name) is not None:
-                    self.config().set(
-                        property_name, str(request.form.get(property_name))
-                    )
-            else:
-                self.config().set(
-                    property_name,
-                    "1" if str(request.form.get(property_name)) == "y" else "0",
-                )
-
-    def __get_property_from_form(self, regex):
+    @staticmethod
+    def get_property_from_form(config: config_manager.ConfigManager, regex):
         property_name = regex.group(0).replace("-<[", "").replace("]>-", "")
-        self.config().set(property_name, str(self.config().get_default(property_name)))
+        config.set(property_name, str(config.get_default(property_name)))
 
     def __verify_settings(self):
         try:
@@ -801,128 +786,140 @@ class WebUIManager:
     def plugins(self):
         if self.__backend.get_plugins().get_plugins():
             if not request.args.get("plugin") == self.__ORDER_LABEL:
-                curr_plugin = (
-                    [
-                        plugin
-                        for plugin in self.__backend.get_plugins().get_plugins()
-                        if plugin.name == request.args.get("plugin")
-                    ][0]
-                    if request.args.get("plugin")
-                    else self.__backend.get_plugins().get_plugins()[0]
-                )
+                curr_plugin = self.__get_current_plugin()
                 config = curr_plugin.config
-                settings = (
-                    request.args.get("variable")
-                    if request.args.get("variable")
-                    else config.get_sections()[0]
-                )
+                settings = self.get_settings(config)
                 properties = config.get_section_properties(settings)
 
                 if request.method == "POST":
-                    for property_name in properties:
-                        if (
-                            config.get_property(property_name).get_type()
-                            != ConfigProperty.BOOLEAN_TYPE
-                        ):
-                            if request.form.get(property_name) is not None:
-                                config.set(
-                                    property_name, str(request.form.get(property_name))
-                                )
-                        else:
-                            config.set(
-                                property_name,
-                                "1"
-                                if str(request.form.get(property_name)) == "y"
-                                else "0",
-                            )
+                    self.__set_property_values(config, properties)
                     regex = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
-                    if regex:
-                        property_name = (
-                            regex.group(0).replace("-<[", "").replace("]>-", "")
-                        )
-                        config.set(
-                            property_name, str(config.get_default(property_name))
-                        )
-                    elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-                        try:
-                            config.verify_warnings()
-                        except Warning as exception:
-                            flash(str(exception))
-                            pass
-                        try:
-                            config.verify_exceptions()
-                            config.save()
-                        except Exception:
-                            session.pop("_flashes", None)
-                            pass
-                    elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-                        for property_name in properties:
-                            config.set(
-                                property_name, str(config.get_default(property_name))
-                            )
-                    elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
-                        config.read_config()
+                    self.__process_plugin_post(config, properties, regex)
+
                     return redirect(
                         "{}?plugin={}&variable={}".format(
                             request.base_url, curr_plugin.name, settings
                         )
                     )
 
-                reset_needed = False
-                for property_name in properties:
-                    if config.get_property(property_name).get_reset_needed():
-                        reset_needed = True
-                        break
-
-                template = render_template(
-                    self.__PLUGINS_HTML,
-                    info="",
-                    order="",
-                    plugin_name=curr_plugin.name,
-                    sett_name=settings,
-                    plugins=[x.name for x in self.__backend.get_plugins().get_plugins()]
-                    + [self.__ORDER_LABEL],
-                    form=self.__build_settings(config, properties),
-                    navlabels=config.get_sections(),
-                    reset_needed=reset_needed,
-                    version=Constants.EPIFRAME_VERSION,
+                return self.__plugin_settings_template(
+                    config,
+                    curr_plugin,
+                    properties,
+                    self.__get_reset_needed(properties),
+                    settings,
                 )
             else:
                 order = self.__backend.get_plugins().read_order()
                 if request.method == "POST":
-                    if request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-                        self.__backend.get_plugins().save_order(
-                            request.form.get("list_order").split(",")
-                        )
-                    elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-                        order.sort()
-                        self.__backend.get_plugins().save_order(order)
-                    return redirect(
-                        "{}?plugin={}".format(request.base_url, self.__ORDER_LABEL)
-                    )
+                    return self.__process_order(order)
+                return self.__order_template(order)
+        return self.__no_plugins_template()
 
-                template = render_template(
-                    self.__PLUGINS_HTML,
-                    info="",
-                    order=order,
-                    plugin_name=self.__ORDER_LABEL,
-                    sett_name="",
-                    plugins=[
-                        plugin.name
-                        for plugin in self.__backend.get_plugins().get_plugins()
-                    ]
-                    + [self.__ORDER_LABEL],
-                    form=None,
-                    navlabels="",
-                    reset_needed=False,
-                    version=Constants.EPIFRAME_VERSION,
-                )
+    def __process_plugin_post(
+        self, config: config_manager.ConfigManager, properties: list, regex
+    ):
+        if regex:
+            self.get_property_from_form(config, regex)
+        elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
+            self.__verify_settings()
+        elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+            self.__set_properties(properties)
+        elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
+            config.read_config()
 
-        else:
-            template = render_template(
-                self.__PLUGINS_HTML,
-                info="<ul><li>There are no <b>ePiframe</b> plugins installed! </li><li>Go to <a "
-                'href="https://github.com/MikeGawi/ePiframe_plugin" target="_blank">ePiframe_plugin</a> site to '
-                "find something for You!</li></ul>",
+    def __set_property_values(
+        self, config: config_manager.ConfigManager, properties: list
+    ):
+        for property_name in properties:
+            if (
+                config.get_property(property_name).get_type()
+                != ConfigProperty.BOOLEAN_TYPE
+            ):
+                if request.form.get(property_name) is not None:
+                    config.set(property_name, str(request.form.get(property_name)))
+            else:
+                self.set_boolean_value(config, property_name)
+
+    @staticmethod
+    def set_boolean_value(config: config_manager.ConfigManager, property_name: str):
+        config.set(
+            property_name,
+            "1" if str(request.form.get(property_name)) == "y" else "0",
+        )
+
+    @staticmethod
+    def get_settings(config: config_manager.ConfigManager):
+        return (
+            request.args.get("variable")
+            if request.args.get("variable")
+            else config.get_sections()[0]
+        )
+
+    def __get_current_plugin(self):
+        return (
+            [
+                plugin
+                for plugin in self.__backend.get_plugins().get_plugins()
+                if plugin.name == request.args.get("plugin")
+            ][0]
+            if request.args.get("plugin")
+            else self.__backend.get_plugins().get_plugins()[0]
+        )
+
+    def __process_order(self, order: list) -> Response:
+        if request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
+            self.__backend.get_plugins().save_order(
+                request.form.get("list_order").split(",")
             )
-        return template
+        elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+            order.sort()
+            self.__backend.get_plugins().save_order(order)
+        return redirect("{}?plugin={}".format(request.base_url, self.__ORDER_LABEL))
+
+    def __plugin_settings_template(
+        self,
+        config: config_manager.ConfigManager,
+        curr_plugin,
+        properties: list,
+        reset_needed: bool,
+        settings: str,
+    ) -> str:
+        return render_template(
+            self.__PLUGINS_HTML,
+            info="",
+            order="",
+            plugin_name=curr_plugin.name,
+            sett_name=settings,
+            plugins=[x.name for x in self.__backend.get_plugins().get_plugins()]
+            + [self.__ORDER_LABEL],
+            form=self.__build_settings(config, properties),
+            navlabels=config.get_sections(),
+            reset_needed=reset_needed,
+            version=Constants.EPIFRAME_VERSION,
+        )
+
+    def __order_template(self, order: list) -> str:
+        return render_template(
+            self.__PLUGINS_HTML,
+            info="",
+            order=order,
+            plugin_name=self.__ORDER_LABEL,
+            sett_name="",
+            plugins=[
+                plugin.name for plugin in self.__backend.get_plugins().get_plugins()
+            ]
+            + [self.__ORDER_LABEL],
+            form=None,
+            navlabels="",
+            reset_needed=False,
+            version=Constants.EPIFRAME_VERSION,
+        )
+
+    def __no_plugins_template(self) -> str:
+        return render_template(
+            self.__PLUGINS_HTML,
+            info="<ul><li>There are no <b>ePiframe</b> plugins installed! </li><li>Go to <a "
+            'href="https://github.com/MikeGawi/ePiframe_plugin" target="_blank">ePiframe_plugin</a> site to '
+            "find something for You!</li></ul>",
+        )
