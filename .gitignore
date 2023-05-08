@@ -128,9 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# assets
-assets/
-
 .idea/
 /pre_origphoto.*
 /misc/users.db
@@ -145,3 +142,4 @@ assets/
 /origphoto_thumb.*
 /photo.bmp
 /photo_thumb.jpg
+/gen_cc_badge.py

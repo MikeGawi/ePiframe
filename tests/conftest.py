@@ -103,6 +103,12 @@ def cleanup(request):
 
 
 def pytest_collection_modifyitems(session, config, items: list):
+    first = get_first(items)
+    items[:] = [item for item in items if item not in first]
+    [items.insert(0, item) for item in first]
+
+
+def get_first(items):
     first = [
         item
         for item in items
@@ -113,5 +119,4 @@ def pytest_collection_modifyitems(session, config, items: list):
             "test_fixture_client_no_login",
         ]
     ]
-    items[:] = [item for item in items if item not in first]
-    [items.insert(0, item) for item in first]
+    return first
