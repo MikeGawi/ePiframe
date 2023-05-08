@@ -261,13 +261,11 @@ def steps(url=str()):
     else:
         page = 1
     toc = {__PAGES[key][__TITLE]: key for key in __PAGES}
-    text = (
-        __PAGES[page][__TEXT]
-        if not __PAGES[page][__TYPE] == __CODE_TYPE
-        else f"<a href='{str(page - 1)}'>Link not generated yet! Upload credentials first!</a>"
-        if not auth_url
-        else str(__PAGES[page][__TEXT]).format(auth_url, auth_url)
-    )
+    text = get_text(page)
+    return get_steps_page(page, text, toc)
+
+
+def get_steps_page(text, toc):
     return render_template(
         __PAGE,
         type=__PAGES[page][__TYPE],
@@ -279,6 +277,16 @@ def steps(url=str()):
         next=(str(page + 1) if page < len(__PAGES.keys()) - 1 else str()),
         toc=toc,
         last=len(__PAGES.keys()),
+    )
+
+
+def get_text():
+    return (
+        __PAGES[page][__TEXT]
+        if not __PAGES[page][__TYPE] == __CODE_TYPE
+        else f"<a href='{str(page - 1)}'>Link not generated yet! Upload credentials first!</a>"
+        if not auth_url
+        else str(__PAGES[page][__TEXT]).format(auth_url, auth_url)
     )
 
 
