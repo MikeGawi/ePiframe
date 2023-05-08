@@ -169,8 +169,8 @@ class ConfigProperty:
             self.STRING_LIST_TYPE: self.__check_list,
             self.INT_LIST_TYPE: self.__process_int_list_values,
         }
-
-        if method := properties.get(self.__type, None):
+        method = properties.get(self.__type, None)
+        if method:
             method()
 
         self.__process_possible()
