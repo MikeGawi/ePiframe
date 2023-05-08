@@ -221,12 +221,11 @@ class BackendManager:
 
     def get_current_file(self) -> str:
         return_value = None
-        if os.path.exists(
-            path := os.path.join(
-                self.__config.get("photo_convert_path"),
-                self.__config.get("photo_convert_filename"),
-            )
-        ):
+        path = os.path.join(
+            self.__config.get("photo_convert_path"),
+            self.__config.get("photo_convert_filename"),
+        )
+        if os.path.exists(path):
             return_value = path
         return return_value
 
