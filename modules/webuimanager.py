@@ -730,7 +730,7 @@ class WebUIManager:
             self.__SETTINGS_HTML,
             form=self.__build_settings(self.config(), properties),
             navlabels=self.config().get_sections(),
-            reset_needed=self.__get_reset_needed(properties),
+            reset_needed=self.__get_reset_needed(properties, self.config()),
             version=Constants.EPIFRAME_VERSION,
         )
 
@@ -738,9 +738,9 @@ class WebUIManager:
         if regex:
             self.get_property_from_form(self.config(), regex)
         elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-            self.__verify_settings()
+            self.__verify_settings(self.config())
         elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-            self.__set_properties(properties)
+            self.__set_properties(properties, self.config())
         elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
             self.config().read_config()
 
@@ -749,29 +749,32 @@ class WebUIManager:
         property_name = regex.group(0).replace("-<[", "").replace("]>-", "")
         config.set(property_name, str(config.get_default(property_name)))
 
-    def __verify_settings(self):
+    @staticmethod
+    def __verify_settings(config: config_manager.ConfigManager):
         try:
-            self.config().verify_warnings()
+            config.verify_warnings()
         except Warning as exception:
             flash(str(exception))
             pass
         try:
-            self.config().verify_exceptions()
-            self.config().save()
+            config.verify_exceptions()
+            config.save()
         except Exception:
             session.pop("_flashes", None)
             pass
 
-    def __set_properties(self, properties: list):
+    @staticmethod
+    def __set_properties(properties: list, config: config_manager.ConfigManager):
         for property_name in properties:
-            self.config().set(
-                property_name, str(self.config().get_default(property_name))
+            config.set(
+                property_name, str(config.get_default(property_name))
             )
 
-    def __get_reset_needed(self, properties: list) -> bool:
+    @staticmethod
+    def __get_reset_needed(properties: list, config: config_manager.ConfigManager) -> bool:
         reset_needed = False
         for property_name in properties:
-            if self.config().get_property(property_name).get_reset_needed():
+            if config.get_property(property_name).get_reset_needed():
                 reset_needed = True
                 break
         return reset_needed
@@ -806,7 +809,7 @@ class WebUIManager:
                     config,
                     curr_plugin,
                     properties,
-                    self.__get_reset_needed(properties),
+                    self.__get_reset_needed(properties, config),
                     settings,
                 )
             else:
@@ -822,9 +825,9 @@ class WebUIManager:
         if regex:
             self.get_property_from_form(config, regex)
         elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-            self.__verify_settings()
+            self.__verify_settings(config)
         elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-            self.__set_properties(properties)
+            self.__set_properties(properties, config)
         elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
             config.read_config()
 

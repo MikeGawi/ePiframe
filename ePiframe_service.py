@@ -58,7 +58,7 @@ class Service(Daemon):
     __TGBOT_ARG = "telegram"
 
     def run(self, args=None):
-        self.__backend = backend.BackendManager(self.restart, self.__config_path)
+        self.__backend = backend.BackendManager(self.event, self.__config_path)
         self.__backend.log(self.__SERVICE_LOG_STARTED, silent=True)
 
         self.__scheduler = sched.scheduler(time.time, time.sleep)
@@ -144,7 +144,7 @@ class Service(Daemon):
 
             time.sleep(self.__WAIT_EVENT_TIME)
 
-    def restart(self, params=None):
+    def event(self, params=None):
         self.__backend.log(self.__SERVICE_TRIGGER, silent=True)
         if self.__scheduler and self.__event:
             self.__scheduler.cancel(self.__event)
