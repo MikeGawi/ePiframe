@@ -1,4 +1,4 @@
-import itertools
+from misc.tools import Tools
 
 
 class Constants:
@@ -99,27 +99,9 @@ class Constants:
     GIF_EXTENSION = "gif"
     FIRST_FRAME_GIF = "[0]"
 
-    TYPE_TO_EXTENSION = dict(
-        (key, value[0] if isinstance(value, list) else value)
-        for key, value in EXTEN.items()
-    )
-    EXTENSION_TO_TYPE = dict(
-        [
-            type
-            for extension in [
-                itertools.product(value if isinstance(value, list) else [value], [key])
-                for key, value in EXTEN.items()
-            ]
-            for type in extension
-        ]
-    )
-    EXTENSIONS = sum(
-        [
-            extension if isinstance(extension, list) else [extension]
-            for extension in list(EXTEN.values())
-        ],
-        [],
-    )
+    TYPE_TO_EXTENSION = Tools.get_type_to_extension(EXTEN)
+    EXTENSION_TO_TYPE = Tools.get_extension_to_type(EXTEN)
+    EXTENSIONS = Tools.get_extensions(list(EXTEN.values()))
 
     NOMATCH_INDICATOR_STRING = "no match"
 

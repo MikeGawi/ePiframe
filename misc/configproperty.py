@@ -65,31 +65,34 @@ class ConfigProperty:
         self.__possible = possible
         self.__reset_needed = reset_needed
         self.__convert = convert
+        self.__load(name)
 
-        is_break = False
+    def __load(self, name):
         for section in self.__config_manager.def_config.sections():
-            if is_break:
-                break
-            for property_name in list(
-                dict(self.__config_manager.def_config.items(section)).keys()
-            ):
-                if property_name == name:
-                    if (
-                        self.__type == self.BOOLEAN_TYPE
-                        or self.__type == self.INTEGER_TYPE
-                    ):
-                        value = self.__config_manager.def_config.get(
-                            section, property_name
-                        )
-                        self.__default = int(value) if value and value.isdigit() else value
-                        is_break = True
-                        break
-                    else:
-                        self.__default = self.__config_manager.def_config.get(
-                            section, property_name
-                        )
-                        is_break = True
-                        break
+            self.__load_properties(name, section)
+
+    def __load_properties(self, name, section):
+        property_name = next(
+            (
+                property_name
+                for property_name in list(
+                    dict(self.__config_manager.def_config.items(section)).keys()
+                )
+                if property_name == name
+            ),
+            None,
+        )
+        if property_name:
+            self.__load_property(property_name, section)
+
+    def __load_property(self, property_name, section):
+        if self.__type == self.BOOLEAN_TYPE or self.__type == self.INTEGER_TYPE:
+            value = self.__config_manager.def_config.get(section, property_name)
+            self.__default = int(value) if value and value.isdigit() else value
+        else:
+            self.__default = self.__config_manager.def_config.get(
+                section, property_name
+            )
 
     def get_name(self) -> str:
         return self.__name
@@ -131,136 +134,157 @@ class ConfigProperty:
             )
 
     def validate(self):
-        if (
-            (
-                self.__dependency
-                and not isinstance(self.__dependency, list)
-                and bool(self.__config_manager.getint(self.__dependency))
-            )
-            or (
-                self.__dependency
-                and isinstance(self.__dependency, list)
-                and self.__config_manager.get(self.__dependency[0])
-                == self.__dependency[1]
-            )
-            or not self.__dependency
-        ):
-            if self.__not_empty and not self.__config_manager.get(self.__name):
-                raise Exception(self.STRING_ERROR_MSG.format(self.__name))
-
+        if self.__check():
+            self.__process_not_empty()
             if self.__config_manager.get(self.__name):
-                if self.__type == self.FILE_TYPE:
-                    if not os.path.exists(self.__config_manager.get(self.__name)):
-                        raise Exception(self.FILE_ERROR_MSG.format(self.__name))
-                elif self.__type == self.INTEGER_TYPE:
-                    try:
-                        self.__config_manager.getint(self.__name)
-                    except Exception:
-                        raise Exception(self.INT_ERROR_MSG.format(self.__name))
+                self.__process_properties()
 
-                    if self.__minvalue is not None:
-                        if self.__config_manager.getint(self.__name) < self.__minvalue:
-                            raise Exception(
-                                self.MIN_ERROR_MSG.format(self.__name, self.__minvalue)
-                            )
+    def __check(self):
+        return (
+            self.__check_get_int_dependency()
+            or self.__check_dependency()
+            or not self.__dependency
+        )
 
-                    if self.__maxvalue is not None:
-                        if self.__config_manager.getint(self.__name) > self.__maxvalue:
-                            raise Exception(
-                                self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue)
-                            )
-                elif self.__type == self.FLOAT_TYPE:
-                    try:
-                        if not isinstance(
-                            float(self.__config_manager.get(self.__name)),
-                            numbers.Real,
-                        ):
-                            raise Exception()
-                    except Exception:
-                        raise Exception(self.FLOAT_ERROR_MSG.format(self.__name))
+    def __check_get_int_dependency(self):
+        return (
+            self.__dependency
+            and not isinstance(self.__dependency, list)
+            and bool(self.__config_manager.getint(self.__dependency))
+        )
 
-                    if self.__minvalue is not None:
-                        if float(self.__config_manager.get(self.__name)) < float(
-                            self.__minvalue
-                        ):
-                            raise Exception(
-                                self.MIN_ERROR_MSG.format(self.__name, self.__minvalue)
-                            )
+    def __check_dependency(self):
+        return (
+            self.__dependency
+            and isinstance(self.__dependency, list)
+            and self.__config_manager.get(self.__dependency[0]) == self.__dependency[1]
+        )
 
-                    if self.__maxvalue is not None:
-                        if float(self.__config_manager.get(self.__name)) > float(
-                            self.__maxvalue
-                        ):
-                            raise Exception(
-                                self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue)
-                            )
-                elif self.__type == self.BOOLEAN_TYPE:
-                    try:
-                        bool(self.__config_manager.getint(self.__name))
-                    except Exception:
-                        raise Exception(self.BOOL_ERROR_MSG.format(self.__name))
-                elif self.__type == self.STRING_LIST_TYPE:
-                    if (
-                        self.__length
-                        and not len(
-                            self.__config_manager.get(self.__name).split(
-                                self.__delimiter
-                            )
-                        )
-                        == self.__length
-                    ):
-                        raise Exception(self.LENGTH_ERROR_MSG.format(self.__name))
-                elif self.__type == self.INT_LIST_TYPE:
-                    if (
-                        self.__length
-                        and not len(
-                            self.__config_manager.get(self.__name).split(
-                                self.__delimiter
-                            )
-                        )
-                        == self.__length
-                    ):
-                        raise Exception(self.LENGTH_ERROR_MSG.format(self.__name))
-                    try:
-                        [
-                            int(x)
-                            for x in self.__config_manager.get(self.__name).split(
-                                self.__delimiter
-                            )
-                        ]
-                    except Exception:
-                        raise Exception(self.INT_LIST_ERROR_MSG.format(self.__name))
+    def __process_properties(self):
+        properties = {
+            self.FILE_TYPE: self.__process_file,
+            self.INTEGER_TYPE: self.__process_int_value,
+            self.FLOAT_TYPE: self.__process_float_value,
+            self.BOOLEAN_TYPE: self.__process_bool,
+            self.STRING_LIST_TYPE: self.__check_list,
+            self.INT_LIST_TYPE: self.__process_int_list_values,
+        }
+        method = properties.get(self.__type, None)
+        if method:
+            method()
 
-                if self.__possible:
-                    if not self.__config_manager.get(self.__name) in [
-                        str(value) for value in self.__possible
-                    ]:
-                        raise Exception(
-                            self.POSSIBLE_ERROR_MSG.format(self.__name, self.__possible)
-                        )
+        self.__process_possible()
+        self.__process_check_function()
+        self.__process_special()
 
-                if self.__check_function:
-                    try:
-                        self.__check_function(self.__config_manager.get(self.__name))
-                    except Exception as exception:
-                        raise Exception(
-                            self.CHECK_ERROR_MSG.format(self.__name, exception)
-                        )
+    def __process_int_value(self):
+        self.__process_int()
+        self.__process_int_min_value()
+        self.__process_int_max_value()
 
-                if self.__special:
-                    try:
-                        self.__special.function(
-                            [
-                                self.__config_manager.get(function)
-                                for function in self.__special.arguments
-                            ]
-                        )
-                    except Exception as exception:
-                        if self.__special.exception_type == self.Special.EXCEPTION_TYPE:
-                            raise Exception(
-                                self.CHECK_ERROR_MSG.format(self.__name, exception)
-                            )
-                        else:
-                            raise Warning(
-                                self.CHECK_WARN_MSG.format(self.__name, exception)
-                            )
+    def __process_float_value(self):
+        self.__process_float()
+        self.__process_float_min_value()
+        self.__process_float_max_value()
+
+    def __process_int_list_values(self):
+        self.__check_list()
+        self.__process_int_list()
+
+    def __process_not_empty(self):
+        if self.__not_empty and not self.__config_manager.get(self.__name):
+            raise Exception(self.STRING_ERROR_MSG.format(self.__name))
+
+    def __process_file(self):
+        if not os.path.exists(self.__config_manager.get(self.__name)):
+            raise Exception(self.FILE_ERROR_MSG.format(self.__name))
+
+    def __process_int(self):
+        try:
+            self.__config_manager.getint(self.__name)
+        except Exception:
+            raise Exception(self.INT_ERROR_MSG.format(self.__name))
+
+    def __process_int_min_value(self):
+        if self.__minvalue is not None:
+            if self.__config_manager.getint(self.__name) < self.__minvalue:
+                raise Exception(self.MIN_ERROR_MSG.format(self.__name, self.__minvalue))
+
+    def __process_int_max_value(self):
+        if self.__maxvalue is not None:
+            if self.__config_manager.getint(self.__name) > self.__maxvalue:
+                raise Exception(self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue))
+
+    def __process_float(self):
+        try:
+            if not isinstance(
+                float(self.__config_manager.get(self.__name)),
+                numbers.Real,
+            ):
+                raise Exception()
+        except Exception:
+            raise Exception(self.FLOAT_ERROR_MSG.format(self.__name))
+
+    def __process_float_min_value(self):
+        if self.__minvalue is not None:
+            if float(self.__config_manager.get(self.__name)) < float(self.__minvalue):
+                raise Exception(self.MIN_ERROR_MSG.format(self.__name, self.__minvalue))
+
+    def __process_float_max_value(self):
+        if self.__maxvalue is not None:
+            if float(self.__config_manager.get(self.__name)) > float(self.__maxvalue):
+                raise Exception(self.MAX_ERROR_MSG.format(self.__name, self.__maxvalue))
+
+    def __process_bool(self):
+        try:
+            bool(self.__config_manager.getint(self.__name))
+        except Exception:
+            raise Exception(self.BOOL_ERROR_MSG.format(self.__name))
+
+    def __check_list(self):
+        if (
+            self.__length
+            and not len(self.__config_manager.get(self.__name).split(self.__delimiter))
+            == self.__length
+        ):
+            raise Exception(self.LENGTH_ERROR_MSG.format(self.__name))
+
+    def __process_int_list(self):
+        try:
+            [
+                int(x)
+                for x in self.__config_manager.get(self.__name).split(self.__delimiter)
+            ]
+        except Exception:
+            raise Exception(self.INT_LIST_ERROR_MSG.format(self.__name))
+
+    def __process_possible(self):
+        if self.__possible:
+            if not self.__config_manager.get(self.__name) in [
+                str(value) for value in self.__possible
+            ]:
+                raise Exception(
+                    self.POSSIBLE_ERROR_MSG.format(self.__name, self.__possible)
+                )
+
+    def __process_check_function(self):
+        if self.__check_function:
+            try:
+                self.__check_function(self.__config_manager.get(self.__name))
+            except Exception as exception:
+                raise Exception(self.CHECK_ERROR_MSG.format(self.__name, exception))
+
+    def __process_special(self):
+        if self.__special:
+            try:
+                self.__special.function(
+                    [
+                        self.__config_manager.get(function)
+                        for function in self.__special.arguments
+                    ]
+                )
+            except Exception as exception:
+                if self.__special.exception_type == self.Special.EXCEPTION_TYPE:
+                    raise Exception(self.CHECK_ERROR_MSG.format(self.__name, exception))
+                else:
+                    raise Warning(self.CHECK_WARN_MSG.format(self.__name, exception))

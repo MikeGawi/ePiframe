@@ -25,16 +25,25 @@ class UsersManager:
         self.__databasemanager = database_manager
         self.__schema = database_manager.get_schema(Constants.USERS_TABLE_NAME)
 
+        self.__populate_api_key()
+
+    def __populate_api_key(self):
         # populate api key for old users
         users = self.get()
         if users and len(users):
-            for item in [user.id for user in users if not user.api]:
-                self.__databasemanager.update(
-                    Constants.USERS_TABLE_NAME,
-                    Constants.USERS_TABLE_API_HEADER,
-                    f"'{str(self.__gen_api())}'",
-                    Constants.USERS_TABLE_ID_HEADER + " IS " + str(item),
-                )
+            self.__set_users(users)
+
+    def __set_users(self, users):
+        for item in [user.id for user in users if not user.api]:
+            self.__update_api_key(item)
+
+    def __update_api_key(self, item):
+        self.__databasemanager.update(
+            Constants.USERS_TABLE_NAME,
+            Constants.USERS_TABLE_API_HEADER,
+            f"'{str(self.__gen_api())}'",
+            Constants.USERS_TABLE_ID_HEADER + " IS " + str(item),
+        )
 
     def __get_column(self, name: str):
         return next(column[0] for column in self.__schema if column[1] == name)
@@ -209,55 +218,68 @@ class UsersManager:
         loop = True
 
         while loop:
-            us = self.get()
-            title = 10 * "-" + " ePiframe user management " + 10 * "-"
-            print(title)
-            print(2 * "-", "Changing anything needs service restart!", 2 * "-")
-            print("USERS:")
-            print("\n".join([u.username for u in us]) if us else "<NO USERS!>")
-            print()
-            print("1. Add new user")
-            print("2. Delete user")
-            print("3. Change user password")
-            print("4. Show user API key")
-            print("5. Test user password")
-            print("6. Exit")
-            print(len(title) * "-")
-            self.__choice = input("Enter your choice [1-6]: ")
+            loop = self.__loop(log, loop, valid)
 
-            if self.__choice == "1":
-                print(5 * "-", "Adding new user", 5 * "-")
-                self._add_user(log)
-            elif self.__choice == "2":
-                print(5 * "-", "Deleting user", 5 * "-")
-                self._delete_user(log, valid)
-            elif self.__choice == "3":
-                print(5 * "-", "Changing user password", 5 * "-")
-                self._change_password(log)
-            elif self.__choice == "4":
-                print(5 * "-", "Showing user API key", 5 * "-")
-                self._show_api_key()
-            elif self.__choice == "5":
-                print(5 * "-", "Testing user password", 5 * "-")
-                self._test_password()
-            elif self.__choice == "6":
-                print("Exiting...")
-                loop = False
-            else:
-                print("Wrong selection. Try again...")
+    def __loop(self, log: Logs, loop: bool, valid: dict) -> bool:
+        self.__show_help()
+        choice = input("Enter your choice [1-6]: ")
 
-    def _test_password(self):
+        choices = [
+            "Adding new user",
+            "Deleting user",
+            "Changing user password",
+            "Showing user API key",
+            "Testing user password",
+        ]
+
+        if not choice.isdigit() or int(choice) not in range(1, len(choices) + 2):
+            print("Wrong selection. Try again...")
+            return loop
+
+        if int(choice) in range(1, len(choices) + 1):
+            methods = [
+                self._add_user,
+                self._delete_user,
+                self._change_password,
+                self._show_api_key,
+                self._test_password,
+            ]
+
+            print(5 * "-", choices[int(choice) - 1], 5 * "-")
+            methods[int(choice) - 1].__call__(log, valid)
+            return loop
+
+        print("Exiting...")
+        return False
+
+    def __show_help(self):
+        users = self.get()
+        title = 10 * "-" + " ePiframe user management " + 10 * "-"
+        print(title)
+        print(2 * "-", "Changing anything needs service restart!", 2 * "-")
+        print("USERS:")
+        print("\n".join([user.username for user in users]) if users else "<NO USERS!>")
+        print()
+        print("1. Add new user")
+        print("2. Delete user")
+        print("3. Change user password")
+        print("4. Show user API key")
+        print("5. Test user password")
+        print("6. Exit")
+        print(len(title) * "-")
+
+    def _test_password(self, log: Logs, valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         self.__result("YOU HAVE LOGGED IN")
 
-    def _show_api_key(self):
+    def _show_api_key(self, log: Logs, valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         user_obj = self.get_by_username(username)[0]
         self.__result(f"USER {username} API KEY: {user_obj.api}", False)
 
-    def _change_password(self, log):
+    def _change_password(self, log: Logs, valid: dict):
         username = self.__user_check()
         current_password = self.__password(username, "Current password: ")
         new_password = self.__new_password(
@@ -268,7 +290,7 @@ class UsersManager:
         log.log(Constants.USERS_ACTIONS_TAG + f"User {username} password changed!")
         self.__result("PASSWORD CHANGED")
 
-    def _delete_user(self, log, valid):
+    def _delete_user(self, log: Logs, valid: dict):
         username = self.__user_check()
         while True:
             choice = (
@@ -285,7 +307,7 @@ class UsersManager:
             else:
                 print("Please respond with 'yes' or 'no' (or 'y' or 'n')")
 
-    def _add_user(self, log):
+    def _add_user(self, log: Logs, valid: dict):
         username = self.__user_check(False)
         password = self.__new_password(
             "Password [empty possible]: ", "Confirm password [empty possible]: "

@@ -39,19 +39,10 @@ class WaveshareDisplay(DisplayBase):
 
     def show_image(self, photo_path: str):
         try:
-            if bool(self._config.getint("clear_display")):
-                self.clear()
+            self.__clear_display()
             image = Image.open(photo_path)
             color_schema = self._config.get("epaper_color")
-            no_convert = [
-                schema.lower()
-                for schema in [
-                    Constants.COLOR_BW,
-                    Constants.COLOR_4C,
-                    Constants.COLOR_7C,
-                    Constants.COLOR_OTHER,
-                ]
-            ]
+            no_convert = self.get_no_convert()
 
             if color_schema.lower() in no_convert:
                 self.__epd.display(self.__epd.getbuffer(image))
@@ -70,6 +61,22 @@ class WaveshareDisplay(DisplayBase):
         except KeyboardInterrupt:
             self.__epd.epdconfig.module_exit()
             raise
+
+    @staticmethod
+    def get_no_convert():
+        return [
+            schema.lower()
+            for schema in [
+                Constants.COLOR_BW,
+                Constants.COLOR_4C,
+                Constants.COLOR_7C,
+                Constants.COLOR_OTHER,
+            ]
+        ]
+
+    def __clear_display(self):
+        if bool(self._config.getint("clear_display")):
+            self.clear()
 
     @staticmethod
     def convert(image: Image, color: list) -> (Image, Image):

@@ -22,21 +22,27 @@ class OAuthManager:
                 self.__credentials = pickle.load(token)
         # If there are no (valid) credentials available, let the user log in.
         if not self.__credentials or not self.__credentials.valid:
-            if (
-                self.__credentials
-                and self.__credentials.expired
-                and self.__credentials.refresh_token
-            ):
-                self.__credentials.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    credentials_file, scopes
-                )
-                self.__credentials = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open(pickle_file, "wb") as token:
-                pickle.dump(self.__credentials, token)
+            self.__refresh_credentials(credentials_file, pickle_file, scopes)
         os.chmod(pickle_file, 0o0666)
+
+    def __refresh_credentials(
+        self, credentials_file: str, pickle_file: str, scopes: str
+    ):
+        if (
+            self.__credentials
+            and self.__credentials.expired
+            and self.__credentials.refresh_token
+        ):
+            self.__credentials.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(credentials_file, scopes)
+            self.__credentials = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        self.__dump_pickle(pickle_file)
+
+    def __dump_pickle(self, pickle_file: str):
+        with open(pickle_file, "wb") as token:
+            pickle.dump(self.__credentials, token)
 
     def build_service(self, name: str, version: str):
         self.__service = build(

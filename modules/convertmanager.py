@@ -124,19 +124,8 @@ class ConvertManager:
 
         # space at the end as those flag are optional
         negate = self.__INVERT_FLAG if config.getint("invert_colors") == 1 else ""
-        rotate = (
-            self.__ROTATE_CODE.format(config.getint("rotation"))
-            if config.getint("horizontal") == 0
-            else ""
-        )
-
-        if config.getint("horizontal") == 1 and config.getint("turned") == 1:
-            rotate = self.__ROTATE_CODE.format(180)
-
-        back = back.strip().lower()
-
-        if back not in self.__BACK_COLORS:
-            back = Constants.BACK_WHITE
+        rotate = self.__get_rotate(config)
+        back = self.__get_back(back.strip().lower())
 
         if back == Constants.BACK_PHOTO:
             back = Constants.BACK_WHITE
@@ -150,34 +139,16 @@ class ConvertManager:
         else:
             code = self.__PHOTO_RESIZE_CODE.format(width, height)
 
-        if bool(config.getint("auto_gamma")):
-            code += self.__AUTO_GAMMA_ENH
-        if bool(config.getint("auto_level")):
-            code += self.__AUTO_LEVEL_ENH
-        if bool(config.getint("normalize")):
-            code += self.__NORMALIZE_ENH
-        if bool(config.getint("grayscale")):
-            code += self.__GRAYSCALE_FLAG
+        code += self.__get_auto_gamma(bool(config.getint("auto_gamma")))
+        code += self.__get_autolevel(bool(config.getint("auto_level")))
+        code += self.__get_normalize(bool(config.getint("normalize")))
+        code += self.__get_grayscale(bool(config.getint("grayscale")))
         code += self.__BRIGHT_CONTRAST_ENH.format(
             config.getint("brightness"), config.getint("contrast")
         )
 
-        thumb1st = self.__THUMB_1ST_PART.format(
-            width,
-            height,
-            width,
-            height,
-            os.path.join(
-                config.get("photo_convert_path"),
-                config.get("thumb_photo_download_name"),
-            ),
-        )
-        thumb2nd = self.__THUMB_2ND_PART.format(
-            os.path.join(
-                config.get("photo_convert_path"),
-                config.get("thumb_photo_convert_filename"),
-            )
-        )
+        thumb1st = self.__get_thumb1st(config, height, width)
+        thumb2nd = self.__get_thumb2nd(config)
 
         return_value = self._get_convert_code(
             back,
@@ -197,20 +168,69 @@ class ConvertManager:
         print(return_value.replace("(", "\(").replace(")", "\)"))
         return return_value
 
+    def __get_rotate(self, config: ConfigManager) -> str:
+        rotate = (
+            self.__ROTATE_CODE.format(config.getint("rotation"))
+            if config.getint("horizontal") == 0
+            else ""
+        )
+        if config.getint("horizontal") == 1 and config.getint("turned") == 1:
+            rotate = self.__ROTATE_CODE.format(180)
+        return rotate
+
+    def __get_back(self, back: str) -> str:
+        if back not in self.__BACK_COLORS:
+            back = Constants.BACK_WHITE
+        return back
+
+    def __get_auto_gamma(self, value: bool) -> str:
+        return self.__AUTO_GAMMA_ENH if value else str()
+
+    def __get_autolevel(self, value: bool) -> str:
+        return self.__AUTO_LEVEL_ENH if value else str()
+
+    def __get_normalize(self, value: bool) -> str:
+        return self.__NORMALIZE_ENH if value else str()
+
+    def __get_grayscale(self, value: bool) -> str:
+        return self.__GRAYSCALE_FLAG if value else str()
+
+    def __get_thumb1st(self, config: ConfigManager, height: int, width: int) -> str:
+        thumb1st = self.__THUMB_1ST_PART.format(
+            width,
+            height,
+            width,
+            height,
+            os.path.join(
+                config.get("photo_convert_path"),
+                config.get("thumb_photo_download_name"),
+            ),
+        )
+        return thumb1st
+
+    def __get_thumb2nd(self, config: ConfigManager) -> str:
+        thumb2nd = self.__THUMB_2ND_PART.format(
+            os.path.join(
+                config.get("photo_convert_path"),
+                config.get("thumb_photo_convert_filename"),
+            )
+        )
+        return thumb2nd
+
     def _get_convert_code(
         self,
-        back,
-        code,
-        config,
-        hdmi,
-        height,
-        negate,
-        option,
-        rotate,
-        target,
-        thumb1st,
-        thumb2nd,
-        width,
+        back: str,
+        code: str,
+        config: ConfigManager,
+        hdmi: bool,
+        height: int,
+        negate: str,
+        option: int,
+        rotate: str,
+        target: str,
+        thumb1st: str,
+        thumb2nd: str,
+        width: int,
     ):
         if hdmi or not DisplayManager.should_convert(config.get("epaper_color")):
             colors = (
@@ -287,10 +307,16 @@ class ConvertManager:
         out, error = self.__subproc(
             self.__GET_PHOTO_SIZE_CODE.format(binary), srcfile + first_frame
         )
-        width_height = str(out.decode()).replace('"', "").split(",") if out else ""
+        height, width = self.__process_sizes(
+            str(out.decode()).replace('"', "").split(",") if out else ""
+        )
+        return error, width, height
+
+    @staticmethod
+    def __process_sizes(width_height: list) -> tuple:
         width = width_height[0] if width_height and len(width_height) > 1 else ""
         height = width_height[1] if width_height and len(width_height) > 1 else ""
-        return error, width, height
+        return height, width
 
     def get_image_format(
         self, binary: str, srcfile: str, first_frame: str

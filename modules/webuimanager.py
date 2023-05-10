@@ -10,6 +10,7 @@ from flask import (
     send_file,
     flash,
     session,
+    Response,
 )
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
@@ -17,7 +18,6 @@ from wtforms import StringField, BooleanField, IntegerField, SelectField, FloatF
 from wtforms.widgets import NumberInput, PasswordInput
 from misc.user import User
 from typing import TYPE_CHECKING
-
 import modules.usersmanager as users_manager
 import modules.databasemanager as database_manager
 import modules.configmanager as config_manager
@@ -108,6 +108,20 @@ class WebUIManager:
         self.app = Flask(__name__, root_path=backend.get_path())
         self.app.config["SECRET_KEY"] = Constants.EPIFRAME_SECRET
 
+        self.__add_menu()
+        self.__add_websites()
+        self.__add_api()
+        self.__add_actions()
+
+        self.app.context_processor(self.inject_context)
+
+        self.__login_manager = LoginManager()
+        self.__login_manager.init_app(self.app)
+        self.__login_manager.login_view = "login"
+        self.__login_manager.user_loader(self.load_user)
+        self.__login_manager.request_loader(self.load_user_from_request)
+
+    def __add_menu(self):
         self.MENU = [
             self.MenuEntry("Home", "/", "home-menu", "bi bi-house"),
             self.MenuEntry("Logs", "/logs", "logs-menu", "bi bi-activity"),
@@ -117,6 +131,7 @@ class WebUIManager:
             self.MenuEntry("Plugins", "/plugins", "plugins-menu", "bi bi-plug"),
         ]
 
+    def __add_websites(self):
         self.WEBSITES = [
             self.SiteBind("/get_image", self.get_image),
             self.SiteBind("/get_status", self.get_status),
@@ -140,16 +155,15 @@ class WebUIManager:
             self.SiteBind("/export", self.export),
             self.SiteBind("/import", self.import_settings, methods=["POST"]),
         ]
-
         for site in self.WEBSITES:
             self.app.add_url_rule(site.url, methods=site.methods, view_func=site.func)
-
         for plugin in self.__backend.get_plugins().plugin_website():
             for website in plugin.add_website(
                 self, self.__users_manager, self.__backend
             ):
                 self.app.register_blueprint(website, url_prefix="/")
 
+    def __add_api(self):
         self.API = [
             self.SiteBind("/api/get_image", self.get_image),
             self.SiteBind("/api/get_status", self.get_status),
@@ -160,10 +174,8 @@ class WebUIManager:
             self.SiteBind("/api/display_power=", self.display_control),
             self.SiteBind("/api/display_power=<action>", self.display_control),
         ]
-
         for plugin in self.__backend.get_plugins().plugin_api():
             self.API += plugin.extend_api(self, self.__users_manager, self.__backend)
-
         for api_site in self.API:
             self.app.add_url_rule(
                 api_site.url,
@@ -172,6 +184,7 @@ class WebUIManager:
                 defaults=api_site.defaults,
             )
 
+    def __add_actions(self):
         self.ACTIONS = {
             self.__NEXT_ACT: self.ActionEntry(
                 "Next Photo",
@@ -192,25 +205,17 @@ class WebUIManager:
                 self.__REBOOT_ACT,
             ),
         }
-
-        def merge_dicts(dictionary1: dict, dictionary2: dict) -> dict:
-            result_dictionary = dictionary1.copy()
-            result_dictionary.update(dictionary2)
-            return result_dictionary
-
         for plugin in self.__backend.get_plugins().plugin_action():
-            self.ACTIONS = merge_dicts(
+            self.ACTIONS = self.merge_dicts(
                 self.ACTIONS,
                 plugin.add_action(self, self.__users_manager, self.__backend),
             )
 
-        self.app.context_processor(self.inject_context)
-
-        self.__login_manager = LoginManager()
-        self.__login_manager.init_app(self.app)
-        self.__login_manager.login_view = "login"
-        self.__login_manager.user_loader(self.load_user)
-        self.__login_manager.request_loader(self.load_user_from_request)
+    @staticmethod
+    def merge_dicts(dictionary1: dict, dictionary2: dict) -> dict:
+        result_dictionary = dictionary1.copy()
+        result_dictionary.update(dictionary2)
+        return result_dictionary
 
     def add_menu_entries(self, entries: List[MenuEntry]):
         self.MENU += entries
@@ -294,24 +299,30 @@ class WebUIManager:
         if not api_key:
             api_key = request.headers.get("Authorization")
             if api_key:
-                api_key = api_key.replace("Basic ", "", 1)
-
-                try:
-                    key = base64.b64decode(api_key)
-                    if "\\" not in key.decode():
-                        api_key = key.decode()
-                except Exception:
-                    pass
+                api_key = self.__get_api_from_header(api_key)
 
         if api_key:
-            try:
-                result_value = self.__users_manager.get_by_api(api_key)
-                result = (
-                    result_value[0] if result_value and len(result_value) > 0 else None
-                )
-            except Exception:
-                pass
+            result = self.__get_by_api(api_key, result)
 
+        return result
+
+    @staticmethod
+    def __get_api_from_header(api_key: str) -> str:
+        api_key = api_key.replace("Basic ", "", 1)
+        try:
+            key = base64.b64decode(api_key)
+            if "\\" not in key.decode():
+                api_key = key.decode()
+        except Exception:
+            pass
+        return api_key
+
+    def __get_by_api(self, api_key: str, result: Optional[User]) -> Optional[User]:
+        try:
+            result_value = self.__users_manager.get_by_api(api_key)
+            result = result_value[0] if result_value and len(result_value) > 0 else None
+        except Exception:
+            pass
         return result
 
     # @app.route('/get_image')
@@ -321,14 +332,7 @@ class WebUIManager:
         filename = str()
 
         if self.__ORIGINAL_TAG in request.args:
-            if not thumb:
-                files = glob.glob(f"{self.__backend.get_download_file()}.*")
-                if files:
-                    filename = max(files, key=os.path.getctime)
-            else:
-                filename = self.__backend.get_filename_if_exists(
-                    "thumb_photo_download_name"
-                )
+            filename = self.__get_original_thumb(filename, thumb)
         else:
             filename = self.__backend.get_filename_if_exists(
                 thumb + "photo_convert_filename"
@@ -344,6 +348,17 @@ class WebUIManager:
             if filename
             else self.__NO_PHOTO_ERROR
         )
+
+    def __get_original_thumb(self, filename: str, thumb: str) -> str:
+        if not thumb:
+            files = glob.glob(f"{self.__backend.get_download_file()}.*")
+            if files:
+                filename = max(files, key=os.path.getctime)
+        else:
+            filename = self.__backend.get_filename_if_exists(
+                "thumb_photo_download_name"
+            )
+        return filename
 
     # @app.route('/_get_status')
     @login_required
@@ -373,21 +388,24 @@ class WebUIManager:
             and request.environ["REQUEST_URI"]
             and "/api/" in request.environ["REQUEST_URI"]
         )
-        result = jsonify(status="OK")
-
         if request.method == "POST":
-            file = request.files[self.__FILE_TAG]
-            extension = file.filename.rsplit(".")[-1].lower()
-            if file and extension in Constants.EXTENSIONS:
-                secure_filename(file.filename)
-                file.save(self.__backend.get_download_file() + "." + extension)
-            else:
-                result = jsonify(error="File unknown!")
-            self.__backend.refresh_frame()
+            result = self.__get_file_request()
         else:
             result = jsonify(error="Method Not Allowed!")
 
         return result if is_api else redirect("/")
+
+    def __get_file_request(self) -> Optional[Response]:
+        result = jsonify(status="OK")
+        file = request.files[self.__FILE_TAG]
+        extension = file.filename.rsplit(".")[-1].lower()
+        if file and extension in Constants.EXTENSIONS:
+            secure_filename(file.filename)
+            file.save(self.__backend.get_download_file() + "." + extension)
+        else:
+            result = jsonify(error="File unknown!")
+        self.__backend.refresh_frame()
+        return result
 
     # @app.route('/_log_stream')
     @login_required
@@ -434,35 +452,40 @@ class WebUIManager:
     # @app.route('/<url>', methods=['GET', 'POST'])
     @login_required
     def handle(self, url: str = str()):
-        template = render_template(
-            self.__INDEX_HTML, version=Constants.EPIFRAME_VERSION
-        )
-        if url == self.__TOOLS_HTML.replace(self.__HTML_IND, str()):
-            template = render_template(
+        if url == self.__PLUGINS_HTML.replace(
+            self.__HTML_IND, str()
+        ) or url == self.__SETTINGS_HTML.replace(self.__HTML_IND, str()):
+            self.__backend.refresh()
+
+        templates = {
+            self.__TOOLS_HTML.replace(self.__HTML_IND, str()): render_template(
                 self.__TOOLS_HTML,
                 version=Constants.EPIFRAME_VERSION,
                 actions=list(self.ACTIONS.values()),
-            )
-        elif url == self.__LOGS_HTML.replace(self.__HTML_IND, str()):
-            template = render_template(self.__LOGS_HTML)
-        elif url == self.__STATS_HTML.replace(self.__HTML_IND, str()):
-            template = render_template(
+            ),
+            self.__LOGS_HTML.replace(self.__HTML_IND, str()): render_template(
+                self.__LOGS_HTML
+            ),
+            self.__STATS_HTML.replace(self.__HTML_IND, str()): render_template(
                 self.__STATS_HTML, version=Constants.EPIFRAME_VERSION
-            )
-        elif url == self.__SETTINGS_HTML.replace(self.__HTML_IND, str()):
-            self.__backend.refresh()
-            template = redirect(
+            ),
+            self.__STATS_HTML.replace(self.__HTML_IND, str()): render_template(
+                self.__STATS_HTML, version=Constants.EPIFRAME_VERSION
+            ),
+            self.__SETTINGS_HTML.replace(self.__HTML_IND, str()): redirect(
                 "/{}/{}".format(
                     self.__SETTINGS_HTML.replace(self.__HTML_IND, str()),
                     str(self.config().get_sections()[0]),
                 )
-            )
-        elif url == self.__PLUGINS_HTML.replace(self.__HTML_IND, str()):
-            self.__backend.refresh()
-            template = redirect(
+            ),
+            self.__PLUGINS_HTML.replace(self.__HTML_IND, str()): redirect(
                 f"/{self.__PLUGINS_HTML.replace(self.__HTML_IND, str())}"
-            )
-        return template
+            ),
+        }
+
+        return templates.get(
+            url, render_template(self.__INDEX_HTML, version=Constants.EPIFRAME_VERSION)
+        )
 
     # @app.route('/_tools$', methods=['GET'])
     # @app.route('/_tools$<action>', methods=['GET'])
@@ -504,157 +527,170 @@ class WebUIManager:
         class MyForm(FlaskForm):
             pass
 
-        for property in properties:
-            prop = config.get_property(property)
+        for property_name in properties:
+            prop = config.get_property(property_name)
             render = dict()
             render[self.__HTML_CLASS] = (
-                str(prop.get_dependency()) if prop.get_dependency() else ""
+                self.__get_dependency_or_empty(prop)
             ) + self.__HTML_FORM
             render[self.__HTML_FILL] = self.__HTML_FLEX_FILL
-            if prop.get_dependency():
-                render[self.__HTML_PAD] = self.__HTML_PX3
-                render[self.__HTML_CLASS_DEP] = prop.get_dependency()
-                render[self.__HTML_CLASS_DEP_VAL] = (
-                    prop.get_dependency_value() if prop.get_dependency_value() else "1"
-                )
-                if (
-                    not prop.get_dependency_value()
-                    and not bool(config.getint(prop.get_dependency()))
-                ) or (
-                    prop.get_dependency_value()
-                    and not config.get(prop.get_dependency())
-                    == prop.get_dependency_value()
-                ):
-                    render[self.__HTML_DISABLED] = self.__HTML_DISABLED
+            render = self.__render_disabled(config, prop, render)
 
-            if (
-                prop.get_type() == ConfigProperty.STRING_TYPE
-                or prop.get_type() == ConfigProperty.INTEGER_TYPE
-                or prop.get_type() == ConfigProperty.FLOAT_TYPE
-            ):
-                if prop.get_possible():
-                    render[self.__HTML_CLASS] = (
-                        str(prop.get_dependency()) if prop.get_dependency() else ""
-                    ) + self.__HTML_SELECT
-                    render[self.__HTML_FILL] = str()
-                    setattr(
-                        MyForm,
-                        property,
-                        SelectField(
-                            self.adapt_name(config, property),
-                            default=config.get_default(property),
-                            choices=prop.get_possible(),
-                            render_kw=render,
-                            description=config.get_comment(property),
-                        ),
-                    )
-                elif prop.get_type() == ConfigProperty.STRING_TYPE:
-                    setattr(
-                        MyForm,
-                        property,
-                        StringField(
-                            self.adapt_name(config, property),
-                            default=config.get_default(property),
-                            description=config.get_comment(property),
-                            render_kw=render,
-                        ),
-                    )
-                elif prop.get_type() == ConfigProperty.INTEGER_TYPE:
-                    render[self.__HTML_FILL] = str()
-                    setattr(
-                        MyForm,
-                        property,
-                        IntegerField(
-                            self.adapt_name(config, property),
-                            widget=NumberInput(min=prop.get_min(), max=prop.get_max()),
-                            default=config.get_default(property),
-                            render_kw=render,
-                            description=config.get_comment(property),
-                        ),
-                    )
-                else:
-                    render[self.__HTML_FILL] = str()
-                    setattr(
-                        MyForm,
-                        property,
-                        FloatField(
-                            self.adapt_name(config, property),
-                            widget=NumberInput(
-                                min=prop.get_min(), max=prop.get_max(), step="0.1"
-                            ),
-                            default=config.get_default(property),
-                            render_kw=render,
-                            description=config.get_comment(property),
-                        ),
-                    )
-            elif prop.get_type() == ConfigProperty.FILE_TYPE:
-                setattr(
-                    MyForm,
-                    property,
-                    StringField(
-                        self.adapt_name(config, property),
-                        default=config.get_default(property),
-                        render_kw=render,
-                        description=config.get_comment(property),
-                    ),
-                )
-            elif prop.get_type() == ConfigProperty.BOOLEAN_TYPE:
-                render[self.__HTML_CLASS] = (
-                    str(prop.get_dependency()) if prop.get_dependency() else ""
-                ) + self.__HTML_CHECKBOX
-                setattr(
-                    MyForm,
-                    property,
-                    BooleanField(
-                        self.adapt_name(config, property),
-                        default=config.get_default(property),
-                        false_values=self.__FALSE_VALS,
-                        description=config.get_comment(property),
-                        render_kw=render,
-                    ),
-                )
-            elif prop.get_type() == ConfigProperty.STRING_LIST_TYPE:
-                setattr(
-                    MyForm,
-                    property,
-                    StringField(
-                        self.adapt_name(config, property),
-                        default=config.get_default(property),
-                        render_kw=render,
-                        description=config.get_comment(property),
-                    ),
-                )
-            elif prop.get_type() == ConfigProperty.INT_LIST_TYPE:
-                setattr(
-                    MyForm,
-                    property,
-                    StringField(
-                        self.adapt_name(config, property),
-                        default=config.get_default(property),
-                        render_kw=render,
-                        description=config.get_comment(property),
-                    ),
-                )
-            elif prop.get_type() == ConfigProperty.PASSWORD_TYPE:
-                setattr(
-                    MyForm,
-                    property,
-                    StringField(
-                        self.adapt_name(config, property),
-                        widget=PasswordInput(hide_value=False),
-                        default=config.get_default(property),
-                        description=config.get_comment(property),
-                        render_kw=render,
-                    ),
-                )
+            setattr(
+                MyForm,
+                property_name,
+                self.__get_field(config, prop, render, property_name),
+            )
+        form = MyForm(data=self.__get_form(config, properties))
+        self.__get_attributes(config, form, properties)
+        self.__verify_form(config, form, properties)
+        return form
 
-        form = MyForm(
-            data=[
-                (name, config.get(name))
-                for name in properties
-                if config.get_property(name).get_type() != ConfigProperty.BOOLEAN_TYPE
-            ]
+    @staticmethod
+    def __get_dependency_or_empty(prop):
+        return str(prop.get_dependency()) if prop.get_dependency() else ""
+
+    def __get_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        type_to_field = {
+            ConfigProperty.STRING_TYPE: self.__get_list_field,
+            ConfigProperty.INTEGER_TYPE: self.__get_integer_field,
+            ConfigProperty.FLOAT_TYPE: self.__get_float_field,
+            ConfigProperty.INT_LIST_TYPE: self.__get_list_field,
+            ConfigProperty.STRING_LIST_TYPE: self.__get_list_field,
+            ConfigProperty.FILE_TYPE: self.__get_list_field,
+            ConfigProperty.BOOLEAN_TYPE: self.__get_bool_field,
+            ConfigProperty.PASSWORD_TYPE: self.__get_password_field,
+        }
+
+        if prop.get_type() in [
+            ConfigProperty.STRING_TYPE,
+            ConfigProperty.INTEGER_TYPE,
+            ConfigProperty.FLOAT_TYPE,
+        ]:
+            if prop.get_possible():
+                return self.__get_select_field(config, prop, render, property_name)
+
+        return type_to_field.get(prop.get_type()).__call__(
+            config, prop, render, property_name
         )
+
+    def __get_select_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        render[self.__HTML_CLASS] = (
+            self.__get_dependency_or_empty(prop)
+        ) + self.__HTML_SELECT
+        render[self.__HTML_FILL] = str()
+
+        return SelectField(
+            self.adapt_name(config, property_name),
+            default=config.get_default(property_name),
+            choices=prop.get_possible(),
+            render_kw=render,
+            description=config.get_comment(property_name),
+        )
+
+    def __get_integer_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        render[self.__HTML_FILL] = str()
+
+        return IntegerField(
+            self.adapt_name(config, property_name),
+            widget=NumberInput(min=prop.get_min(), max=prop.get_max()),
+            default=config.get_default(property_name),
+            render_kw=render,
+            description=config.get_comment(property_name),
+        )
+
+    def __get_float_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        render[self.__HTML_FILL] = str()
+
+        return FloatField(
+            self.adapt_name(config, property_name),
+            widget=NumberInput(min=prop.get_min(), max=prop.get_max(), step="0.1"),
+            default=config.get_default(property_name),
+            render_kw=render,
+            description=config.get_comment(property_name),
+        )
+
+    def __get_bool_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        render[self.__HTML_CLASS] = (
+            self.__get_dependency_or_empty(prop)
+        ) + self.__HTML_CHECKBOX
+
+        return BooleanField(
+            self.adapt_name(config, property_name),
+            default=config.get_default(property_name),
+            false_values=self.__FALSE_VALS,
+            description=config.get_comment(property_name),
+            render_kw=render,
+        )
+
+    def __get_list_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        return StringField(
+            self.adapt_name(config, property_name),
+            default=config.get_default(property_name),
+            render_kw=render,
+            description=config.get_comment(property_name),
+        )
+
+    def __get_password_field(
+        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+    ):
+        return StringField(
+            self.adapt_name(config, property_name),
+            widget=PasswordInput(hide_value=False),
+            default=config.get_default(property_name),
+            description=config.get_comment(property_name),
+            render_kw=render,
+        )
+
+    def __render_disabled(
+        self, config: config_manager.ConfigManager, prop, render: dict
+    ) -> dict:
+        if prop.get_dependency():
+            render[self.__HTML_PAD] = self.__HTML_PX3
+            render[self.__HTML_CLASS_DEP] = prop.get_dependency()
+            render[self.__HTML_CLASS_DEP_VAL] = (
+                prop.get_dependency_value() if prop.get_dependency_value() else "1"
+            )
+            render = self.__check_dependency(config, prop, render)
+
+        return render
+
+    def __check_dependency(
+        self, config: config_manager.ConfigManager, prop, render: dict
+    ) -> dict:
+        if (
+            not prop.get_dependency_value()
+            and not bool(config.getint(prop.get_dependency()))
+        ) or (
+            prop.get_dependency_value()
+            and not config.get(prop.get_dependency()) == prop.get_dependency_value()
+        ):
+            render[self.__HTML_DISABLED] = self.__HTML_DISABLED
+
+        return render
+
+    @staticmethod
+    def __get_form(config: config_manager.ConfigManager, properties):
+        return [
+            (name, config.get(name))
+            for name in properties
+            if config.get_property(name).get_type() != ConfigProperty.BOOLEAN_TYPE
+        ]
+
+    @staticmethod
+    def __get_attributes(config: config_manager.ConfigManager, form, properties):
         for iterator in [
             prop
             for prop in properties
@@ -662,6 +698,7 @@ class WebUIManager:
         ]:
             getattr(form, iterator).data = config.getint(iterator)
 
+    def __verify_form(self, config: config_manager.ConfigManager, form, properties):
         for iterator in properties:
             try:
                 config.validate(iterator)
@@ -677,189 +714,205 @@ class WebUIManager:
                 getattr(form, iterator).render_kw[
                     self.__HTML_INVALID
                 ] = self.__HTML_IS_INVALID
-        return form
 
     # @app.route('/settings/<variable>', methods=['GET', 'POST'])
     @login_required
     def setting(self, variable=str()):
-        properties = self.config().get_section_properties(
-            variable if variable else self.config().get_sections()[0]
-        )
+        properties = self.__get_section(variable)
 
         if request.method == "POST":
-            for property in properties:
-                if (
-                    self.config().get_property(property).get_type()
-                    != ConfigProperty.BOOLEAN_TYPE
-                ):
-                    if request.form.get(property) is not None:
-                        self.config().set(property, str(request.form.get(property)))
-                else:
-                    self.config().set(
-                        property, "1" if str(request.form.get(property)) == "y" else "0"
-                    )
+            self.__set_property_values(self.config(), properties)
             regex = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
-            if regex:
-                property_name = regex.group(0).replace("-<[", "").replace("]>-", "")
-                self.config().set(
-                    property_name, str(self.config().get_default(property_name))
-                )
-            elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-                try:
-                    self.config().verify_warnings()
-                except Warning as exception:
-                    flash(str(exception))
-                    pass
-                try:
-                    self.config().verify_exceptions()
-                    self.config().save()
-                except Exception:
-                    session.pop("_flashes", None)
-                    pass
-            elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-                for property in properties:
-                    self.config().set(
-                        property, str(self.config().get_default(property))
-                    )
-            elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
-                self.config().read_config()
+            self.__process_post(self.config(), properties, regex)
             return redirect(request.path)
-
-        reset_needed = False
-        for property in properties:
-            if self.config().get_property(property).get_reset_needed():
-                reset_needed = True
-                break
 
         return render_template(
             self.__SETTINGS_HTML,
             form=self.__build_settings(self.config(), properties),
             navlabels=self.config().get_sections(),
-            reset_needed=reset_needed,
+            reset_needed=self.__get_reset_needed(properties, self.config()),
             version=Constants.EPIFRAME_VERSION,
+        )
+
+    @staticmethod
+    def get_property_from_form(config: config_manager.ConfigManager, regex):
+        property_name = regex.group(0).replace("-<[", "").replace("]>-", "")
+        config.set(property_name, str(config.get_default(property_name)))
+
+    @staticmethod
+    def __verify_settings(config: config_manager.ConfigManager):
+        try:
+            config.verify_warnings()
+        except Warning as exception:
+            flash(str(exception))
+            pass
+        try:
+            config.verify_exceptions()
+            config.save()
+        except Exception:
+            session.pop("_flashes", None)
+            pass
+
+    @staticmethod
+    def __set_properties(properties: list, config: config_manager.ConfigManager):
+        for property_name in properties:
+            config.set(property_name, str(config.get_default(property_name)))
+
+    @staticmethod
+    def __get_reset_needed(
+        properties: list, config: config_manager.ConfigManager
+    ) -> bool:
+        reset_needed = False
+        for property_name in properties:
+            if config.get_property(property_name).get_reset_needed():
+                reset_needed = True
+                break
+        return reset_needed
+
+    def __get_section(self, variable: str) -> list:
+        return self.config().get_section_properties(
+            variable if variable else self.config().get_sections()[0]
         )
 
     # @app.route('/plugins', self.plugins, methods=['GET', 'POST'])
     @login_required
     def plugins(self):
-        if len(self.__backend.get_plugins().get_plugins()) > 0:
+        if self.__backend.get_plugins().get_plugins():
             if not request.args.get("plugin") == self.__ORDER_LABEL:
-                curr_plugin = (
-                    [
-                        plugin
-                        for plugin in self.__backend.get_plugins().get_plugins()
-                        if plugin.name == request.args.get("plugin")
-                    ][0]
-                    if request.args.get("plugin")
-                    else self.__backend.get_plugins().get_plugins()[0]
-                )
+                curr_plugin = self.__get_current_plugin()
                 config = curr_plugin.config
-                settings = (
-                    request.args.get("variable")
-                    if request.args.get("variable")
-                    else config.get_sections()[0]
-                )
+                settings = self.get_settings(config)
                 properties = config.get_section_properties(settings)
 
                 if request.method == "POST":
-                    for property in properties:
-                        if (
-                            config.get_property(property).get_type()
-                            != ConfigProperty.BOOLEAN_TYPE
-                        ):
-                            if request.form.get(property) is not None:
-                                config.set(property, str(request.form.get(property)))
-                        else:
-                            config.set(
-                                property,
-                                "1" if str(request.form.get(property)) == "y" else "0",
-                            )
+                    self.__set_property_values(config, properties)
                     regex = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
-                    if regex:
-                        property_name = (
-                            regex.group(0).replace("-<[", "").replace("]>-", "")
-                        )
-                        config.set(
-                            property_name, str(config.get_default(property_name))
-                        )
-                    elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-                        try:
-                            config.verify_warnings()
-                        except Warning as exception:
-                            flash(str(exception))
-                            pass
-                        try:
-                            config.verify_exceptions()
-                            config.save()
-                        except Exception:
-                            session.pop("_flashes", None)
-                            pass
-                    elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-                        for property in properties:
-                            config.set(property, str(config.get_default(property)))
-                    elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
-                        config.read_config()
+                    self.__process_post(config, properties, regex)
+
                     return redirect(
                         "{}?plugin={}&variable={}".format(
                             request.base_url, curr_plugin.name, settings
                         )
                     )
 
-                reset_needed = False
-                for property in properties:
-                    if config.get_property(property).get_reset_needed():
-                        reset_needed = True
-                        break
-
-                template = render_template(
-                    self.__PLUGINS_HTML,
-                    info="",
-                    order="",
-                    plugin_name=curr_plugin.name,
-                    sett_name=settings,
-                    plugins=[x.name for x in self.__backend.get_plugins().get_plugins()]
-                    + [self.__ORDER_LABEL],
-                    form=self.__build_settings(config, properties),
-                    navlabels=config.get_sections(),
-                    reset_needed=reset_needed,
-                    version=Constants.EPIFRAME_VERSION,
+                return self.__plugin_settings_template(
+                    config,
+                    curr_plugin,
+                    properties,
+                    self.__get_reset_needed(properties, config),
+                    settings,
                 )
             else:
                 order = self.__backend.get_plugins().read_order()
                 if request.method == "POST":
-                    if request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-                        self.__backend.get_plugins().save_order(
-                            request.form.get("list_order").split(",")
-                        )
-                    elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-                        order.sort()
-                        self.__backend.get_plugins().save_order(order)
-                    return redirect(
-                        "{}?plugin={}".format(request.base_url, self.__ORDER_LABEL)
-                    )
+                    return self.__process_order(order)
+                return self.__order_template(order)
+        return self.__no_plugins_template()
 
-                template = render_template(
-                    self.__PLUGINS_HTML,
-                    info="",
-                    order=order,
-                    plugin_name=self.__ORDER_LABEL,
-                    sett_name="",
-                    plugins=[
-                        plugin.name
-                        for plugin in self.__backend.get_plugins().get_plugins()
-                    ]
-                    + [self.__ORDER_LABEL],
-                    form=None,
-                    navlabels="",
-                    reset_needed=False,
-                    version=Constants.EPIFRAME_VERSION,
-                )
+    def __process_post(
+        self, config: config_manager.ConfigManager, properties: list, regex
+    ):
+        if regex:
+            self.get_property_from_form(config, regex)
+        elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
+            self.__verify_settings(config)
+        elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+            self.__set_properties(properties, config)
+        elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
+            config.read_config()
 
-        else:
-            template = render_template(
-                self.__PLUGINS_HTML,
-                info="<ul><li>There are no <b>ePiframe</b> plugins installed! </li><li>Go to <a "
-                'href="https://github.com/MikeGawi/ePiframe_plugin" target="_blank">ePiframe_plugin</a> site to '
-                "find something for You!</li></ul>",
+    def __set_property_values(
+        self, config: config_manager.ConfigManager, properties: list
+    ):
+        for property_name in properties:
+            if (
+                config.get_property(property_name).get_type()
+                != ConfigProperty.BOOLEAN_TYPE
+            ):
+                if request.form.get(property_name) is not None:
+                    config.set(property_name, str(request.form.get(property_name)))
+            else:
+                self.set_boolean_value(config, property_name)
+
+    @staticmethod
+    def set_boolean_value(config: config_manager.ConfigManager, property_name: str):
+        config.set(
+            property_name,
+            "1" if str(request.form.get(property_name)) == "y" else "0",
+        )
+
+    @staticmethod
+    def get_settings(config: config_manager.ConfigManager):
+        return (
+            request.args.get("variable")
+            if request.args.get("variable")
+            else config.get_sections()[0]
+        )
+
+    def __get_current_plugin(self):
+        return (
+            [
+                plugin
+                for plugin in self.__backend.get_plugins().get_plugins()
+                if plugin.name == request.args.get("plugin")
+            ][0]
+            if request.args.get("plugin")
+            else self.__backend.get_plugins().get_plugins()[0]
+        )
+
+    def __process_order(self, order: list) -> Response:
+        if request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
+            self.__backend.get_plugins().save_order(
+                request.form.get("list_order").split(",")
             )
-        return template
+        elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
+            order.sort()
+            self.__backend.get_plugins().save_order(order)
+        return redirect("{}?plugin={}".format(request.base_url, self.__ORDER_LABEL))
+
+    def __plugin_settings_template(
+        self,
+        config: config_manager.ConfigManager,
+        curr_plugin,
+        properties: list,
+        reset_needed: bool,
+        settings: str,
+    ) -> str:
+        return render_template(
+            self.__PLUGINS_HTML,
+            info="",
+            order="",
+            plugin_name=curr_plugin.name,
+            sett_name=settings,
+            plugins=[x.name for x in self.__backend.get_plugins().get_plugins()]
+            + [self.__ORDER_LABEL],
+            form=self.__build_settings(config, properties),
+            navlabels=config.get_sections(),
+            reset_needed=reset_needed,
+            version=Constants.EPIFRAME_VERSION,
+        )
+
+    def __order_template(self, order: list) -> str:
+        return render_template(
+            self.__PLUGINS_HTML,
+            info="",
+            order=order,
+            plugin_name=self.__ORDER_LABEL,
+            sett_name="",
+            plugins=[
+                plugin.name for plugin in self.__backend.get_plugins().get_plugins()
+            ]
+            + [self.__ORDER_LABEL],
+            form=None,
+            navlabels="",
+            reset_needed=False,
+            version=Constants.EPIFRAME_VERSION,
+        )
+
+    def __no_plugins_template(self) -> str:
+        return render_template(
+            self.__PLUGINS_HTML,
+            info="<ul><li>There are no <b>ePiframe</b> plugins installed! </li><li>Go to <a "
+            'href="https://github.com/MikeGawi/ePiframe_plugin" target="_blank">ePiframe_plugin</a> site to '
+            "find something for You!</li></ul>",
+        )
