@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pytest
 from starlette import status
 
+import tests.test_pluginsmanager
 from misc.constants import Constants
 from misc.user import User
 from modules.configmanager import ConfigManager
@@ -340,8 +341,10 @@ def test_import(client_no_login):
 
 def test_plugins(client_no_login):
     response = client_no_login.post("/plugins")
-    assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert (
+        response.location == "http://localhost/plugins?plugin=Plugin1&variable=General"
+    )
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 def test_stats(client_no_login):
@@ -600,6 +603,47 @@ def test_settings_pages(client_no_login):
         assert response.status_code == status.HTTP_200_OK
         for setting in config.get_section_properties(section):
             assert WebUIManager.adapt_name(config, setting) in response.data.decode()
+
+
+def test_plugin_settings_pages(client_no_login):
+    plugins = tests.test_pluginsmanager.get_manager()
+    for plugin in plugins.get_plugins():
+        for section in plugin.config.get_sections():
+            response = client_no_login.get(
+                f"/plugins?plugin={plugin.name.title()}&variable={section}"
+            )
+            assert response.status_code == status.HTTP_200_OK
+            for setting in plugin.config.get_section_properties(section):
+                assert (
+                    WebUIManager.adapt_name(plugin.config, setting)
+                    in response.data.decode()
+                )
+
+
+def test_plugin_api(client_no_login):
+    response = client_no_login.get("/api/get_text/my_text")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data.decode() == '{"text_label":"my_text"}\n'
+
+
+def test_plugin_menu(client_no_login):
+    response = client_no_login.get("/")
+    assert response.status_code == status.HTTP_200_OK
+    assert (
+        '<a href="127.0.0.1" class="nav-link align-middle px-1 link-secondary server-menu d-none d-md-block">'
+        in response.data.decode()
+    )
+    assert (
+        '<i class="fs-6 bi bi-server"></i> <span>Server</span>'
+        in response.data.decode()
+    )
+
+
+def test_plugin_action(client_no_login):
+    with Capturing() as output:
+        response = client_no_login.get("/api/action=lightoff")
+        assert response.status_code == status.HTTP_200_OK
+    assert "I'm dummy" in output
 
 
 class WebMockRead:

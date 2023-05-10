@@ -1,12 +1,14 @@
 import glob
 import os
 import shutil
-from unittest.mock import patch
+from unittest import mock
+from unittest.mock import patch, PropertyMock
 import pytest
 import requests_mock
 from misc.constants import Constants
 from modules import timermanager, intervalmanager, configmanager
 from modules.backendmanager import BackendManager
+from modules.pluginsmanager import PluginsManager
 from modules.webuimanager import WebUIManager
 from tests.helpers.config import Config
 from tests.helpers.helpers import remove_file
@@ -15,6 +17,7 @@ from tests.test_backendmanager import (
     MockedIntervalManager,
     MockedTimerManager,
 )
+from tests.test_pluginsmanager import order_file
 
 
 @pytest.fixture(scope="module")
@@ -29,8 +32,18 @@ def requests_mocker():
 def app_no_login():
     with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
         intervalmanager, "IntervalManager", MockedIntervalManager
+    ), mock.patch.object(
+        PluginsManager,
+        "_PluginsManager__PLUGINS_DIR",
+        return_value="tests/plugins/",
+        new_callable=PropertyMock,
+    ), mock.patch.object(
+        PluginsManager,
+        "_PluginsManager__ORDER_FILE",
+        return_value=order_file,
+        new_callable=PropertyMock,
     ):
-        backend = BackendManager(event_mock, ".")
+        backend = BackendManager(event_mock, "")
         web_manager = WebUIManager(backend)
     app = web_manager.app
     app.config.update(
@@ -98,6 +111,7 @@ def cleanup(request):
         shutil.rmtree("PATH")
         remove_file("log.test")
         remove_file("test_users.db")
+        remove_file(order_file)
 
     request.addfinalizer(clean)
 
