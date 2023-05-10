@@ -723,7 +723,7 @@ class WebUIManager:
         if request.method == "POST":
             self.__set_property_values(self.config(), properties)
             regex = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
-            self.__process_post(properties, regex)
+            self.__process_post(self.config(), properties, regex)
             return redirect(request.path)
 
         return render_template(
@@ -733,16 +733,6 @@ class WebUIManager:
             reset_needed=self.__get_reset_needed(properties, self.config()),
             version=Constants.EPIFRAME_VERSION,
         )
-
-    def __process_post(self, properties: list, regex):
-        if regex:
-            self.get_property_from_form(self.config(), regex)
-        elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-            self.__verify_settings(self.config())
-        elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
-            self.__set_properties(properties, self.config())
-        elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
-            self.config().read_config()
 
     @staticmethod
     def get_property_from_form(config: config_manager.ConfigManager, regex):
@@ -766,12 +756,12 @@ class WebUIManager:
     @staticmethod
     def __set_properties(properties: list, config: config_manager.ConfigManager):
         for property_name in properties:
-            config.set(
-                property_name, str(config.get_default(property_name))
-            )
+            config.set(property_name, str(config.get_default(property_name)))
 
     @staticmethod
-    def __get_reset_needed(properties: list, config: config_manager.ConfigManager) -> bool:
+    def __get_reset_needed(
+        properties: list, config: config_manager.ConfigManager
+    ) -> bool:
         reset_needed = False
         for property_name in properties:
             if config.get_property(property_name).get_reset_needed():
@@ -797,7 +787,7 @@ class WebUIManager:
                 if request.method == "POST":
                     self.__set_property_values(config, properties)
                     regex = re.search(r"\-\<\[.*?\]\>\-", str(request.form))
-                    self.__process_plugin_post(config, properties, regex)
+                    self.__process_post(config, properties, regex)
 
                     return redirect(
                         "{}?plugin={}&variable={}".format(
@@ -819,7 +809,7 @@ class WebUIManager:
                 return self.__order_template(order)
         return self.__no_plugins_template()
 
-    def __process_plugin_post(
+    def __process_post(
         self, config: config_manager.ConfigManager, properties: list, regex
     ):
         if regex:
