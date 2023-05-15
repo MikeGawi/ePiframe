@@ -96,7 +96,6 @@ def test_run_plugins():
             None, None, None, None, None, None, None
         )
         manager.get_plugins()[0].add_service_thread(None, None)
-        manager.get_plugins()[0].add_website(None, None, None)
         manager.get_plugins()[0].change_photos_list(
             None, None, None, None, None, None, None
         )
@@ -106,10 +105,7 @@ def test_run_plugins():
         manager.get_plugins()[0].postprocess_photo(
             None, None, None, None, None, None, None, None, None
         )
-        manager.get_plugins()[0].extend_api(None, None, None)
-
         manager.get_plugins()[1].add_photo_source(None, None, None, None)
-
         manager.get_plugins()[2].add_photo_source(None, None, None, None)
 
 def test_read_order():
