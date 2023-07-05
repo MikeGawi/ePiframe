@@ -109,6 +109,8 @@ class PimoroniDisplay(DisplayBase):
             palette.append([255, 0, 0])
         elif color == Constants.COLOR_BWY:
             palette.append([255, 255, 0])
+        elif color == "7 colors":
+            palette = self.__inky.SATURATED_PALETTE
 
         return palette
 
