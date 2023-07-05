@@ -43,6 +43,7 @@ class PimoroniDisplay(DisplayBase):
             "inky_ssd1608": self.__init_inky_ssd,
             "inky_uc8159": self.__init_inky_uc,
             "inky_ssd1683": self.__init_inky_ssd,
+            "inky_ac073tc1a": self.__init_inky_ssd,
         }
 
         display_method = displays_dict.get(self._display, None)
