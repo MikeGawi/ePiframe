@@ -3,7 +3,7 @@ from misc.tools import Tools
 
 class Constants:
 
-    EPIFRAME_VERSION = "v1.9.2"
+    EPIFRAME_VERSION = "v1.9.3"
     EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
 
     # minimal needed python version
