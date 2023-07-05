@@ -17,7 +17,7 @@ class ConvertManager:
 
     __INVERT_FLAG = "-negate "
     __ROTATE_CODE = "-rotate {} "
-    __BACK_COLORS = [Constants.BACK_BLACK, Constants.BACK_WHITE, Constants.BACK_PHOTO]
+    __BACK_COLORS = [Constants.BACK_BLACK, Constants.BACK_WHITE, Constants.BACK_PHOTO, Constants.BACK_CROP]
     __GRAYSCALE_FLAG = "-colorspace Gray "
     __COLORS_FLAG = "-colors {} "
 
@@ -43,6 +43,7 @@ class ConvertManager:
         "-clone 0 -sample {}x{} ) -delete 0 -gravity center -compose over -composite "
     )
     __PHOTO_RESIZE_CODE = "-sample {}x{} "
+    __PHOTO_CROP_CODE = "-resize {}x{}^ -gravity Center -extent {}x{} "
 
     # options for ImageMagick converter
     # https://legacy.imagemagick.org/Usage/quantize/
@@ -136,6 +137,9 @@ class ConvertManager:
             code = self.__PHOTO_BACK_CODE.format(
                 new_height, scale, width, new_height, width, width, height
             )
+        elif back == Constants.BACK_CROP:
+          back = Constants.BACK_WHITE
+          code = self.__PHOTO_CROP_CODE.format(width, height, width, height)
         else:
             code = self.__PHOTO_RESIZE_CODE.format(width, height)
 
