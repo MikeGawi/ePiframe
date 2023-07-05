@@ -145,3 +145,4 @@ class Constants:
     BACK_WHITE = "white"
     BACK_BLACK = "black"
     BACK_PHOTO = "photo"
+    BACK_CROP = "crop"
