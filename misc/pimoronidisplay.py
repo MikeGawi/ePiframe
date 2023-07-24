@@ -100,7 +100,7 @@ class PimoroniDisplay(DisplayBase):
 
     def __get_palette(self, module: ModuleType) -> list:
         color = self._config.get("epaper_color")
-        palette = [[255, 255, 255]] if module.WHITE == 0 else [[0, 0, 0]]
+        palette = self.__get_first_color(module)
         palette.append([0, 0, 0]) if module.BLACK == 1 else palette.append(
             [255, 255, 255]
         )
@@ -113,6 +113,10 @@ class PimoroniDisplay(DisplayBase):
             palette = self.__inky.SATURATED_PALETTE
 
         return palette
+
+    @staticmethod
+    def __get_first_color(module):
+        return [[255, 255, 255]] if module.WHITE == 0 else [[0, 0, 0]]
 
     def __convert(self, image: Image) -> Image:
         palette = tuple(itertools.chain(*self.__palette_filter)) + (0, 0, 0) * (
