@@ -14,7 +14,7 @@ filename = "config_test.cfg"
 
 def test_get_background_colors():
     colors = ConvertManager.get_background_colors()
-    assert colors == ["black", "white", "photo"]
+    assert colors == ["black", "white", "photo", "crop"]
 
 
 def test_get_convert_options():
@@ -27,7 +27,7 @@ def test_get_rotations():
     assert rotation == [90, 270]
 
 
-@pytest.mark.parametrize("value", ["black", "white", "photo"])
+@pytest.mark.parametrize("value", ["black", "white", "photo", "crop"])
 def test_verify_color_ok(value):
     with not_raises(Exception):
         ConvertManager.verify_background_color(value)
@@ -39,7 +39,7 @@ def test_verify_color_nok():
 
     assert (
         str(exception.value)
-        == "Configuration background_color should be one of ['black', 'white', 'photo']"
+        == "Configuration background_color should be one of ['black', 'white', 'photo', 'crop']"
     )
 
 
@@ -537,6 +537,62 @@ def test_convert_invert():
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -negate -background black -gravity center -extent 800x600 "
         "-type bilevel -write target ) ( +clone -thumbnail 200x120 -write path/convert_name ) NULL:",
+    ]
+
+
+def test_convert_background_crop():
+    remove_file(filename)
+    set_file(
+        "\n".join(
+            [
+                "[test_section]",
+                "convert_option=1",
+                "convert_bin_path=bin",
+                "image_width=800",
+                "image_height=600",
+                "background_color=crop",
+                "invert_colors=0",
+                "rotation=90",
+                "horizontal=1",
+                "turned=0",
+                "auto_gamma=0",
+                "auto_level=0",
+                "normalize=0",
+                "grayscale=0",
+                "brightness=0",
+                "contrast=10",
+                "photo_convert_path=path",
+                "thumb_photo_download_name=download_name",
+                "thumb_photo_convert_filename=convert_name",
+                "epaper_color=BW",
+                "colors_num=",
+            ]
+        ),
+        filename,
+    )
+
+    config = get_config()
+    with patch.object(subprocess, "Popen", MockedPopen) as popen, Capturing() as output:
+        popen.set_data("".encode())
+        ConvertManager().convert_image(
+            original_width=1200,
+            original_height=960,
+            source_file="source",
+            config=config,
+            target="target",
+        )
+
+    assert output == [
+        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent "
+        "800x600 -thumbnail 200x120 -write path/download_name +delete \) \( +clone -resize 800x600^ "
+        "-gravity Center -extent 800x600 -brightness-contrast 0,10 -dither FloydSteinberg -remap "
+        "pattern:gray50 -background white -gravity center -extent 800x600 -type bilevel -write target "
+        "\) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent "
+        "800x600 -thumbnail 200x120 -write path/download_name +delete ) ( +clone -resize 800x600^ "
+        "-gravity Center -extent 800x600 -brightness-contrast 0,10 -dither FloydSteinberg -remap "
+        "pattern:gray50 -background white -gravity center -extent 800x600 -type bilevel -write target ) "
+        "( +clone -thumbnail 200x120 -write path/convert_name ) NULL:",
     ]
 
 
