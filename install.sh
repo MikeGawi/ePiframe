@@ -54,7 +54,6 @@ function install_pips {
         order+=( "Dateutil" )
         order+=( "Pillow" )
         order+=( "ConfigParser" )
-        order+=( "Google components" )
         order+=( "SMBus" )
         order+=( "SPI Libs" )
         order+=( "Pandas" )
@@ -62,14 +61,15 @@ function install_pips {
         order+=( "WTForms" )
         order+=( "Flask-Login" )
         order+=( "Flask" )
+        order+=( "Google components" )
 
         for i in "${order[@]}"; do
                 pip=${pips[$i]}
                 printf '\e[1;37m%-30s\e[m' "Installing $i:"
                 if [ "$i" == "Google components" ] || [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ] || [ "$i" == "Flask" ]; then
-                        out=$(sudo -H pip3 -q install -I --upgrade $pip 2>&1 > /dev/null)
+                        out=$(sudo -H pip3 -q install --upgrade $pip 2>&1 > /dev/null)
                 else
-                        out=$(sudo -H pip3 -q install -I "$pip" 2>&1 > /dev/null)
+                        out=$(sudo -H pip3 -q install "$pip" 2>&1 > /dev/null)
                 fi
 
                 if [ -z "$out" ]; then
@@ -78,9 +78,9 @@ function install_pips {
                 else
                         echo -e '\033[0;31merror!\033[0m'
                         if [ "$i" == "Google components" ] || [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ] || [ "$i" == "Flask" ]; then
-                                echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I --upgrade $pip manually and run the script again\033[0m"
+                                echo -e "\033[1;37mPlease try to install sudo -H pip3 install --upgrade $pip manually and run the script again\033[0m"
                         else
-                                echo -e "\033[1;37mPlease try to install sudo -H pip3 install -I '$pip' manually and run the script again\033[0m"
+                                echo -e "\033[1;37mPlease try to install sudo -H pip3 install '$pip' manually and run the script again\033[0m"
 
                         fi
                         echo -e "\033[0;31m$out\033[0m"
@@ -89,7 +89,7 @@ function install_pips {
         done
 
 sudo -H pip3 -q uninstall --yes werkzeug > /dev/null 2>&1
-sudo -H pip3 -q install --no-cache-dir -I 'werkzeug==2.0.3' > /dev/null 2>&1
+sudo -H pip3 -q install --no-cache-dir 'werkzeug==2.0.3' > /dev/null 2>&1
 }
 
 function check_pi {

@@ -3,7 +3,7 @@ from misc.tools import Tools
 
 class Constants:
 
-    EPIFRAME_VERSION = "v1.9.2"
+    EPIFRAME_VERSION = "v1.9.3"
     EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
 
     # minimal needed python version
@@ -145,3 +145,4 @@ class Constants:
     BACK_WHITE = "white"
     BACK_BLACK = "black"
     BACK_PHOTO = "photo"
+    BACK_CROP = "crop"
