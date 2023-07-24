@@ -109,6 +109,24 @@ def test_inky_ssd1683_display():
     assert "saturation=0.8" not in output
 
 
+def test_inky_inky_ac073tc1a():
+    set_config(Constants.COLOR_BWR, display="inky_ac073tc1a")
+
+    config = get_config()
+    with patch.object(importlib, "import_module", mocked_import):
+        with Capturing() as output:
+            display = PimoroniDisplay(config)
+            display.show_image(bitmap)
+
+    assert output
+    assert "__init__" in output
+    assert "set_border" not in output
+    assert "set_image" in output
+    assert "show" in output
+    assert "colour='red'" in output
+    assert "saturation=0.8" not in output
+
+
 def test_non_existing_display():
     set_config(Constants.COLOR_BWR, display="non_existing_display")
 

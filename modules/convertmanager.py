@@ -17,7 +17,12 @@ class ConvertManager:
 
     __INVERT_FLAG = "-negate "
     __ROTATE_CODE = "-rotate {} "
-    __BACK_COLORS = [Constants.BACK_BLACK, Constants.BACK_WHITE, Constants.BACK_PHOTO, Constants.BACK_CROP]
+    __BACK_COLORS = [
+        Constants.BACK_BLACK,
+        Constants.BACK_WHITE,
+        Constants.BACK_PHOTO,
+        Constants.BACK_CROP,
+    ]
     __GRAYSCALE_FLAG = "-colorspace Gray "
     __COLORS_FLAG = "-colors {} "
 
@@ -128,20 +133,7 @@ class ConvertManager:
         rotate = self.__get_rotate(config)
         back = self.__get_back(back.strip().lower())
 
-        if back == Constants.BACK_PHOTO:
-            back = Constants.BACK_WHITE
-            # this takes more time to progress
-            aspect_ratio = int(original_width) / int(original_height)
-            new_height = max(int(width / aspect_ratio), height)
-            scale = round(aspect_ratio * 10.0, 2)
-            code = self.__PHOTO_BACK_CODE.format(
-                new_height, scale, width, new_height, width, width, height
-            )
-        elif back == Constants.BACK_CROP:
-          back = Constants.BACK_WHITE
-          code = self.__PHOTO_CROP_CODE.format(width, height, width, height)
-        else:
-            code = self.__PHOTO_RESIZE_CODE.format(width, height)
+        back, code = self.__get_background(back, height, original_height, original_width, width)
 
         code += self.__get_auto_gamma(bool(config.getint("auto_gamma")))
         code += self.__get_autolevel(bool(config.getint("auto_level")))
@@ -171,6 +163,23 @@ class ConvertManager:
 
         print(return_value.replace("(", "\(").replace(")", "\)"))
         return return_value
+
+    def __get_background(self, back, height, original_height, original_width, width):
+        if back == Constants.BACK_PHOTO:
+            back = Constants.BACK_WHITE
+            # this takes more time to progress
+            aspect_ratio = int(original_width) / int(original_height)
+            new_height = max(int(width / aspect_ratio), height)
+            scale = round(aspect_ratio * 10.0, 2)
+            code = self.__PHOTO_BACK_CODE.format(
+                new_height, scale, width, new_height, width, width, height
+            )
+        elif back == Constants.BACK_CROP:
+            back = Constants.BACK_WHITE
+            code = self.__PHOTO_CROP_CODE.format(width, height, width, height)
+        else:
+            code = self.__PHOTO_RESIZE_CODE.format(width, height)
+        return back, code
 
     def __get_rotate(self, config: ConfigManager) -> str:
         rotate = (

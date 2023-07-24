@@ -330,7 +330,7 @@ def test_export(client_no_login):
     assert not response.location
     assert response.status_code == status.HTTP_200_OK
     with open(Constants.CONFIG_FILE_DEFAULT, "r") as file:
-        assert "".join(file.readlines()) == response.data.decode() + "\n"
+        assert "".join(file.readlines()) == response.data.decode()
 
 
 def test_import(client_no_login):
