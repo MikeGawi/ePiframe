@@ -143,3 +143,4 @@ dmypy.json
 /photo.bmp
 /photo_thumb.jpg
 /gen_cc_badge.py
+/webtest.py
