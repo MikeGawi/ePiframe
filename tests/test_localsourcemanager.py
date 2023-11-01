@@ -34,7 +34,10 @@ def test_get_files_path():
 
 def test_get_files_recursive():
     lsm = LocalSourceManager("tests/", True, Constants.EXTENSIONS)
-    assert lsm.get_files() == ["tests/assets/waveshare.bmp"]
+    assert lsm.get_files() == [
+        "tests/assets/waveshare.bmp",
+        "tests/assets/recursive/waveshare2.bmp",
+    ]
 
 
 def test_get_files_non_existing_extension():
