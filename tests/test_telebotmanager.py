@@ -1,13 +1,14 @@
 import os.path
 from unittest.mock import patch
+import pytest
 import telebot
 from starlette import status
 from misc.telebotcmd import TelebotCmd
 from modules.telebotmanager import TelebotManager
 from tests.helpers.backend_manager import MockedBackendManager
-from tests.helpers.bot import MockedBot
+from tests.helpers.bot import MockedBot, MockedBotFail
 from tests.helpers.capturing import Capturing
-from tests.helpers.helpers import remove_file
+from tests.helpers.helpers import remove_file, not_raises
 from tests.helpers.message import (
     MockedChat,
     MockedMessage,
@@ -23,6 +24,16 @@ def test_init(requests_mocker):
         TelebotManager(backend)
 
     assert output == normal_response
+
+
+def test_init_fail(requests_mocker):
+    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_404_NOT_FOUND)
+    backend = MockedBackendManager()
+    with patch.object(telebot, "TeleBot", MockedBotFail), pytest.raises(Warning) as warning:
+        TelebotManager(backend)
+
+    assert warning
+    assert str(warning.value) == 'This is exception'
 
 
 def test_start(requests_mocker):

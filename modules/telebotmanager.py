@@ -38,10 +38,13 @@ class TelebotManager:
             "http://" + TelebotCmd.API_URL, int(TelebotCmd.API_CONNECTION_TIMEOUT)
         )
         if return_value:
-            raise Exception(return_value)
-        bot = telebot.TeleBot(token, parse_mode=TelebotCmd.TG_PARSE_MODE)
-        bot.get_me()
-        return bot
+            raise Warning(return_value)
+        try:
+            bot = telebot.TeleBot(token, parse_mode=TelebotCmd.TG_PARSE_MODE)
+            bot.get_me()
+            return bot
+        except Exception as exception:
+            raise Warning(str(exception))
 
     def start(self):
         self.__bot.infinity_polling()
@@ -161,10 +164,10 @@ class TelebotManager:
         cmd = commands.get(command.split(" ")[0], self.__process_unknown_command)
         cmd.__call__(chat_id, command)
 
-    def __process_ping_command(self, chat_id: Union[int, str], command: str):
+    def __process_ping_command(self, chat_id: Union[int, str], _command: str):
         return self.__bot.send_message(chat_id, TelebotCmd.PING_REP)
 
-    def __process_current_command(self, chat_id: Union[int, str], command: str):
+    def __process_current_command(self, chat_id: Union[int, str], _command: str):
         self.__bot.send_chat_action(chat_id, TelebotCmd.UPLOAD_PHOTO_TAG)
         if self.__backend.get_current_file():
             self.__bot.send_photo(
@@ -177,14 +180,14 @@ class TelebotManager:
         else:
             self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
 
-    def __process_next_command(self, chat_id: Union[int, str], command: str):
+    def __process_next_command(self, chat_id: Union[int, str], _command: str):
         if self.__backend.pid_file_exists():
             self.__bot.send_message(chat_id, TelebotCmd.PROGRESS_REP)
         else:
             self.__backend.fire_event()
             self.__bot.send_message(chat_id, TelebotCmd.OK_REP)
 
-    def __process_when_command(self, chat_id: Union[int, str], command: str):
+    def __process_when_command(self, chat_id: Union[int, str], _command: str):
         self.__bot.send_message(
             chat_id,
             f"{TelebotCmd.NEXT_UPDATE_MSG}\n{self.__backend.get_next_time()}",
@@ -196,7 +199,7 @@ class TelebotManager:
         else:
             self.__bot.send_message(chat_id, " ".join(command.split()[1:]))
 
-    def __process_original_command(self, chat_id: Union[int, str], command: str):
+    def __process_original_command(self, chat_id: Union[int, str], _command: str):
         if self.__backend.get_original_file():
             self.__bot.send_chat_action(chat_id, TelebotCmd.UPLOAD_PHOTO_TAG)
             self.__bot.send_photo(
@@ -209,7 +212,7 @@ class TelebotManager:
         else:
             self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
 
-    def __process_start_command(self, chat_id: Union[int, str], command: str):
+    def __process_start_command(self, chat_id: Union[int, str], _command: str):
         self.__bot.send_message(
             chat_id,
             "*{}*\n\n{}\n{}\n\n{}\n\n{}".format(
@@ -221,7 +224,7 @@ class TelebotManager:
             ),
         )
 
-    def __process_status_command(self, chat_id: Union[int, str], command: str):
+    def __process_status_command(self, chat_id: Union[int, str], _command: str):
         result = (
             self.__backend.start_system_command(self.__STATUS_OS_CMD)
             if self.__backend.is_metric()
@@ -232,9 +235,9 @@ class TelebotManager:
         else:
             self.__bot.send_message(chat_id, TelebotCmd.ERROR_REP)
 
-    def __process_reboot_command(self, chat_id: Union[int, str], command: str):
+    def __process_reboot_command(self, chat_id: Union[int, str], _command: str):
         self.__bot.send_message(chat_id, TelebotCmd.OK_REP)
         self.__backend.reboot()
 
-    def __process_unknown_command(self, chat_id: Union[int, str], command: str):
+    def __process_unknown_command(self, chat_id: Union[int, str], _command: str):
         self.__bot.send_message(chat_id, TelebotCmd.UNKNOWN_REP)

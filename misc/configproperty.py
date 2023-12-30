@@ -1,5 +1,6 @@
 import os
 import numbers
+from typing import Callable, Optional
 
 
 class ConfigProperty:
@@ -169,7 +170,7 @@ class ConfigProperty:
             self.STRING_LIST_TYPE: self.__check_list,
             self.INT_LIST_TYPE: self.__process_int_list_values,
         }
-        method = properties.get(self.__type, None)
+        method: Optional[Callable] = properties.get(self.__type, None)
         if method:
             method()
 
@@ -271,6 +272,8 @@ class ConfigProperty:
         if self.__check_function:
             try:
                 self.__check_function(self.__config_manager.get(self.__name))
+            except Warning as warning:
+                raise Warning(self.CHECK_ERROR_MSG.format(self.__name, warning))
             except Exception as exception:
                 raise Exception(self.CHECK_ERROR_MSG.format(self.__name, exception))
 

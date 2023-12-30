@@ -1,4 +1,14 @@
-listener = None
+from typing import Callable, Optional
+
+listener: Optional[Callable] = None
+
+
+class MockedBotFail:
+    def __init__(self, token, parse_mode):
+        pass
+
+    def get_me(self):
+        raise Exception("This is exception")
 
 
 class MockedBot:
@@ -8,7 +18,7 @@ class MockedBot:
     def send_message(self, chat_id, message):
         print(f"send_message {message} to {chat_id}")
 
-    def set_update_listener(cls, listener_local):
+    def set_update_listener(self, listener_local):
         print(f"set_update_listener {listener_local.__name__}")
         global listener
         listener = listener_local

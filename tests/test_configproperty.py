@@ -256,6 +256,16 @@ def test_check_function_nok():
     verify_nok(config)
 
 
+def test_check_function_warning_nok():
+    def check_function(value):
+        raise Warning("Check failed!")
+
+    config = get_config_check_function("property", "value", check_function)
+    with pytest.raises(Warning):
+        config.verify()
+    remove_file(filename)
+
+
 def test_check_function_ok():
     def check_function(value):
         print("Check successful!")
