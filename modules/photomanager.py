@@ -1,4 +1,5 @@
 import pandas as pd
+from misc.constants import Constants
 
 
 class PhotoManager:
@@ -71,3 +72,7 @@ class PhotoManager:
             target_dataframe = pd.DataFrame()
         merged = target_dataframe.append([source_dataframe])
         return self.reset_index(merged)
+
+    @staticmethod
+    def get_refresh_rates():
+        return [Constants.REFRESH_ALWAYS, Constants.REFRESH_ONCE]

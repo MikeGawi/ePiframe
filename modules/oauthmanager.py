@@ -109,6 +109,12 @@ class OAuthManager:
 
         return items
 
+    def get_item(
+        self,
+        identifier: str,
+    ) -> list:
+        return self.__service.mediaItems().get(mediaItemId=identifier).execute()
+
     def get_service(self):
         return self.__service
 

@@ -80,7 +80,9 @@ class WebUIManager:
     __ORDER_LABEL = "Execution Order"
 
     class SiteBind:
-        def __init__(self, url: str, func, methods: List[str] = ["GET"], defaults=None):
+        def __init__(self, url: str, func, methods: List[str] = None, defaults=None):
+            if not methods:
+                methods = ["GET"]
             self.url = url
             self.func = func
             self.methods = methods
@@ -292,12 +294,12 @@ class WebUIManager:
 
         return return_value
 
-    def load_user_from_request(self, request) -> Optional[User]:
+    def load_user_from_request(self, request_data) -> Optional[User]:
         result = None
-        api_key = request.args.get("api_key")
+        api_key = request_data.args.get("api_key")
 
         if not api_key:
-            api_key = request.headers.get("Authorization")
+            api_key = request_data.headers.get("Authorization")
             if api_key:
                 api_key = self.__get_api_from_header(api_key)
 
@@ -634,7 +636,7 @@ class WebUIManager:
         )
 
     def __get_list_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+        self, config: config_manager.ConfigManager, _prop, render: dict, property_name
     ):
         return StringField(
             self.adapt_name(config, property_name),
@@ -644,7 +646,7 @@ class WebUIManager:
         )
 
     def __get_password_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+        self, config: config_manager.ConfigManager, _prop, render: dict, property_name
     ):
         return StringField(
             self.adapt_name(config, property_name),

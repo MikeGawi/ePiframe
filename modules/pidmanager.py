@@ -19,7 +19,7 @@ class PIDManager:
             if os.path.exists(self.__path):
                 with open(self.__path, "r") as file_data:
                     lines = file_data.readlines()
-                    pid = str(lines[0]).rstrip()
+                    pid = str("".join(lines)).rstrip()
                     file_data.close()
         except Exception:
             self.remove()

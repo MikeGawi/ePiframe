@@ -1,4 +1,6 @@
 import os
+import json
+from json import JSONDecodeError
 
 
 class IndexManager:
@@ -12,19 +14,23 @@ class IndexManager:
 
         # read index from file to change after each run
         if os.path.exists(path):
-            with open(path, "r") as file_lines:
-                lines = file_lines.readlines()
-                if len(lines) == 2:
-                    self.__id = str(lines[0]).rstrip()
-                    self.__index = int(lines[1])
-                file_lines.close()
+            try:
+                with open(path, "r") as index_file:
+                    index_data = json.load(index_file)
+                    self.__index = index_data.get("index")
+                    self.__id = index_data.get("id").rstrip()
+            except JSONDecodeError:
+                # legacy
+                with open(path, "r") as file_lines:
+                    lines = file_lines.readlines()
+                    if len(lines) == 2:
+                        self.__id = str(lines[0]).rstrip()
+                        self.__index = int(lines[1])
+                    file_lines.close()
 
     def save(self):
         with open(self.__path, "w") as file_data:
-            file_data.write(str(self.__id))
-            file_data.write("\n")
-            file_data.write(str(self.__index))
-            file_data.close()
+            json.dump({"id": self.__id, "index": self.__index}, file_data)
 
     def get_index(self) -> int:
         return self.__index

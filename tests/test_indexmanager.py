@@ -47,3 +47,15 @@ def test_index_manager_max():
     assert index_manager.get_index() == index_test
 
     remove_file(index_filename)
+
+
+def test_legacy_index_manager_init():
+    remove_file(index_filename)
+    with open(index_filename, "w") as file_data:
+        file_data.write(str(id_test))
+        file_data.write("\n")
+        file_data.write(str(index_test))
+    index_manager = IndexManager(index_filename)
+    assert index_manager.get_index() == index_test
+    assert index_manager.get_id() == id_test
+    remove_file(index_filename)

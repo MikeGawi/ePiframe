@@ -9,6 +9,7 @@ import modules.pluginsmanager as plugins_manager
 import modules.timermanager as timer_manager
 from misc.constants import Constants
 from misc.logs import Logs
+from misc.tools import Tools
 from modules.displaymanager import DisplayManager
 from modules.weathermanager import WeatherManager
 
@@ -65,12 +66,7 @@ class BackendManager:
         )
 
     def get_last_date(self, file: str) -> float:
-        return_value = None
-        try:
-            return_value = os.stat(os.path.join(self.__path, file)).st_mtime
-        except Exception:
-            pass
-        return return_value
+        return Tools.get_last_date(os.path.join(self.__path, file))
 
     def get_path(self) -> str:
         return self.__path

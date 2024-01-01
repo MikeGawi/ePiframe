@@ -1,4 +1,5 @@
 import itertools
+import os
 from typing import Any
 
 
@@ -9,7 +10,9 @@ class Tools:
 
     @staticmethod
     def get_type_to_extension(extensions: dict) -> dict:
-        return dict(Tools.check_if_list(key, value) for key, value in extensions.items())
+        return dict(
+            Tools.check_if_list(key, value) for key, value in extensions.items()
+        )
 
     @staticmethod
     def get_product(key: str, value: str):
@@ -39,3 +42,12 @@ class Tools:
             [Tools.get_extension(extension) for extension in list(extensions)],
             [],
         )
+
+    @staticmethod
+    def get_last_date(file: str) -> float:
+        return_value = None
+        try:
+            return_value = os.stat(file).st_mtime
+        except Exception:
+            pass
+        return return_value
