@@ -45,11 +45,11 @@ class TimerManager:
 
     def __check_no_time_mark(
         self,
-        now: datetime,
+        _now: datetime,
         start_tab: str,
-        end_tab: str,
-        day_of_week: int,
-        yesterday: int,
+        _end_tab: str,
+        _day_of_week: int,
+        _yesterday: int,
     ) -> bool:
         return False if start_tab == self.__NO_TIME_MARK else None
 
@@ -57,8 +57,8 @@ class TimerManager:
         self,
         now: datetime,
         start_tab: str,
-        end_tab: str,
-        day_of_week: int,
+        _end_tab: str,
+        _day_of_week: int,
         yesterday: int,
     ) -> bool:
         return (
@@ -76,7 +76,7 @@ class TimerManager:
         start_tab: str,
         end_tab: str,
         day_of_week: int,
-        yesterday: int,
+        _yesterday: int,
     ) -> bool:
         return (
             (
@@ -95,9 +95,9 @@ class TimerManager:
         self,
         now: datetime,
         start_tab: str,
-        end_tab: str,
+        _end_tab: str,
         day_of_week: int,
-        yesterday: int,
+        _yesterday: int,
     ) -> bool:
         return (
             True

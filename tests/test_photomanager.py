@@ -21,6 +21,10 @@ photo_manager: PhotoManager
 album: AlbumManager
 
 
+def test_get_frame_rates():
+    assert PhotoManager.get_refresh_rates() == ["always", "once"]
+
+
 def test_set_photos():
     global album
     album = AlbumManager(albums, names, header)

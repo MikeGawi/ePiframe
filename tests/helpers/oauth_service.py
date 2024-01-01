@@ -34,6 +34,11 @@ class OauthService:
         return cls
 
     @classmethod
+    def get(cls, mediaItemId):
+        print(f"Get: {mediaItemId=}")
+        return cls
+
+    @classmethod
     def execute(cls):
         if cls.data:
             data = cls.data

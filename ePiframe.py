@@ -6,9 +6,16 @@ import os
 import shutil
 import signal
 import sys
+from datetime import datetime
+import pandas
+import starlette.status
+from pandas import DataFrame
+from requests import HTTPError
+
 from misc.connection import Connection
 from misc.constants import Constants
 from misc.logs import Logs
+from misc.tools import Tools
 from modules.albummanager import AlbumManager
 from modules.base.pluginbase import PluginBase
 from modules.configmanager import ConfigManager
@@ -104,11 +111,7 @@ class EPiframe:
         )
         self.logging.log(f"Photo to show:\n{photo}")
 
-        self.index_manager.set_id(
-            self.photo_manager.get_photo_attribute(
-                photo, Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER
-            )
-        )
+        self.index_manager.set_id(self.get_photo_id(photo))
         self.remove_old_files()
 
         self.logging.log("Getting next photo...")
@@ -120,18 +123,26 @@ class EPiframe:
             returned_value,
         )
 
+    def get_photo_id(self, photo):
+        return self.photo_manager.get_photo_attribute(
+            photo, Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER
+        )
+
     def get_next_photo(self, photo) -> tuple:
         returned_value = None
         if photo[Constants.PHOTOS_SOURCE_LABEL] == Constants.GOOGLE_PHOTOS_SOURCE:
             filename = self.get_photo(photo)
-            download_url = self.get_download_url(photo)
-            returned_value = self.try_download_file(download_url, filename)
+            returned_value = self.try_download_file(
+                self.get_download_url(photo), self.get_photo_id(photo), filename
+            )
         else:
             plugin_with_source = self.get_plugin_with_source(photo)
             filename = self.get_filename(photo, plugin_with_source, returned_value)
         return filename, returned_value
 
-    def get_filename(self, photo, plugin_with_source: PluginBase, returned_value) -> str:
+    def get_filename(
+        self, photo, plugin_with_source: PluginBase, returned_value
+    ) -> str:
         if plugin_with_source and self.plugins_manager.plugin_source_get_file(
             plugin_with_source
         ):
@@ -172,20 +183,41 @@ class EPiframe:
             None,
         )
 
-    def try_download_file(self, download_url: str, filename: str) -> str:
-        try:
-            returned_value = Connection.download_file(
-                download_url,
-                self.config.get("photo_convert_path"),
-                filename,
-                Constants.OK_STATUS_ERRORCODE,
-                Constants.CHECK_CONNECTION_TIMEOUT,
-            )
-        except Exception as exception:
-            returned_value = str(exception)
+    def try_download_file(self, download_url: str, photo_id: str, filename: str) -> str:
+        returned_value = self.download_or_retry(download_url, filename, photo_id)
+
         if returned_value != Constants.OK_STATUS_ERRORCODE:
             self.logging.log(f"Fail! Server error: {str(returned_value)}")
         return returned_value
+
+    def download_or_retry(self, download_url, filename, photo_id):
+        returned_value = None
+        count = 2
+        while not returned_value:
+            try:
+                returned_value = Connection.download_file(
+                    download_url,
+                    self.config.get("photo_convert_path"),
+                    filename,
+                    Constants.OK_STATUS_ERRORCODE,
+                    Constants.CHECK_CONNECTION_TIMEOUT,
+                )
+            except HTTPError as exception:
+                if self.is_403_exception(exception) and count:
+                    download_url = self.get_download_url(
+                        self.auth_manager.get_item(photo_id)
+                    )
+                    count -= 1
+                    continue
+                returned_value = str(exception)
+        return returned_value
+
+    @staticmethod
+    def is_403_exception(exception):
+        return (
+            hasattr(exception, "response")
+            and exception.response.status_code == starlette.status.HTTP_403_FORBIDDEN
+        )
 
     def get_download_url(self, photo) -> str:
         return (
@@ -346,37 +378,72 @@ class EPiframe:
             self.logging.log("No photos in albums!")
             sys.exit(1)
 
-    def get_from_sources(self):
-        photos = None
+    def get_from_sources(self) -> DataFrame:
+        photos: DataFrame = DataFrame()
         if bool(self.config.getint("use_google_photos")):
-            self.logging.log("Getting data from Google Photos source...")
-            self.logging.log("Checking connection...")
-            self.check_connection()
-            self.logging.log("OK!")
-
-            self.logging.log("Loading credentials...")
-            self.create_auth_manager()
-            self.logging.log("Success!")
-
-            self.logging.log("Trying to build service with given credentials...")
-            self.build_service()
-
-            self.logging.log("Success!")
-            self.logging.log("Getting all albums...")
-            self.get_albums_data()
-            self.logging.log("Success!")
-
-            self.logging.log("Getting desired album(s)...")
-            self.album_manager = AlbumManager(
-                self.auth_manager.get_response(),
-                self.config.get("album_names"),
-                Constants.GOOGLE_PHOTOS_ALBUMS_TITLE_HEADER,
-            )
-
-            photos = self.get_albums()
+            photos = self.get_google_photos()
         photos = self.get_local_source(photos)
         photos = self.get_plugin_sources(photos)
         return photos
+
+    @staticmethod
+    def should_data_be_refreshed(filename: str) -> bool:
+        if not os.path.exists(filename):
+            return True
+
+        mod_time = Tools.get_last_date(filename)
+        if not mod_time:
+            return True
+
+        return datetime.now().date() > datetime.fromtimestamp(int(mod_time)).date()
+
+    def read_stored_photos(self):
+        photos = DataFrame()
+        filename: str = self.config.get("photo_list_file") + ".fth"
+        should_refresh: bool = self.should_data_be_refreshed(filename)
+        if (
+            self.config.get("refresh_rate") == Constants.REFRESH_ONCE
+            and not self.check_arguments("--refresh")
+            and not should_refresh
+        ):
+            try:
+                self.logging.log(
+                    "Trying to read saved Google Photos data (according to refresh_rate setting set to "
+                    "'once' a day)..."
+                )
+                photos = pandas.read_feather(filename)
+                self.logging.log("Success!")
+            except Exception:
+                pass
+
+        return photos
+
+    def get_google_photos(self) -> DataFrame:
+        self.logging.log("Getting data from Google Photos source...")
+        self.logging.log("Checking connection...")
+        self.check_connection()
+        self.logging.log("OK!")
+        self.logging.log("Loading credentials...")
+        self.create_auth_manager()
+        self.logging.log("Success!")
+        self.logging.log("Trying to build service with given credentials...")
+        self.build_service()
+        self.logging.log("Success!")
+
+        photos = self.read_stored_photos()
+        if not photos.empty:
+            return photos
+
+        self.logging.log("Getting all albums...")
+        self.get_albums_data()
+        self.logging.log("Success!")
+        self.logging.log("Getting desired album(s)...")
+        self.album_manager = AlbumManager(
+            self.auth_manager.get_response(),
+            self.config.get("album_names"),
+            Constants.GOOGLE_PHOTOS_ALBUMS_TITLE_HEADER,
+        )
+        return self.get_albums()
 
     def process_test_convert(self):
         if self.check_arguments("--test-convert"):
@@ -445,7 +512,7 @@ class EPiframe:
             self.logging.log("No photo sources picked! Check the configuration!")
             raise Exception("No photo sources picked! Check the configuration!")
 
-    def get_albums(self):
+    def get_albums(self) -> DataFrame:
         if self.album_manager.get_albums().empty:
             self.logging.log(
                 "Fail! Can't find album {}".format(self.config.get("album_names"))
@@ -476,11 +543,11 @@ class EPiframe:
             raise
         return self.get_google_source()
 
-    def get_google_source(self):
+    def get_google_source(self) -> DataFrame:
         if self.album_manager.get_data().empty:
             self.logging.log("Fail! Couldn't retrieve albums!")
             raise
-        photos = self.photo_manager.set_photos(
+        photos: DataFrame = self.photo_manager.set_photos(
             self.album_manager,
             Constants.GOOGLE_PHOTOS_ALBUMS_MEDIAMETADATA_HEADER,
             Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_HEADER,
@@ -490,9 +557,11 @@ class EPiframe:
             Constants.GOOGLE_PHOTOS_SOURCE,
         )
         self.logging.log("Success!")
+        if not photos.empty:
+            photos.to_feather(self.config.get("photo_list_file") + ".fth")
         return photos
 
-    def get_local_source(self, photos):
+    def get_local_source(self, photos: DataFrame) -> DataFrame:
         if bool(self.config.getint("use_local")):
             self.logging.log("Getting data from local source...")
             self.local_source_manager = LocalSourceManager(
@@ -510,7 +579,7 @@ class EPiframe:
             self.logging.log("Success!")
         return photos
 
-    def get_plugin_sources(self, photos):
+    def get_plugin_sources(self, photos: DataFrame) -> DataFrame:
         for plugin in self.plugins_manager.plugin_source():
             try:
                 self.logging.log(f"Getting data from plugin '{plugin.name}' source...")
@@ -631,8 +700,11 @@ class EPiframe:
             print("--test-display [file]	displays the photo file on attached display")
             print("			with current ePiframe configuration")
             print("--test-convert [file]	converts the photo file to configured")
-            print("			photo_convert_filename current ePiframe configuration")
+            print("			photo_convert_filename with current ePiframe configuration")
             print("--no-skip		like --test but is not skipping to another photo")
+            print(
+                "--refresh		force Google API data refresh even if refresh_rate flag is set to 'once'"
+            )
             print("--users			manage users")
             print("--help			this help")
 

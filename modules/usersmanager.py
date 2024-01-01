@@ -268,18 +268,18 @@ class UsersManager:
         print("6. Exit")
         print(len(title) * "-")
 
-    def _test_password(self, log: Logs, valid: dict):
+    def _test_password(self, _log: Logs, _valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         self.__result("YOU HAVE LOGGED IN")
 
-    def _show_api_key(self, log: Logs, valid: dict):
+    def _show_api_key(self, _log: Logs, _valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         user_obj = self.get_by_username(username)[0]
         self.__result(f"USER {username} API KEY: {user_obj.api}", False)
 
-    def _change_password(self, log: Logs, valid: dict):
+    def _change_password(self, log: Logs, _valid: dict):
         username = self.__user_check()
         current_password = self.__password(username, "Current password: ")
         new_password = self.__new_password(
@@ -307,7 +307,7 @@ class UsersManager:
             else:
                 print("Please respond with 'yes' or 'no' (or 'y' or 'n')")
 
-    def _add_user(self, log: Logs, valid: dict):
+    def _add_user(self, log: Logs, _valid: dict):
         username = self.__user_check(False)
         password = self.__new_password(
             "Password [empty possible]: ", "Confirm password [empty possible]: "

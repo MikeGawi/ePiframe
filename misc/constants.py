@@ -3,7 +3,7 @@ from misc.tools import Tools
 
 class Constants:
 
-    EPIFRAME_VERSION = "v1.9.3"
+    EPIFRAME_VERSION = "v1.9.4"
     EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
 
     # minimal needed python version
@@ -39,6 +39,7 @@ class Constants:
     GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER = "description"
     GOOGLE_PHOTOS_ALBUMS_PHOTO_BASEURL_HEADER = "baseUrl"
     GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER = "id"
+    GOOGLE_PHOTOS_ALBUMS_MEDIA_ITEM_ID_HEADER = "mediaItemId"
     GOOGLE_PHOTOS_ALBUMS_PHOTO_HEIGHT_HEADER = "height"
     GOOGLE_PHOTOS_ALBUMS_PHOTO_WIDTH_HEADER = "width"
     GOOGLE_PHOTOS_ALBUMS_PHOTO_GET_DETAILS = "=d"
@@ -146,3 +147,6 @@ class Constants:
     BACK_BLACK = "black"
     BACK_PHOTO = "photo"
     BACK_CROP = "crop"
+
+    REFRESH_ALWAYS = "always"
+    REFRESH_ONCE = "once"

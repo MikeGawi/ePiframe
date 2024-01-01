@@ -65,7 +65,7 @@ class PimoroniDisplay(DisplayBase):
         )
         self.__palette_filter = self.__get_palette(module)
 
-    def __init_inky_uc(self, color_schema: str, module: ModuleType):
+    def __init_inky_uc(self, _color_schema: str, module: ModuleType):
         self.__inky = module.Inky()
         self.__palette_filter = module.DESATURATED_PALETTE
 

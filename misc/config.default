@@ -23,6 +23,12 @@ pickle_file=token.pickle
 # Empty means all. Default: empty
 album_names=
 
+# Refresh rate for data from the Google Photos API.
+# Possible values: always = every frame refresh, once = once a day.
+# This is to prevent a large number of photos from hitting the daily API limit (10k calls).
+# Default: always
+refresh_rate=always
+
 # Set 1 to get photos from local storage.
 ; The rest of the values in this section regarding local should be filled as well when enabled.
 # Default: 1 (enabled)

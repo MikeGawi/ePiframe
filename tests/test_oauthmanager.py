@@ -79,6 +79,26 @@ def test_get_items():
     assert items == ["media_items_data"]
 
 
+def test_get_item():
+    manager = get_manager()
+    OauthService.set_data(
+        {
+            Constants.GOOGLE_PHOTOS_ALBUMS_MEDIAITEMS_HEADER: {
+                "media_item_data": "data"
+            },
+        }
+    )
+    with Capturing() as output:
+        with not_raises(Exception):
+            items = manager.get_item("photo_id")
+    assert output == [
+        "MediaItems",
+        "Get: mediaItemId='photo_id'",
+    ]
+
+    assert items == {'mediaItems': {'media_item_data': 'data'}}
+
+
 def test_create_credentials():
     remove_file(pickle_file)
     manager = get_manager_flow()

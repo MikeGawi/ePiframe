@@ -1,7 +1,6 @@
 import os
 import requests
 import re
-import socket
 
 
 class Connection:
