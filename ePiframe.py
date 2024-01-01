@@ -105,23 +105,34 @@ class EPiframe:
         filter_number = self.photo_manager.get_num_of_photos(photos)
         self.logging.log(f"Filtered {filter_number} photos")
         self.exit_if_no_photos_after_filtering(filter_number)
-        self.get_random_photo(filter_number, photos)
-        photo = self.photo_manager.get_photo_by_index(
-            photos, self.index_manager.get_index()
-        )
-        self.logging.log(f"Photo to show:\n{photo}")
 
-        self.index_manager.set_id(self.get_photo_id(photo))
-        self.remove_old_files()
+        count = 3
+        while count > 0:
+            self.get_random_photo(filter_number, photos)
+            photo = self.photo_manager.get_photo_by_index(
+                photos, self.index_manager.get_index()
+            )
+            self.logging.log(f"Photo to show:\n{photo}")
 
-        self.logging.log("Getting next photo...")
-        filename, returned_value = self.get_next_photo(photo)
+            self.index_manager.set_id(self.get_photo_id(photo))
+            self.remove_old_files()
 
-        self.process_if_exists(
-            filename,
-            photo,
-            returned_value,
-        )
+            self.logging.log("Getting next photo...")
+            filename, returned_value = self.get_next_photo(photo)
+
+            count -= 1
+            if os.path.exists(filename) and returned_value == Constants.OK_STATUS_ERRORCODE:
+                self.process_file(
+                    filename,
+                    photo,
+                )
+                break
+
+            self.logging.log(
+                f"Fail! File was not retrieved! Error: {str(returned_value)}"
+            )
+            if count > 0:
+                self.logging.log("Retrying with the new photo...")
 
     def get_photo_id(self, photo):
         return self.photo_manager.get_photo_attribute(
@@ -207,6 +218,7 @@ class EPiframe:
                     download_url = self.get_download_url(
                         self.auth_manager.get_item(photo_id)
                     )
+                    self.logging.log("Photo download URL expired! - Refreshing URL in Google Photos...")
                     count -= 1
                     continue
                 returned_value = str(exception)
@@ -596,20 +608,15 @@ class EPiframe:
                 raise
         return photos
 
-    def process_if_exists(
+    def process_file(
         self,
         filename: str,
         photo: str,
-        returned_value: str,
     ):
-        if not os.path.exists(filename):
-            self.logging.log(f"Fail! File was not retrieved! : {str(returned_value)}")
-        else:
-            self.logging.log("Success!")
-
-            self.interval_multiplication(filename, photo)
-            self.save_index()
-            self.convert_file(filename, photo)
+        self.logging.log("Success!")
+        self.interval_multiplication(filename, photo)
+        self.save_index()
+        self.convert_file(filename, photo)
 
     def save_index(self):
         # save index of current photo for next run
