@@ -10,7 +10,6 @@ werkzeug==2.0.3
 flask-wtf==1.0.0
 flask-login==0.5.0
 wtforms==3.0.1
-pyarrow==14.0.2
 pytest
 starlette
 google-api-python-client
