@@ -411,7 +411,7 @@ class EPiframe:
 
     def read_stored_photos(self):
         photos = DataFrame()
-        filename: str = self.config.get("photo_list_file") + ".fth"
+        filename: str = self.config.get("photo_list_file") + ".pickle"
         should_refresh: bool = self.should_data_be_refreshed(filename)
         if (
             self.config.get("refresh_rate") == Constants.REFRESH_ONCE
@@ -423,7 +423,7 @@ class EPiframe:
                     "Trying to read saved Google Photos data (according to refresh_rate setting set to "
                     "'once' a day)..."
                 )
-                photos = pandas.read_feather(filename)
+                photos = pandas.read_pickle(filename)
                 self.logging.log("Success!")
             except Exception:
                 pass
@@ -570,7 +570,7 @@ class EPiframe:
         )
         self.logging.log("Success!")
         if not photos.empty:
-            photos.to_feather(self.config.get("photo_list_file") + ".fth")
+            photos.to_pickle(self.config.get("photo_list_file") + ".pickle")
         return photos
 
     def get_local_source(self, photos: DataFrame) -> DataFrame:
