@@ -157,11 +157,11 @@ function display_libs_waveshare {
 
 function display_libs_pimoroni {
 	declare -A cmds
-	cmds["Preparing"]='sudo rm -rf inky-master/ pimoroni.zip'
-	cmds["Downloading"]='sudo wget -q https://github.com/pimoroni/inky/archive/master.zip -O pimoroni.zip 2>&1 | grep -i "failed\|error"'
+	cmds["Preparing"]='sudo rm -rf inky-main/ pimoroni.zip'
+	cmds["Downloading"]='sudo wget -q https://codeload.github.com/pimoroni/inky/zip/refs/heads/main -O pimoroni.zip 2>&1 | grep -i "failed\|error"'
 	cmds["Unpacking"]='sudo unzip -q pimoroni.zip'
-	cmds["Copying"]='sudo cp -r inky-master/library/inky/ lib/'
-	cmds["Cleanup"]='sudo rm -r inky-master/ pimoroni.zip'
+	cmds["Copying"]='sudo cp -r inky-main/library/inky/ lib/'
+	cmds["Cleanup"]='sudo rm -r inky-main/ pimoroni.zip'
 
 	declare -a order;
 	order+=( "Preparing" )
