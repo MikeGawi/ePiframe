@@ -108,7 +108,8 @@ def cleanup(request):
         files.extend(glob.glob("logs/ePiframe.log.*.gz"))
         for file in files:
             os.remove(file)
-        shutil.rmtree("PATH")
+        if os.path.exists("PATH"):
+            shutil.rmtree("PATH")
         remove_file("log.test")
         remove_file("test_users.db")
         remove_file(order_file)

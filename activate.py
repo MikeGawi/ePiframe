@@ -4,6 +4,8 @@ import json
 import os
 import shutil
 import pickle
+from threading import Timer
+
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 
@@ -203,15 +205,14 @@ def gen_token(code_token):
 
 
 def generate():
+    from flask import request, redirect, flash
+
     if request.method == "POST":
         try:
             gen_token(request.form.get("code"))
             return redirect(str(len(__PAGES.keys())))
-        except Exception as exception:
-            if hasattr(exception, "message") and getattr(
-                exception, "message", str(exception)
-            ):
-                flash(f"Error: {exception}")
+        except Exception as exception_data:
+            flash_error(exception_data)
             flash(
                 "Error: The URL should be an exact copy of the generated URL and should not be empty!"
             )
@@ -221,11 +222,22 @@ def generate():
             return redirect(str(page))
 
 
+def flash_error(exception_data):
+    from flask import flash
+
+    if (
+        str(exception_data)
+        or hasattr(exception_data, "message")
+        and getattr(exception_data, "message", str(exception_data))
+    ):
+        flash(f"Error: {exception_data}")
+
+
 def save_creds(content):
     if not content:
         raise Exception("Empty value")
     struct = json.loads(content)
-    if not struct["installed"]["client_id"] or not struct["installed"]["client_secret"]:
+    if check_credentials_json(struct):
         raise Exception("Wrong file content")
     if os.path.exists(__CRED_FILE):
         shutil.copy(__CRED_FILE, __CRED_FILE + ".back")
@@ -236,7 +248,17 @@ def save_creds(content):
     auth_url = get_auth_url()
 
 
+def check_credentials_json(struct):
+    return (
+        "installed" not in struct
+        or "client_id" not in struct["installed"]
+        or "client_secret" not in struct["installed"]
+    )
+
+
 def upload():
+    from flask import request, redirect, flash
+
     if request.method == "POST":
         try:
             content = request.files.get("file").read().decode("utf-8")
@@ -261,11 +283,13 @@ def steps(url=str()):
     else:
         page = 1
     toc = {__PAGES[key][__TITLE]: key for key in __PAGES}
-    text = get_text(page)
-    return get_steps_page(page, text, toc)
+    text = get_text()
+    return get_steps_page(text, toc)
 
 
 def get_steps_page(text, toc):
+    from flask import render_template
+
     return render_template(
         __PAGE,
         type=__PAGES[page][__TYPE],
@@ -290,14 +314,12 @@ def get_text():
     )
 
 
-if __name__ == "__main__":
+def start():
     try:
         from flask import Flask, render_template, request, redirect, flash
-        from threading import Timer
         import crypt
 
-        if not os.path.exists("templates/" + __PAGE):
-            raise Exception()
+        check_templates()
 
         print(
             "Do You want to start a web version of Activation Tool (with visual guide) or just activate here in the "
@@ -305,13 +327,11 @@ if __name__ == "__main__":
         )
         valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
 
-        res = None
         while True:
             choice = input("[Y/n]? [Default: Yes] ").lower() or "yes"
 
             if choice in valid:
-                res = valid[choice]
-                break
+                return valid[choice]
             else:
                 print("Please respond with 'yes' or 'no' (or 'y' or 'n').")
     except Exception:
@@ -319,86 +339,119 @@ if __name__ == "__main__":
             "----- Probably this is not an ePiframe device or ePiframe is not yet installed so starting console mode "
             "----- "
         )
-        res = False
+        return False
 
-    if res:
-        app = Flask(__name__)
-        app.config["SECRET_KEY"] = crypt.mksalt(crypt.METHOD_SHA512)
 
-        app.add_url_rule("/upload", view_func=upload, methods=["POST"])
-        app.add_url_rule("/generate", view_func=generate, methods=["POST"])
-        app.add_url_rule("/stop", view_func=stop, methods=["POST"])
-        app.add_url_rule("/<url>", methods=["GET"], view_func=steps)
-        app.add_url_rule("/", defaults={"url": ""}, methods=["GET"], view_func=steps)
+def check_templates():
+    if not os.path.exists("templates/" + __PAGE):
+        raise Exception()
 
-        while True:
-            ip = (
-                input(
-                    f"Enter IP address [Leave empty for {IP} (under public IP address)]:"
-                )
-                or IP
-            )
 
-            if re.match(
-                r"^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$",
-                ip,
-            ):
-                print("IP = " + ip)
-                break
+def prepare_app():
+    from flask import Flask
+    import crypt
+
+    global app
+    app = Flask(__name__)
+    app.config["SECRET_KEY"] = crypt.mksalt(crypt.METHOD_SHA512)
+    app.add_url_rule("/upload", view_func=upload, methods=["POST"])
+    app.add_url_rule("/generate", view_func=generate, methods=["POST"])
+    app.add_url_rule("/stop", view_func=stop, methods=["POST"])
+    app.add_url_rule("/<url>", methods=["GET"], view_func=steps)
+    app.add_url_rule("/", defaults={"url": ""}, methods=["GET"], view_func=steps)
+
+
+def get_ip():
+    while True:
+        ip_value = (
+            input(f"Enter IP address [Leave empty for {IP} (under public IP address)]:")
+            or IP
+        )
+
+        if re.match(
+            r"^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$",
+            ip_value,
+        ):
+            print("IP = " + ip_value)
+            return ip_value
+        else:
+            print("Please provide a correct IP address")
+
+
+def get_port():
+    while True:
+        print(
+            "Any port below 5000 will need root privileges - start script with 'sudo'"
+        )
+        port_value = (
+            input(f"Enter port number (1-65535) [Leave empty for {PORT}]:") or PORT
+        )
+
+        try:
+            if 65535 >= int(port_value) >= 1:
+                print("Port = " + port_value)
+                return port_value
             else:
-                print("Please provide a correct IP address")
+                raise Exception()
+        except Exception:
+            print("Please provide a value in 1-65535 range")
 
-        while True:
+
+def print_text_pages():
+    for item in [
+        key
+        for key in [key_value for key_value in __PAGES.keys()][:-1]
+        if __PAGES[key][__TYPE] == __TEXT_TYPE
+    ]:
+        print("* " + strip_html(__PAGES[item]["text"]))
+
+
+def get_json():
+    while True:
+        try:
             print(
-                "Any port below 5000 will need root privileges - start script with 'sudo'"
+                "* Now paste here the content (as it is) of downloaded JSON credentials file. Any existing "
+                "credentials file will be backed up. "
             )
-            port = (
-                input(f"Enter port number (1-65535) [Leave empty for {PORT}]:") or PORT
+            creds = input("JSON credentials content: ")
+            save_creds(creds)
+            break
+        except Exception as exception_object:
+            print(f"Error: {exception_object}")
+
+
+def get_code():
+    while True:
+        try:
+            print("* Visit page:")
+            print(auth_url)
+            print(
+                "and authenticate with Your ePiframe Google account You have created project and credentials for. "
+                "After successful authentication You will get an error (but that is ok), copy the whole address "
+                "that is not reachable and paste it below. "
+            )
+            code = input("URL: ")
+            gen_token(code)
+            break
+        except Exception:
+            print(
+                "Error: The URL should be an exact copy of the generated URL and should not be empty!"
             )
 
-            try:
-                if 65535 >= int(port) >= 1:
-                    print("Port = " + port)
-                    break
-                else:
-                    raise Exception()
-            except Exception:
-                print("Please provide a value in 1-65535 range")
+
+def activate():
+    res = start()
+    if res:
+        prepare_app()
+        ip = get_ip()
+        port = get_port()
         app.run(host=ip, port=int(port))
     else:
-        for i in [
-            key
-            for key in [k for k, v in __PAGES.items()][:-1]
-            if __PAGES[key][__TYPE] == __TEXT_TYPE
-        ]:
-            print("* " + strip_html(__PAGES[i]["text"]))
-
-        while True:
-            try:
-                print(
-                    "* Now paste here the content (as it is) of downloaded JSON credentials file. Any existing "
-                    "credentials file will be backed up. "
-                )
-                creds = input("JSON credentials content: ")
-                save_creds(creds)
-                break
-            except Exception as exception:
-                print(f"Error: {exception}")
-
-        while True:
-            try:
-                print("* Visit page:")
-                print(auth_url)
-                print(
-                    "and authenticate with Your ePiframe Google account You have created project and credentials for. "
-                    "After successful authentication You will get an error (but that is ok), copy the whole address "
-                    "that is not reachable and paste it below. "
-                )
-                code = input("URL: ")
-                gen_token(code)
-                break
-            except Exception as exception:
-                print(
-                    "Error: The URL should be an exact copy of the generated URL and should not be empty!"
-                )
+        print_text_pages()
+        get_json()
+        get_code()
         print("*** " + strip_html(__PAGES[len(__PAGES)]["text"]))
+
+
+if __name__ == "__main__":
+    activate()
