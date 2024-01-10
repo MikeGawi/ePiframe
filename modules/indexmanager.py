@@ -17,7 +17,7 @@ class IndexManager:
             try:
                 with open(path, "r") as index_file:
                     index_data = json.load(index_file)
-                    self.__index = index_data.get("index")
+                    self.__index = int(index_data.get("index"))
                     self.__id = index_data.get("id").rstrip()
             except JSONDecodeError:
                 # legacy
@@ -30,7 +30,7 @@ class IndexManager:
 
     def save(self):
         with open(self.__path, "w") as file_data:
-            json.dump({"id": self.__id, "index": self.__index}, file_data)
+            json.dump({"id": str(self.__id), "index": int(self.__index)}, file_data)
 
     def get_index(self) -> int:
         return self.__index
