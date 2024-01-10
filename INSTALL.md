@@ -92,10 +92,10 @@ sudo chown -R pi ..
 * Download Pimoroni ZIP file (or use [git](https://github.com/pimoroni/inky)) and extract all RasPi Pimoroni display libraries to *lib* inside *path*:
 ```
 cd <path>
-wget -q https://github.com/pimoroni/inky/archive/master.zip -O pimoroni.zip
+wget -q https://codeload.github.com/pimoroni/inky/zip/refs/heads/main -O pimoroni.zip
 unzip -q pimoroni.zip
-cp -r inky-master/library/inky/ lib/
-rm -r inky-master/ pimoroni.zip
+cp -r inky-main/library/inky/ lib/
+rm -r inky-main/ pimoroni.zip
 sudo chown -R pi ..
 ```
 * Enable SPI support:
