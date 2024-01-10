@@ -2,20 +2,23 @@ import json
 import os
 import time
 import urllib.parse
+from crypt import crypt
 from threading import Timer
 from unittest.mock import patch
-
+import builtins
 import flask
 import pytest
 from flask import Flask, render_template
 from google_auth_oauthlib import flow
 from googleapiclient import discovery
 import activate
+import tests
 from tests.helpers.capturing import Capturing
 from tests.helpers.credentials import Flow
 from tests.helpers.helpers import remove_file, not_raises
 from tests.helpers.oauth_service import OauthService
 from tests.helpers.request import MockedRequest, MockedStream
+from tests.test_usersmanager_manage import MockedInput
 
 mocked_code = (
     "http://localhost:1/?state=VOT2v2x5aq1chctSbL1qhjDGq66WHz&code=ABCDEFGHIJKLMNOPQRSTVXYZ0123456789&scope"
@@ -380,8 +383,109 @@ def test_upload_ok():
     assert response == "Redirect page='20'"
 
 
+@pytest.mark.parametrize(
+    "param",
+    [
+        "y",
+        "ye",
+        "yes",
+        "",
+        "Y",
+        "YE",
+        "YES",
+    ],
+)
+def test_start(param):
+    inputs = MockedInput([param])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.start()
+
+    assert results is True
+    assert output == [
+        "Do You want to start a web version of Activation Tool (with visual guide) or just activate here in the "
+        "console? "
+    ]
+
+
+@pytest.mark.parametrize(
+    "param",
+    [
+        "n",
+        "no",
+        "N",
+        "NO",
+    ],
+)
+def test_start_no(param):
+    inputs = MockedInput([param])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.start()
+
+    assert results is False
+    assert output == [
+        "Do You want to start a web version of Activation Tool (with visual guide) or just activate here in the "
+        "console? "
+    ]
+
+
+@pytest.mark.parametrize(
+    "param",
+    [
+        "lorem",
+        "ipsum",
+        "dolor",
+        "sit",
+        "amet",
+    ],
+)
+def test_start_wrong(param):
+    inputs = MockedInput([param, ""])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.start()
+
+    assert results is True
+    assert output == [
+        "Do You want to start a web version of Activation Tool (with visual guide) or just activate here in the "
+        "console? ",
+        "Please respond with 'yes' or 'no' (or 'y' or 'n').",
+    ]
+
+
+def test_start_wrong_templates():
+    page_backup = activate.__PAGE
+    activate.__PAGE = "non_existing_page_directory"
+    with Capturing() as output:
+        results = activate.start()
+
+    assert results is False
+    assert output == [
+        "----- Probably this is not an ePiframe device or ePiframe is not yet installed so starting "
+        "console mode ----- "
+    ]
+    activate.__PAGE = page_backup
+
+
+def test_start_wrong_import():
+    with Capturing() as output, patch.object(builtins, "__import__", import_fail):
+        results = activate.start()
+
+    assert results is False
+    assert output == [
+        "----- Probably this is not an ePiframe device or ePiframe is not yet installed so starting "
+        "console mode ----- "
+    ]
+
+
 def stop():
     return "Tool shutting down...<br>You can close this page."
+
+
+def import_fail(name, globals, locals, fromlist, level):
+    if name == "flask":
+        raise ImportError
 
 
 def mocked_flash(msg: str):
