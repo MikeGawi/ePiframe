@@ -261,8 +261,8 @@ def steps(url=str()):
     else:
         page = 1
     toc = {__PAGES[key][__TITLE]: key for key in __PAGES}
-    text = get_text(page)
-    return get_steps_page(page, text, toc)
+    text = get_text()
+    return get_steps_page(text, toc)
 
 
 def get_steps_page(text, toc):

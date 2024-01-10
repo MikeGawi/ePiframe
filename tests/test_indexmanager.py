@@ -1,6 +1,7 @@
 import os.path
+from numpy import int64
 from modules.indexmanager import IndexManager
-from tests.helpers.helpers import remove_file
+from tests.helpers.helpers import remove_file, not_raises
 
 index_filename = "test_index.index"
 index_test = 111
@@ -12,6 +13,20 @@ def test_index_manager_init():
     index_manager = IndexManager(index_filename)
     assert index_manager.get_index() == -1
     assert not index_manager.get_id()
+
+
+def test_index_manager_save_int64():
+    index_manager = IndexManager(index_filename)
+    index_manager.set_index(int64(index_test))
+    index_manager.set_id(id_test)
+
+    assert index_manager.get_index() == index_test
+    assert index_manager.get_id() == id_test
+    remove_file(index_filename)
+    with not_raises(Exception):
+        index_manager.save()
+
+    assert os.path.exists(index_filename)
 
 
 def test_index_manager_save():
