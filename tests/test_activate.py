@@ -1,8 +1,8 @@
 import json
 import os
+import subprocess
 import time
 import urllib.parse
-from crypt import crypt
 from threading import Timer
 from unittest.mock import patch
 import builtins
@@ -12,7 +12,6 @@ from flask import Flask, render_template
 from google_auth_oauthlib import flow
 from googleapiclient import discovery
 import activate
-import tests
 from tests.helpers.capturing import Capturing
 from tests.helpers.credentials import Flow
 from tests.helpers.helpers import remove_file, not_raises
@@ -479,13 +478,290 @@ def test_start_wrong_import():
     ]
 
 
+def test_prepare_app():
+    with not_raises(Exception):
+        activate.prepare_app()
+
+    assert activate.app
+
+
+@pytest.mark.parametrize(
+    "param",
+    [
+        "",
+        "0.0.0.0",
+        "192.168.0.1",
+        "127.0.0.1",
+    ],
+)
+def test_get_ip(param):
+    inputs = MockedInput([param])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.get_ip()
+
+    assert results is param or "0.0.0.0"
+    assert output is ["IP = 0.0.0.0"] or [f"IP = {param}"]
+
+
+@pytest.mark.parametrize(
+    "param",
+    [
+        "lorem",
+        "127.0.0.l",
+        "192",
+        "192.168",
+        "1921.168.0.1",
+        "123-456-789",
+    ],
+)
+def test_get_ip_wrong(param):
+    inputs = MockedInput([param, ""])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.get_ip()
+
+    assert results == "0.0.0.0"
+    assert output == ["Please provide a correct IP address", "IP = 0.0.0.0"]
+
+
+@pytest.mark.parametrize(
+    "param",
+    [
+        "",
+        "1",
+        "80",
+        "65535",
+    ],
+)
+def test_get_port(param):
+    inputs = MockedInput([param])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.get_port()
+
+    assert results is param or "80"
+    assert output is [
+        "Any port below 5000 will need root privileges - start script with 'sudo'",
+        "Port = 80",
+    ] or [f"Port = {param}"]
+
+
+@pytest.mark.parametrize(
+    "param",
+    [
+        "lorem",
+        "-100",
+        "0",
+        "65536",
+        "!",
+    ],
+)
+def test_get_port_wrong(param):
+    inputs = MockedInput([param, ""])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            results = activate.get_port()
+
+    assert results == "80"
+    assert output == [
+        "Any port below 5000 will need root privileges - start script with 'sudo'",
+        "Please provide a value in 1-65535 range",
+        "Any port below 5000 will need root privileges - start script with 'sudo'",
+        "Port = 80",
+    ]
+
+
+def test_print_text_pages():
+    with Capturing() as output:
+        activate.print_text_pages()
+
+    assert output == [
+        "* This tool will guide You through token and credentials activation of Google Photos API support for "
+        "ePiframe. You can always start it by running ./install.sh --activate command in the main path",
+        "* Create new or use an existing Google account for ePiframe and log in. Go to Google Cloud Console. Click on "
+        "Select a project.",
+        "* Click on NEW PROJECT",
+        "* Put ePiframe in the Project name field and click [CREATE]. You have created ePiframe project!",
+        "* Now select ePiframe project by clicking on it",
+        "* Click APIs & Services in the panel on the left hand side and pick Library",
+        "* Search for Photos and then click Photos Library API",
+        "* Click on [ENABLE]. Now You have given Your ePiframe project support to Google Photos API",
+        "* Go to Credentials in the panel on the left hand side under APIs & Services and click [CONFIGURE CONSENT "
+        "SCREEN]",
+        "* Choose External and click [CREATE]",
+        "* Put ePiframe in the App name field, type Google email used for Your ePiframe where necessary, scroll down "
+        "and click on [SAVE AND CONTINUE] three times until You get to Summary. Click [BACK TO DASHBOARD]. Your "
+        "application consent screen is ready!",
+        "* Click on [PUBLISH APP] in Oauth consent screen section under APIs & Services to publish Your application",
+        "* Click on +CREATE CREDENTIALS and choose OAuth client ID",
+        "* Pick Desktop app as Application type and put ePiframe\tin the Name field. Click [CREATE]",
+        "* You have created OAuth client for Your ePiframe! Click on DOWNLOAD JSON to download JSON formatted "
+        "credentials file",
+        "* You can always get it from the Credentials dashboard by clicking download icon in Actions column of Your "
+        "desired Client ID",
+    ]
+
+
+def test_get_json():
+    activate.save_creds = mocked_save
+    inputs = MockedInput(["ok"])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            activate.get_json()
+
+    assert output == [
+        "* Now paste here the content (as it is) of downloaded JSON credentials file. Any existing credentials file "
+        "will be backed up. ",
+        "Save msg='ok'",
+    ]
+
+
+def test_get_json_nok():
+    activate.save_creds = mock_save
+    inputs = MockedInput(["nok", "ok"])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            activate.get_json()
+
+    assert output == [
+        "* Now paste here the content (as it is) of downloaded JSON credentials file. Any existing credentials file "
+        "will be backed up. ",
+        "Error: this is an exception",
+        "* Now paste here the content (as it is) of downloaded JSON credentials file. Any existing credentials file "
+        "will be backed up. ",
+    ]
+
+
+def test_get_code():
+    activate.gen_token = mocked_save
+    activate.auth_url = "Authorization URL"
+    inputs = MockedInput(["ok"])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            activate.get_code()
+
+    assert output == [
+        "* Visit page:",
+        "Authorization URL",
+        "and authenticate with Your ePiframe Google account You have created project and credentials for. After "
+        "successful authentication You will get an error (but that is ok), copy the whole address that is not "
+        "reachable and paste it below. ",
+        "Save msg='ok'",
+    ]
+
+
+def test_get_code_nok():
+    activate.gen_token = mock_save
+    activate.auth_url = "Authorization URL"
+    inputs = MockedInput(["nok", "ok"])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            activate.get_code()
+
+    assert output == [
+        "* Visit page:",
+        "Authorization URL",
+        "and authenticate with Your ePiframe Google account You have created project and credentials for. After "
+        "successful authentication You will get an error (but that is ok), copy the whole address that is not "
+        "reachable and paste it below. ",
+        "Error: The URL should be an exact copy of the generated URL and should not be empty!",
+        "* Visit page:",
+        "Authorization URL",
+        "and authenticate with Your ePiframe Google account You have created project and credentials for. After "
+        "successful authentication You will get an error (but that is ok), copy the whole address that is not "
+        "reachable and paste it below. ",
+    ]
+
+
+def test_activate_web():
+    activate.app = MockedApp
+    activate.prepare_app = mocked_prepare
+    inputs = MockedInput(["", "", ""])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            activate.activate()
+
+    assert output == [
+        "Do You want to start a web version of Activation Tool (with visual guide) or just activate here in the "
+        "console? ",
+        "Prepare_app",
+        "IP = 0.0.0.0",
+        "Any port below 5000 will need root privileges - start script with 'sudo'",
+        "Port = 80",
+        "App run host='0.0.0.0', port=80",
+    ]
+
+
+def test_activate_text():
+    activate.auth_url = "Authorization URL"
+    activate.gen_token = mock_save
+    activate.save_creds = mock_save
+    inputs = MockedInput(["n", "ok", "ok"])
+    with patch.object(builtins, "input", inputs.mock_inputs):
+        with Capturing() as output:
+            activate.activate()
+
+    assert output == [
+        "Do You want to start a web version of Activation Tool (with visual guide) or just activate here in the "
+        "console? ",
+        "* This tool will guide You through token and credentials activation of Google Photos API support for "
+        "ePiframe. You can always start it by running ./install.sh --activate command in the main path",
+        "* Create new or use an existing Google account for ePiframe and log in. Go to Google Cloud Console. Click on "
+        "Select a project.",
+        "* Click on NEW PROJECT",
+        "* Put ePiframe in the Project name field and click [CREATE]. You have created ePiframe project!",
+        "* Now select ePiframe project by clicking on it",
+        "* Click APIs & Services in the panel on the left hand side and pick Library",
+        "* Search for Photos and then click Photos Library API",
+        "* Click on [ENABLE]. Now You have given Your ePiframe project support to Google Photos API",
+        "* Go to Credentials in the panel on the left hand side under APIs & Services and click [CONFIGURE CONSENT "
+        "SCREEN]",
+        "* Choose External and click [CREATE]",
+        "* Put ePiframe in the App name field, type Google email used for Your ePiframe where necessary, scroll down "
+        "and click on [SAVE AND CONTINUE] three times until You get to Summary. Click [BACK TO DASHBOARD]. Your "
+        "application consent screen is ready!",
+        "* Click on [PUBLISH APP] in Oauth consent screen section under APIs & Services to publish Your application",
+        "* Click on +CREATE CREDENTIALS and choose OAuth client ID",
+        "* Pick Desktop app as Application type and put ePiframe\tin the Name field. Click [CREATE]",
+        "* You have created OAuth client for Your ePiframe! Click on DOWNLOAD JSON to download JSON formatted "
+        "credentials file",
+        "* You can always get it from the Credentials dashboard by clicking download icon in Actions column of Your "
+        "desired Client ID",
+        "* Now paste here the content (as it is) of downloaded JSON credentials file. Any existing credentials file "
+        "will be backed up. ",
+        "* Visit page:",
+        "Authorization URL",
+        "and authenticate with Your ePiframe Google account You have created project and credentials for. After "
+        "successful authentication You will get an error (but that is ok), copy the whole address that is not "
+        "reachable and paste it below. ",
+        "*** All done! You have successfully activated Google Photos credentials and token for Your ePiframe! Test "
+        "Your frame and have fun!",
+    ]
+
+
+class MockedApp:
+    @staticmethod
+    def run(host=None, port=None):
+        print(f"App run {host=}, {port=}")
+
+
 def stop():
     return "Tool shutting down...<br>You can close this page."
+
+
+def mock_save(name):
+    if name != "ok":
+        raise Exception("this is an exception")
 
 
 def import_fail(name, globals, locals, fromlist, level):
     if name == "flask":
         raise ImportError
+
+
+def mocked_prepare():
+    print(f"Prepare_app")
 
 
 def mocked_flash(msg: str):
