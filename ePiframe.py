@@ -140,7 +140,7 @@ class EPiframe:
         )
 
     def get_next_photo(self, photo) -> tuple:
-        returned_value = None
+        returned_value = Constants.OK_STATUS_ERRORCODE
         if photo[Constants.PHOTOS_SOURCE_LABEL] == Constants.GOOGLE_PHOTOS_SOURCE:
             filename = self.get_photo(photo)
             returned_value = self.try_download_file(
