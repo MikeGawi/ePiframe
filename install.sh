@@ -47,7 +47,7 @@ function install_pips {
         declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==9.3.0" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
                                   ["Google components"]="google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
                                   ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask<2.2.0" ["Flask-WTF"]="flask-wtf==1.0.0" \
-                                  ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0" ["SMBus"]="smbus2")
+                                  ["Starlette"]="starlette" ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0" ["SMBus"]="smbus2")
         declare -a order;
         order+=( "Requests" )
         order+=( "Telebot" )
@@ -57,6 +57,7 @@ function install_pips {
         order+=( "SMBus" )
         order+=( "SPI Libs" )
         order+=( "Pandas" )
+        order+=( "Starlette" )
         order+=( "Flask-WTF" )
         order+=( "WTForms" )
         order+=( "Flask-Login" )
