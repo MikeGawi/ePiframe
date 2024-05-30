@@ -94,8 +94,8 @@ sudo -H pip3 -q install --no-cache-dir 'werkzeug==2.0.3' > /dev/null 2>&1
 }
 
 function check_pi {
-	if  [ ! -d "/sys/bus/platform/drivers/gpiomem-bcm2835" ]; then
-		echo -e '\033[0;31mThis application is meant to run on Raspberry Pi!\033[0m'
+  if [[ $(grep Model /proc/cpuinfo| cut -d ":" -f 2) != *"Raspberry"* ]]; then
+    echo -e '\033[0;31mThis application is meant to run on Raspberry Pi!\033[0m'
 		echo -e '\033[1;37mTo install it manually please refer to the documentation\033[0m'
 		exit 1
 	fi
