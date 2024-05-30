@@ -7,7 +7,10 @@ def test_not_raises():
         with not_raises(Exception):
             raise Exception()
 
-    assert str(exception.value) == "Did raise exception <class 'Exception'> when it should not!"
+    assert (
+        str(exception.value)
+        == "Did raise exception <class 'Exception'> when it should not!"
+    )
 
 
 def test_not_raises_wrong():
@@ -15,4 +18,4 @@ def test_not_raises_wrong():
         with not_raises(Warning):
             raise Exception()
 
-    assert str(exception.value) == 'An unexpected exception Exception() raised.'
+    assert str(exception.value) == "An unexpected exception Exception() raised."

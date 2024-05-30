@@ -27,13 +27,17 @@ def test_init(requests_mocker):
 
 
 def test_init_fail(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_404_NOT_FOUND)
+    requests_mocker.get(
+        url="http://api.telegram.org", status_code=status.HTTP_404_NOT_FOUND
+    )
     backend = MockedBackendManager()
-    with patch.object(telebot, "TeleBot", MockedBotFail), pytest.raises(Warning) as warning:
+    with patch.object(telebot, "TeleBot", MockedBotFail), pytest.raises(
+        Warning
+    ) as warning:
         TelebotManager(backend)
 
     assert warning
-    assert str(warning.value) == 'This is exception'
+    assert str(warning.value) == "This is exception"
 
 
 def test_start(requests_mocker):

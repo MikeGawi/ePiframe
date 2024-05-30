@@ -108,6 +108,7 @@ def test_run_plugins():
         manager.get_plugins()[1].add_photo_source(None, None, None, None)
         manager.get_plugins()[2].add_photo_source(None, None, None, None)
 
+
 def test_read_order():
     manager = get_manager()
     with mock.patch.object(
