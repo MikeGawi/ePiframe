@@ -39,7 +39,9 @@ def test_add():
 
     output, users_manager = mock_manage(MockedInput(["1", username, "", "", "", "6"]))
     with open(logs_filename, "r") as file:
-        assert "--------Users management: User username added!" in "".join(file.readlines())
+        assert "--------Users management: User username added!" in "".join(
+            file.readlines()
+        )
 
     users = users_manager.get_by_username(username)
     assert users
@@ -68,10 +70,14 @@ def test_api():
 
 
 def test_change():
-    output, users_manager = mock_manage(MockedInput(["3", username, "", password, password, "", "6"]))
+    output, users_manager = mock_manage(
+        MockedInput(["3", username, "", password, password, "", "6"])
+    )
     assert "PASSWORD CHANGED SUCCESSFULLY!" in output
     with open(logs_filename, "r") as file:
-        assert "--------Users management: User username password changed!" in "".join(file.readlines())
+        assert "--------Users management: User username password changed!" in "".join(
+            file.readlines()
+        )
 
 
 def test_check_after():
@@ -93,7 +99,9 @@ def test_delete():
     users = users_manager.get_by_username(username)
     assert not users
     with open(logs_filename, "r") as file:
-        assert "--------Users management: User username deleted!" in "".join(file.readlines())
+        assert "--------Users management: User username deleted!" in "".join(
+            file.readlines()
+        )
 
     remove_file(db_filename)
     remove_file(logs_filename)

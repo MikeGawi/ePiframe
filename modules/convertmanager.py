@@ -133,7 +133,9 @@ class ConvertManager:
         rotate = self.__get_rotate(config)
         back = self.__get_back(back.strip().lower())
 
-        back, code = self.__get_background(back, height, original_height, original_width, width)
+        back, code = self.__get_background(
+            back, height, original_height, original_width, width
+        )
 
         code += self.__get_auto_gamma(bool(config.getint("auto_gamma")))
         code += self.__get_autolevel(bool(config.getint("auto_level")))

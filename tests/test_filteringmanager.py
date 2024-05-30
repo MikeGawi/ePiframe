@@ -78,7 +78,8 @@ def test_verify_times_nok():
     with pytest.raises(Exception) as exception:
         FilteringManager.verify_times([now, past])
     assert (
-        str(exception.value) == "Configuration photos_from time is older than photos_to!"
+        str(exception.value)
+        == "Configuration photos_from time is older than photos_to!"
     )
 
 

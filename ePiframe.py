@@ -121,7 +121,10 @@ class EPiframe:
             filename, returned_value = self.get_next_photo(photo)
 
             count -= 1
-            if os.path.exists(filename) and returned_value == Constants.OK_STATUS_ERRORCODE:
+            if (
+                os.path.exists(filename)
+                and returned_value == Constants.OK_STATUS_ERRORCODE
+            ):
                 self.process_file(
                     filename,
                     photo,
@@ -218,7 +221,9 @@ class EPiframe:
                     download_url = self.get_download_url(
                         self.auth_manager.get_item(photo_id)
                     )
-                    self.logging.log("Photo download URL expired! - Refreshing URL in Google Photos...")
+                    self.logging.log(
+                        "Photo download URL expired! - Refreshing URL in Google Photos..."
+                    )
                     count -= 1
                     continue
                 returned_value = str(exception)

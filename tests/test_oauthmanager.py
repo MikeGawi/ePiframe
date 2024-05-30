@@ -96,7 +96,7 @@ def test_get_item():
         "Get: mediaItemId='photo_id'",
     ]
 
-    assert items == {'mediaItems': {'media_item_data': 'data'}}
+    assert items == {"mediaItems": {"media_item_data": "data"}}
 
 
 def test_create_credentials():

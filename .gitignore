@@ -145,3 +145,4 @@ dmypy.json
 /gen_cc_badge.py
 /webtest.py
 /list.pickle
+/gen_black_badge.py
