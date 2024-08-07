@@ -68,11 +68,13 @@ class EPiframe:
         if (
             not self.check_arguments("--test-display")
             and not self.check_arguments("--test-convert")
+            and not self.check_arguments("--convert")
             and not self.check_arguments("--users")
         ):
             self.process_flow()
 
         self.process_test_convert()
+        self.process_convert_command()
         self.process_test_display()
 
         end_time = Logs.end_time()
@@ -466,6 +468,10 @@ class EPiframe:
         if self.check_arguments("--test-convert"):
             self.test_convert()
 
+    def process_convert_command(self):
+        if self.check_arguments("--convert"):
+            self.convert_command()
+
     def process_test_display(self):
         if self.check_arguments("--test-display"):
             self.test_display()
@@ -659,6 +665,7 @@ class EPiframe:
         if (
             not self.check_arguments("--test")
             and not self.check_arguments("--test-convert")
+            and not self.check_arguments("--convert")
             and not self.check_arguments("--no-skip")
             and not DisplayManager.is_hdmi(self.config.get("display_type"))
         ):
@@ -713,6 +720,11 @@ class EPiframe:
             print("			with current ePiframe configuration")
             print("--test-convert [file]	converts the photo file to configured")
             print("			photo_convert_filename with current ePiframe configuration")
+            print("--convert [source_file] [target_file_or_loc]")
+            print("                        converts the [source_file] photo file to")
+            print(
+                "                        [target_file_or_loc] (if location - the filename is the same)"
+            )
             print("--no-skip		like --test but is not skipping to another photo")
             print(
                 "--refresh		force Google API data refresh even if refresh_rate flag is set to 'once'"
@@ -870,6 +882,27 @@ class EPiframe:
         self.copy_file(filename, source)
         self.process_convert(returned_value, source, target_filename)
 
+    def convert_command(self):
+        files = list(self.get_files())
+        if not files or len(files) != 2:
+            raise Exception(f"Files not specified!")
+
+        source, target = files
+        self.check_file_exist(source)
+        error, _ = ConvertManager().get_image_format(
+            self.config.get("convert_bin_path"), source, Constants.FIRST_FRAME_GIF
+        )
+
+        if error:
+            raise Exception(f"Unknown file {source} format ! - {error}")
+
+        if os.path.isdir(target):
+            target = os.path.join(target, source.split(os.sep)[-1])
+
+        self.process_convert(
+            None, source, "".join(target.rsplit(".")[:-1]) + ".bmp", thumbs=False
+        )
+
     def get_source(
         self, error: str, image_type, returned_value, source: str
     ) -> (str, str):
@@ -892,10 +925,7 @@ class EPiframe:
             raise Exception(f"No file: {filename}!")
 
     def process_convert(
-        self,
-        returned_value,
-        source: str,
-        target_filename: str,
+        self, returned_value, source: str, target_filename: str, thumbs: bool = True
     ):
         if not os.path.exists(source):
             self.logging.log(f"Fail! File was not retrieved! : {str(returned_value)}")
@@ -903,9 +933,7 @@ class EPiframe:
             import pandas as pandas_engine
 
             if not self.convert(
-                source,
-                target_filename,
-                pandas_engine.DataFrame(),
+                source, target_filename, pandas_engine.DataFrame(), thumbs
             ):
                 self.logging.log("Fail!")
 
@@ -926,13 +954,13 @@ class EPiframe:
     @staticmethod
     def get_next_file():
         return next(
-            (
-                element
-                for element in [argument.lower() for argument in sys.argv[1:]]
-                if "--" not in element
-            ),
+            EPiframe.get_files(),
             "",
         )
+
+    @staticmethod
+    def get_files():
+        return (element for element in sys.argv[1:] if "--" not in element)
 
     def show_image(self, target_filename: str):
         try:
@@ -941,19 +969,21 @@ class EPiframe:
             self.logging.log(f"Error sending photo to display: {exception}")
             raise
 
-    def convert(
-        self,
-        filename: str,
-        target_filename: str,
-        photo,
-    ):
+    def convert(self, filename: str, target_filename: str, photo, thumbs: bool = True):
         return_value = False
 
         self.auto_orient(filename)
-        filename_pre = os.path.join(
-            os.path.split(filename)[0], "pre_" + os.path.split(filename)[1]
+
+        filename_pre = (
+            os.path.join(
+                os.path.split(filename)[0], "pre_" + os.path.split(filename)[1]
+            )
+            if thumbs
+            else filename
         )
-        self.copy_file(filename, filename_pre)
+
+        if thumbs:
+            self.copy_file(filename, filename_pre)
         self.plugins_preprocess(photo, filename_pre)
         error, width, height = ConvertManager().get_image_size(
             self.config.get("convert_bin_path"), filename_pre, Constants.FIRST_FRAME_GIF
@@ -969,6 +999,7 @@ class EPiframe:
                 target_filename,
                 self.config,
                 DisplayManager.is_hdmi(self.config.get("display_type")),
+                thumbs,
             )
             is not None
         ):

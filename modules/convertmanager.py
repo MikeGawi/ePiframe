@@ -119,6 +119,7 @@ class ConvertManager:
         target: str,
         config: ConfigManager,
         hdmi: bool,
+        thumbs: bool = True,
     ) -> str:
         option = int(config.get("convert_option"))
         width = config.getint("image_width")
@@ -158,8 +159,8 @@ class ConvertManager:
             option,
             rotate,
             target,
-            thumb1st,
-            thumb2nd,
+            thumb1st if thumbs else "",
+            thumb2nd if thumbs else "",
             width,
         )
 
@@ -298,10 +299,11 @@ class ConvertManager:
         target: str,
         config: ConfigManager,
         hdmi: bool = False,
+        thumbs: bool = True,
     ) -> bytes:
         out, error = self.__subproc(
             self.__convert_option(
-                original_width, original_height, target, config, hdmi
+                original_width, original_height, target, config, hdmi, thumbs
             ),
             source_file,
         )
