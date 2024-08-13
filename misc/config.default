@@ -211,6 +211,12 @@ allow_triggers=1
 
 [Image]
 
+# Convert before displaying.
+# If disabled, then You must have your photos pre-converted via the ePiframe command line!
+# Command line actions will always work.
+# Default: 1
+convert=1
+
 # Used for e-Paper SPI _black&white_ displays!
 # There are 6 standard types of conversion to black&white image (add more in
 # convertmanager module). Every option gives slightly different

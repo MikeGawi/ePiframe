@@ -7,6 +7,8 @@ import shutil
 import signal
 import sys
 from datetime import datetime
+from typing import List
+
 import pandas
 import starlette.status
 from pandas import DataFrame
@@ -627,7 +629,12 @@ class EPiframe:
         self.logging.log("Success!")
         self.interval_multiplication(filename, photo)
         self.save_index()
-        self.convert_file(filename, photo)
+        if bool(self.config.getint("convert")):
+            self.convert_file(filename, photo)
+        else:
+            self.logging.log(
+                "Conversion disabled in config by 'config' flag! Make sure your photos are pre-converted!"
+            )
 
     def save_index(self):
         # save index of current photo for next run
@@ -662,13 +669,9 @@ class EPiframe:
             raise
 
     def check_system(self):
-        if (
-            not self.check_arguments("--test")
-            and not self.check_arguments("--test-convert")
-            and not self.check_arguments("--convert")
-            and not self.check_arguments("--no-skip")
-            and not DisplayManager.is_hdmi(self.config.get("display_type"))
-        ):
+        if not self.check_multiple_arguments(
+            ["--test", "--test-convert", "--convert", "--no-skip"]
+        ) and not DisplayManager.is_hdmi(self.config.get("display_type")):
             self.process_check_system()
 
     def process_check_system(self):
@@ -733,6 +736,13 @@ class EPiframe:
             print("--help			this help")
 
             sys.exit(0)
+
+    @staticmethod
+    def check_multiple_arguments(names: List[str]) -> bool:
+        return_value = False
+        for name in names:
+            return_value = return_value or EPiframe.check_arguments(name)
+        return return_value
 
     @staticmethod
     def check_arguments(name: str) -> bool:

@@ -9,6 +9,7 @@
 	  	* [Local Source](#local-source)
 			* [Cloud sync](#cloud-sync)		
 			* [Other sources](#other-sources)		
+			* [Pre-process photos](#pre-process-photos)		
 	  	* [Google Photos](#google-photos)
 			* [Activate from ePiframe device](#activate-from-epiframe-device)
 			* [Activate from other device](#activate-from-other-device)
@@ -149,6 +150,10 @@ It is possible to download photos to a local storage (and use them by ePiframe) 
 
 * [gallery-dl](https://github.com/mikf/gallery-dl) - a command-line program to download image galleries and collections from DeviantArt, Flickr, Instagram, Pinterest and many more
 * [iCloud Photos Downloader](https://github.com/icloud-photos-downloader/icloud_photos_downloader) - a command-line tool to download all your iCloud photos
+
+### Pre-process photos
+
+If you want photos to be pre-processed and ready for display in the frame (to save resources during conversion or to convert them earlier, on another device), this is possible using the `--convert` option command in [ePiframe commands](#command-line) and disabling conversion in [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) by switching the `convert` flag off.
 
 ## Google Photos
 

@@ -63,6 +63,7 @@ class ConfigManager(ConfigBase):
             ConfigProperty(
                 "photo_convert_path", self, prop_type=ConfigProperty.FILE_TYPE
             ),
+            ConfigProperty("convert", self, prop_type=ConfigProperty.BOOLEAN_TYPE),
             ConfigProperty("log_files", self, not_empty=False),
             ConfigProperty(
                 "convert_bin_path", self, prop_type=ConfigProperty.FILE_TYPE

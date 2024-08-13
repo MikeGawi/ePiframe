@@ -125,9 +125,7 @@ class ConvertManager:
         width = config.getint("image_width")
         height = config.getint("image_height")
         back = config.get("background_color")
-
-        if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1:
-            option = 1
+        option = self.__get_option(option)
 
         # space at the end as those flag are optional
         negate = self.__INVERT_FLAG if config.getint("invert_colors") == 1 else ""
@@ -166,6 +164,13 @@ class ConvertManager:
 
         print(return_value.replace("(", "\(").replace(")", "\)"))
         return return_value
+
+    def __get_option(self, option: int) -> int:
+        return (
+            1
+            if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1
+            else option
+        )
 
     def __get_background(self, back, height, original_height, original_width, width):
         if back == Constants.BACK_PHOTO:
