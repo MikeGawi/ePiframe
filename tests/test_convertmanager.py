@@ -428,6 +428,57 @@ def test_convert_6():
     ]
 
 
+def test_convert_no_thumb():
+    remove_file(filename)
+    set_file(
+        "\n".join(
+            [
+                "[test_section]",
+                "convert_option=6",
+                "convert_bin_path=bin",
+                "image_width=800",
+                "image_height=600",
+                "background_color=white",
+                "invert_colors=0",
+                "rotation=90",
+                "horizontal=1",
+                "turned=0",
+                "auto_gamma=0",
+                "auto_level=0",
+                "normalize=0",
+                "grayscale=0",
+                "brightness=0",
+                "contrast=10",
+                "photo_convert_path=path",
+                "thumb_photo_download_name=download_name",
+                "thumb_photo_convert_filename=convert_name",
+                "epaper_color=BW",
+                "colors_num=",
+            ]
+        ),
+        filename,
+    )
+
+    config = get_config()
+    with patch.object(subprocess, "Popen", MockedPopen) as popen, Capturing() as output:
+        popen.set_data("".encode())
+        ConvertManager().convert_image(
+            original_width=1200,
+            original_height=960,
+            source_file="source",
+            config=config,
+            target="target",
+            thumbs=False,
+        )
+
+    assert output == [
+        "bin [] -limit thread 1  \\( +clone -sample 800x600 -brightness-contrast 0,10 -colors 2 +dither -background "
+        "white -gravity center -extent 800x600 -type bilevel -write target \\)  NULL:",
+        "bin source -limit thread 1 ( +clone -sample 800x600 -brightness-contrast 0,10 -colors 2 +dither -background "
+        "white -gravity center -extent 800x600 -type bilevel -write target ) NULL:",
+    ]
+
+
 def test_convert_background():
     remove_file(filename)
     set_file(

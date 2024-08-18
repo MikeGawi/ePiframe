@@ -9,6 +9,7 @@
 	  	* [Local Source](#local-source)
 			* [Cloud sync](#cloud-sync)		
 			* [Other sources](#other-sources)		
+			* [Pre-process photos](#pre-process-photos)		
 	  	* [Google Photos](#google-photos)
 			* [Activate from ePiframe device](#activate-from-epiframe-device)
 			* [Activate from other device](#activate-from-other-device)
@@ -149,6 +150,10 @@ It is possible to download photos to a local storage (and use them by ePiframe) 
 
 * [gallery-dl](https://github.com/mikf/gallery-dl) - a command-line program to download image galleries and collections from DeviantArt, Flickr, Instagram, Pinterest and many more
 * [iCloud Photos Downloader](https://github.com/icloud-photos-downloader/icloud_photos_downloader) - a command-line tool to download all your iCloud photos
+
+### Pre-process photos
+
+If you want photos to be pre-processed and ready for display in the frame (to save resources during conversion or to convert them earlier, on another device), this is possible using the `--convert` option command in [ePiframe commands](#command-line) and disabling conversion in [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) by switching the `convert` flag off.
 
 ## Google Photos
 
@@ -407,6 +412,7 @@ Syntax: ```ePiframe.py [option]```
 * ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
 * ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
+* ```--convert [source file] [target file or location]``` - converts the photo ```source file``` to target file or under specified location with current ePiframe configuration. Just convert, no thumbnails, no pre file. Used just to convert file to ePiframe quality. 
 * ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
 * ```--users``` - manage users for the WebUI: add, change passwords, delete, etc.
 * ```--help``` - show help

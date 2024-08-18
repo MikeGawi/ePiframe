@@ -119,14 +119,13 @@ class ConvertManager:
         target: str,
         config: ConfigManager,
         hdmi: bool,
+        thumbs: bool = True,
     ) -> str:
         option = int(config.get("convert_option"))
         width = config.getint("image_width")
         height = config.getint("image_height")
         back = config.get("background_color")
-
-        if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1:
-            option = 1
+        option = self.__get_option(option)
 
         # space at the end as those flag are optional
         negate = self.__INVERT_FLAG if config.getint("invert_colors") == 1 else ""
@@ -158,13 +157,20 @@ class ConvertManager:
             option,
             rotate,
             target,
-            thumb1st,
-            thumb2nd,
+            thumb1st if thumbs else "",
+            thumb2nd if thumbs else "",
             width,
         )
 
         print(return_value.replace("(", "\(").replace(")", "\)"))
         return return_value
+
+    def __get_option(self, option: int) -> int:
+        return (
+            1
+            if int(option) > len(self.__CONVERT_OPTIONS) or int(option) < 1
+            else option
+        )
 
     def __get_background(self, back, height, original_height, original_width, width):
         if back == Constants.BACK_PHOTO:
@@ -298,10 +304,11 @@ class ConvertManager:
         target: str,
         config: ConfigManager,
         hdmi: bool = False,
+        thumbs: bool = True,
     ) -> bytes:
         out, error = self.__subproc(
             self.__convert_option(
-                original_width, original_height, target, config, hdmi
+                original_width, original_height, target, config, hdmi, thumbs
             ),
             source_file,
         )
