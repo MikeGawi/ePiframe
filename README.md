@@ -1,6 +1,10 @@
 # ePiframe 
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/logo.png">
 
+
+### **❗❗❗ Due to changes to the [Google Photos API](https://developers.google.com/photos/support/updates), only the option to display photos from a local source is currently available. More on this in issue [#114](https://github.com/MikeGawi/ePiframe/issues/114). ❗❗❗**
+
+
 <img src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/badge.svg"> <img src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/cc_badge.svg"> <img src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/black_badge.svg">
 
 Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame with Google Photos and/or local storage (and more), weather information, Telegram Bot, Web User Interface, API and plugins.
