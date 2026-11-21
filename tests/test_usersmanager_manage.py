@@ -1,8 +1,8 @@
 import builtins
 import getpass
+import logging
 from unittest.mock import patch
 import pytest
-from misc.logs import Logs
 from modules.databasemanager import DatabaseManager
 from modules.usersmanager import UsersManager
 from tests.helpers.capturing import Capturing
@@ -10,29 +10,22 @@ from tests.helpers.inputs import MockedInput
 from tests.helpers.helpers import remove_file
 
 db_filename = "test.sqlite"
-logs_filename = "test_log.log"
 username = "username"
 password = "password"
 
 database_manager: DatabaseManager
-logger: Logs
 
 
 @patch("epiframe.config.paths.USERS_DB_FILE", db_filename)
-def test_add():
+def test_add(caplog):
     remove_file(db_filename)
-    remove_file(logs_filename)
+    caplog.set_level(logging.INFO, logger="epiframe")
 
-    global logger
-    logger = Logs(logs_filename)
     global database_manager
     database_manager = DatabaseManager()
 
     output, users_manager = mock_manage(MockedInput(["1", username, "", "", "", "6"]))
-    with open(logs_filename, "r") as file:
-        assert "--------Users management: User username added!" in "".join(
-            file.readlines()
-        )
+    assert "--------Users management: User username added!" in caplog.text
 
     users = users_manager.get_by_username(username)
     assert users
@@ -60,15 +53,13 @@ def test_api():
     assert f"USER {username} API KEY: {pytest.api_key} " in output
 
 
-def test_change():
+def test_change(caplog):
+    caplog.set_level(logging.INFO, logger="epiframe")
     output, users_manager = mock_manage(
         MockedInput(["3", username, "", password, password, "", "6"])
     )
     assert "PASSWORD CHANGED SUCCESSFULLY!" in output
-    with open(logs_filename, "r") as file:
-        assert "--------Users management: User username password changed!" in "".join(
-            file.readlines()
-        )
+    assert "--------Users management: User username password changed!" in caplog.text
 
 
 def test_check_after():
@@ -84,18 +75,15 @@ def test_delete_no():
     assert len(users) == 1
 
 
-def test_delete():
+def test_delete(caplog):
+    caplog.set_level(logging.INFO, logger="epiframe")
     output, users_manager = mock_manage(MockedInput(["2", username, "y", "", "6"]))
     assert "USER DELETED SUCCESSFULLY!" in output
     users = users_manager.get_by_username(username)
     assert not users
-    with open(logs_filename, "r") as file:
-        assert "--------Users management: User username deleted!" in "".join(
-            file.readlines()
-        )
+    assert "--------Users management: User username deleted!" in caplog.text
 
     remove_file(db_filename)
-    remove_file(logs_filename)
 
 
 def mock_manage(inputs: MockedInput):
@@ -105,5 +93,5 @@ def mock_manage(inputs: MockedInput):
         patch.object(getpass, "getpass", inputs.mock_inputs),
     ):
         with Capturing() as output:
-            users_manager.manage(logger)
+            users_manager.manage()
     return output, users_manager

@@ -6,14 +6,15 @@ import os
 import shutil
 import signal
 import sys
+import time
 from http import HTTPStatus
 from typing import List
 
 from pandas import DataFrame
 
 from epiframe.config import paths
+from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
-from misc.logs import Logs
 from modules.base.pluginbase import PluginBase
 from modules.configmanager import ConfigManager
 from modules.convertmanager import FIRST_FRAME_GIF, ConvertManager
@@ -51,6 +52,8 @@ from modules.weatherstampmanager import WeatherStampManager
 MINIMAL_PYTHON_VERSION = (3, 11)
 NOMATCH_INDICATOR_STRING = "no match"
 
+log = get_logger()
+
 
 class EPiframe:
     def __init__(self):
@@ -58,11 +61,12 @@ class EPiframe:
         print("ePiframe - e-Paper Raspberry Pi Photo Frame")
 
         self.show_help()
-        start_time = Logs.start_time()
+        start_time = time.monotonic()
+        setup_logging()
         self.config = self.load_config()
 
-        self.logging = Logs(self.config.get("log_files"))
-        self.logging.log("Verifying configuration...")
+        setup_logging(self.config.get("log_files"))
+        log.info("Verifying configuration...")
         self.verify_config()
 
         self.photo_manager = PhotoManager()
@@ -70,11 +74,10 @@ class EPiframe:
         self.plugins_manager = PluginsManager(
             os.path.dirname(os.path.realpath(__file__)),
             self.pid_manager,
-            self.logging,
             self.config,
         )
         self.verify_plugin_configs()
-        self.logging.log("OK!")
+        log.info("OK!")
         self.check_config()
 
         self.start_user_management()
@@ -93,35 +96,34 @@ class EPiframe:
         self.process_convert_command()
         self.process_test_display()
 
-        end_time = Logs.end_time()
-        self.logging.log(f"Done in{Logs.execution_time(start_time, end_time)}")
+        log.info(f"Done in {format_duration(time.monotonic() - start_time)}")
 
     def process_flow(self):
-        self.logging.log("Checking sources...")
+        log.info("Checking sources...")
         self.check_all_sources()
-        self.logging.log("OK!")
+        log.info("OK!")
         photos = self.get_from_sources()
 
         total_number = self.get_total_count(photos)
-        self.logging.log(f"Found {total_number} photos")
+        log.info(f"Found {total_number} photos")
         self.exit_if_no_photos(total_number)
 
-        self.logging.log("Reading last photo index file...")
+        log.info("Reading last photo index file...")
         self.read_index()
-        self.logging.log("Success!")
+        log.info("Success!")
 
-        self.logging.log("Filtering photos...")
+        log.info("Filtering photos...")
         photos = self.filter_photos_by_from_date(photos)
         photos = self.filter_photos_by_to_date(photos)
         photos = self.filter_photos_by_number(photos)
 
-        self.logging.log("and sorting ...")
+        log.info("and sorting ...")
         photos = self.sort_photos(photos)
         photos = self.photo_manager.reset_index(photos)
         photos = self.process_plugins_manipulate_list(photos)
 
         filter_number = self.photo_manager.get_num_of_photos(photos)
-        self.logging.log(f"Filtered {filter_number} photos")
+        log.info(f"Filtered {filter_number} photos")
         self.exit_if_no_photos_after_filtering(filter_number)
 
         count = 3
@@ -130,12 +132,12 @@ class EPiframe:
             photo = self.photo_manager.get_photo_by_index(
                 photos, self.index_manager.get_index()
             )
-            self.logging.log(f"Photo to show:\n{photo}")
+            log.info(f"Photo to show:\n{photo}")
 
             self.index_manager.set_id(self.get_photo_id(photo))
             self.remove_old_files()
 
-            self.logging.log("Getting next photo...")
+            log.info("Getting next photo...")
             filename, returned_value = self.get_next_photo(photo)
 
             count -= 1
@@ -146,11 +148,9 @@ class EPiframe:
                 )
                 break
 
-            self.logging.log(
-                f"Fail! File was not retrieved! Error: {str(returned_value)}"
-            )
+            log.error(f"Fail! File was not retrieved! Error: {str(returned_value)}")
             if count > 0:
-                self.logging.log("Retrying with the new photo...")
+                log.info("Retrying with the new photo...")
 
     def get_photo_id(self, photo):
         return self.photo_manager.get_photo_attribute(photo, PHOTOS_ID_HEADER)
@@ -253,13 +253,13 @@ class EPiframe:
 
     def exit_if_no_photos_after_filtering(self, filter_number: int):
         if filter_number == 0:
-            self.logging.log("No photos after filtering!")
+            log.info("No photos after filtering!")
             sys.exit(1)
 
     def process_plugins_manipulate_list(self, photos):
         for plugin in self.plugins_manager.plugin_photos_list():
             try:
-                self.logging.log(f"Changing photo list by plugin '{plugin.name}'...")
+                log.info(f"Changing photo list by plugin '{plugin.name}'...")
                 photos = plugin.change_photos_list(
                     PHOTOS_ID_HEADER,
                     PHOTOS_CREATIONTIME_HEADER,
@@ -269,9 +269,9 @@ class EPiframe:
                     self.index_manager,
                     FilteringManager(),
                 )
-                self.logging.log("Success!")
+                log.info("Success!")
             except Exception as exception:
-                self.logging.log(f"Error: {exception}")
+                log.error(f"Error: {exception}")
                 raise
         return photos
 
@@ -290,9 +290,7 @@ class EPiframe:
                     photos, self.config.getint("no_photos")
                 )
             except Exception as exception:
-                self.logging.log(
-                    f"Error parsing configured time no_photos: {exception}"
-                )
+                log.error(f"Error parsing configured time no_photos: {exception}")
                 raise
         return photos
 
@@ -305,9 +303,7 @@ class EPiframe:
                     PHOTOS_CREATIONTIME_HEADER,
                 )
             except Exception as exception:
-                self.logging.log(
-                    f"Error parsing configured time photos_to: {exception}"
-                )
+                log.error(f"Error parsing configured time photos_to: {exception}")
                 raise
         return photos
 
@@ -320,9 +316,7 @@ class EPiframe:
                     PHOTOS_CREATIONTIME_HEADER,
                 )
             except Exception as exception:
-                self.logging.log(
-                    f"Error parsing configured time photos_from: {exception}"
-                )
+                log.error(f"Error parsing configured time photos_from: {exception}")
                 raise
         return photos
 
@@ -330,7 +324,7 @@ class EPiframe:
         try:
             self.index_manager = IndexManager(self.config.get("photo_index_file"))
         except IOError as exception:
-            self.logging.log(
+            log.error(
                 "Error opening file {}: {}".format(
                     self.config.get("photo_index_file"), exception
                 )
@@ -339,7 +333,7 @@ class EPiframe:
 
     def exit_if_no_photos(self, total_number: int):
         if total_number == 0:
-            self.logging.log("No photos in sources!")
+            log.info("No photos in sources!")
             sys.exit(1)
 
     def get_from_sources(self) -> DataFrame:
@@ -369,12 +363,12 @@ class EPiframe:
         if not bool(self.config.getint("use_local")) and not (
             self.plugins_manager.plugin_source()
         ):
-            self.logging.log("No photo sources picked! Check the configuration!")
+            log.info("No photo sources picked! Check the configuration!")
             raise Exception("No photo sources picked! Check the configuration!")
 
     def get_local_source(self, photos: DataFrame) -> DataFrame:
         if bool(self.config.getint("use_local")):
-            self.logging.log("Getting data from local source...")
+            log.info("Getting data from local source...")
             self.local_source_manager = LocalSourceManager(
                 self.config.get("local_path"),
                 bool(self.config.getint("local_subfolders")),
@@ -387,13 +381,13 @@ class EPiframe:
                 LOCAL_SOURCE,
             )
             photos = self.photo_manager.append_photos(photos, local_photos)
-            self.logging.log("Success!")
+            log.info("Success!")
         return photos
 
     def get_plugin_sources(self, photos: DataFrame) -> DataFrame:
         for plugin in self.plugins_manager.plugin_source():
             try:
-                self.logging.log(f"Getting data from plugin '{plugin.name}' source...")
+                log.info(f"Getting data from plugin '{plugin.name}' source...")
                 plugin_photos = plugin.add_photo_source(
                     PHOTOS_ID_HEADER,
                     PHOTOS_CREATIONTIME_HEADER,
@@ -401,9 +395,9 @@ class EPiframe:
                     self.photo_manager,
                 )
                 photos = self.photo_manager.append_photos(photos, plugin_photos)
-                self.logging.log("Success!")
+                log.info("Success!")
             except Exception as exception:
-                self.logging.log(f"Error: {exception}")
+                log.error(f"Error: {exception}")
                 raise
         return photos
 
@@ -412,13 +406,13 @@ class EPiframe:
         filename: str,
         photo: str,
     ):
-        self.logging.log("Success!")
+        log.info("Success!")
         self.interval_multiplication(filename, photo)
         self.save_index()
         if bool(self.config.getint("convert")):
             self.convert_file(filename, photo)
         else:
-            self.logging.log(
+            log.info(
                 "Conversion disabled in config by 'config' flag! Make sure your photos are pre-converted!"
             )
 
@@ -428,7 +422,7 @@ class EPiframe:
             if not self.check_arguments("--no-skip"):
                 self.index_manager.save()
         except IOError as exception:
-            self.logging.log(
+            log.error(
                 "Error saving file {}: {}".format(
                     self.config.get("photo_index_file"), exception
                 )
@@ -451,7 +445,7 @@ class EPiframe:
             self.pid_manager.save()
             atexit.register(self.pid_manager.remove)
         except Exception as exception:
-            self.logging.log(f"Error! {exception}")
+            log.error(f"Error! {exception}")
             raise
 
     def check_system(self):
@@ -465,32 +459,30 @@ class EPiframe:
             if not self.config.check_system():
                 raise Exception("SPI is disabled on system!")
         except Exception as exception:
-            self.logging.log(
+            log.error(
                 f"Error on checking system configuration - SPI is not enabled! {exception}"
             )
             raise
 
     def start_user_management(self):
         if self.check_arguments("--users"):
-            self.logging.log(
-                USERS_ACTIONS_TAG + "Starting database management module..."
-            )
+            log.info(USERS_ACTIONS_TAG + "Starting database management module...")
             try:
                 self.database_manager = DatabaseManager()
-                self.logging.log(USERS_ACTIONS_TAG + "Success!")
+                log.info(USERS_ACTIONS_TAG + "Success!")
             except Exception as exception:
-                self.logging.log(USERS_ACTIONS_TAG + f"Fail! {exception}")
+                log.info(USERS_ACTIONS_TAG + f"Fail! {exception}")
                 raise
 
-            self.logging.log(USERS_ACTIONS_TAG + "Starting users management module...")
+            log.info(USERS_ACTIONS_TAG + "Starting users management module...")
             try:
                 self.users_manager = UsersManager(self.database_manager)
-                self.logging.log(USERS_ACTIONS_TAG + "Success!")
+                log.info(USERS_ACTIONS_TAG + "Success!")
             except Exception as exception:
-                self.logging.log(USERS_ACTIONS_TAG + f"Fail! {exception}")
+                log.info(USERS_ACTIONS_TAG + f"Fail! {exception}")
                 raise
 
-            self.users_manager.manage(self.logging)
+            self.users_manager.manage()
             sys.exit(1)
 
     def check_config(self):
@@ -535,18 +527,18 @@ class EPiframe:
 
     def verify_plugin_configs(self):
         if len(self.plugins_manager.get_enabled()) > 0:
-            self.logging.log("Verifying plugins configuration...")
+            log.info("Verifying plugins configuration...")
 
             for plugin in self.plugins_manager.get_enabled():
                 try:
                     plugin.config.verify()
                 except Warning as warning:
-                    self.logging.log(
+                    log.warning(
                         f"Warning verifying configuration file for '{plugin.name}' plugin! {warning}"
                     )
                     pass
                 except Exception as exception:
-                    self.logging.log(
+                    log.error(
                         f"Error verifying configuration file for '{plugin.name}' plugin! {exception}"
                     )
                     raise
@@ -554,7 +546,7 @@ class EPiframe:
     def warn_obsolete_config(self):
         obsolete = self.config.get_obsolete()
         if obsolete:
-            self.logging.log(
+            log.warning(
                 f"Warning! Obsolete configuration entries removed: {', '.join(obsolete)}"
             )
 
@@ -563,10 +555,10 @@ class EPiframe:
         try:
             self.config.verify()
         except Warning as warning:
-            self.logging.log(f"Warning verifying configuration file! {warning}")
+            log.warning(f"Warning verifying configuration file! {warning}")
             pass
         except Exception as exception:
-            self.logging.log(f"Error verifying configuration file! {exception}")
+            log.error(f"Error verifying configuration file! {exception}")
             raise
 
     @staticmethod
@@ -574,7 +566,7 @@ class EPiframe:
         try:
             return ConfigManager(paths.CONFIG_FILE, paths.CONFIG_FILE_DEFAULT)
         except Exception as exception:
-            Logs.show_log(
+            log.error(
                 f"Error loading {paths.CONFIG_FILE} configuration file! {exception}"
             )
             raise
@@ -629,15 +621,15 @@ class EPiframe:
             ):
                 self.send_to_display(target_filename)
         else:
-            self.logging.log("Fail!")
+            log.error("Fail!")
 
     def send_to_display(self, target_filename: str):
-        self.logging.log("Sending to display...")
+        log.info("Sending to display...")
         display_manager = DisplayManager(self.config)
         try:
             display_manager.show_image(target_filename)
         except Exception as exception:
-            self.logging.log(f"Error sending photo to display: {exception}")
+            log.error(f"Error sending photo to display: {exception}")
             raise
 
     def test_convert(self):
@@ -719,10 +711,10 @@ class EPiframe:
         self, returned_value, source: str, target_filename: str, thumbs: bool = True
     ):
         if not os.path.exists(source):
-            self.logging.log(f"Fail! File was not retrieved! : {str(returned_value)}")
+            log.error(f"Fail! File was not retrieved! : {str(returned_value)}")
         else:
             if not self.convert(source, target_filename, DataFrame(), thumbs):
-                self.logging.log("Fail!")
+                log.error("Fail!")
 
     def test_display(self):
         target_filename = os.path.join(
@@ -734,7 +726,7 @@ class EPiframe:
             target_filename = file
         if not os.path.exists(target_filename):
             raise Exception(f"No file: {target_filename}!")
-        self.logging.log("Sending to display...")
+        log.info("Sending to display...")
         self.display_manager = DisplayManager(self.config)
         self.show_image(target_filename)
 
@@ -753,7 +745,7 @@ class EPiframe:
         try:
             self.display_manager.show_image(target_filename)
         except Exception as exception:
-            self.logging.log(f"Error sending photo to display: {exception}")
+            log.error(f"Error sending photo to display: {exception}")
             raise
 
     def convert(self, filename: str, target_filename: str, photo, thumbs: bool = True):
@@ -776,7 +768,7 @@ class EPiframe:
             self.config.get("convert_bin_path"), filename_pre, FIRST_FRAME_GIF
         )
 
-        self.logging.log("Processing the photo...")
+        log.info("Processing the photo...")
         if (
             error
             or ConvertManager().convert_image(
@@ -790,9 +782,9 @@ class EPiframe:
             )
             is not None
         ):
-            self.logging.log(f"Fail! {str(error)}")
+            log.error(f"Fail! {str(error)}")
         else:
-            self.logging.log("Success!")
+            log.info("Success!")
 
             self.plugins_postprocess(photo, target_filename)
             self.process_show_weather(target_filename)
@@ -801,15 +793,15 @@ class EPiframe:
 
     def auto_orient(self, filename):
         if bool(self.config.getint("auto_orientation")):
-            self.logging.log("Auto-orientate the photo...")
+            log.info("Auto-orientate the photo...")
             error = ConvertManager().orient_image(
                 self.config.get("convert_bin_path"), filename, FIRST_FRAME_GIF
             )
 
             if error:
-                self.logging.log(f"Fail! {str(error)}")
+                log.error(f"Fail! {str(error)}")
                 raise
-            self.logging.log("Success!")
+            log.info("Success!")
 
     @staticmethod
     def copy_file(src, target):
@@ -825,7 +817,7 @@ class EPiframe:
     ):
         for plugin in self.plugins_manager.plugin_preprocess():
             try:
-                self.logging.log(f"Preprocessing photo by plugin '{plugin.name}'...")
+                log.info(f"Preprocessing photo by plugin '{plugin.name}'...")
                 plugin.preprocess_photo(
                     filename_pre,
                     bool(self.config.getint("horizontal")),
@@ -835,9 +827,9 @@ class EPiframe:
                     PHOTOS_CREATIONTIME_HEADER,
                     PHOTOS_SOURCE_LABEL,
                 )
-                self.logging.log("Success!")
+                log.info("Success!")
             except Exception as exception:
-                self.logging.log(f"Error: {exception}")
+                log.error(f"Error: {exception}")
                 raise
 
     def plugins_postprocess(
@@ -847,7 +839,7 @@ class EPiframe:
     ):
         for plugin in self.plugins_manager.plugin_postprocess():
             try:
-                self.logging.log(f"Postprocessing photo by plugin '{plugin.name}'...")
+                log.info(f"Postprocessing photo by plugin '{plugin.name}'...")
                 plugin.postprocess_photo(
                     targetFilename,
                     self.config.getint("image_width"),
@@ -859,14 +851,14 @@ class EPiframe:
                     PHOTOS_CREATIONTIME_HEADER,
                     PHOTOS_SOURCE_LABEL,
                 )
-                self.logging.log("Success!")
+                log.info("Success!")
             except Exception as exception:
-                self.logging.log(f"Error: {exception}")
+                log.error(f"Error: {exception}")
                 raise
 
     def process_show_weather(self, target_filename: str):
         if bool(self.config.getint("show_weather")):
-            self.logging.log("Getting weather data...")
+            log.info("Getting weather data...")
             self.weather_manager = WeatherManager(
                 self.config.get("apikey"),
                 self.config.get("units"),
@@ -878,8 +870,8 @@ class EPiframe:
                 self.weather_manager.send_request(WEATHER_BASE_URL, WEATHER_TIMEOUT)
                 if not self.weather_manager.get_data():
                     raise Exception("Couldn't retrieve weather data!")
-                self.logging.log("Success!")
-                self.logging.log("Putting weather stamp...")
+                log.info("Success!")
+                log.info("Putting weather stamp...")
                 self.weather_stamp_manager = WeatherStampManager(
                     target_filename,
                     self.config.getint("image_width"),
@@ -903,12 +895,11 @@ class EPiframe:
                         WEATHER_ICON_TAG,
                     ),
                 )
-                self.logging.log("Success!")
+                log.info("Success!")
             except Exception as exception:
-                self.logging.log(f"Fail! {str(exception)}")
+                log.error(f"Fail! {str(exception)}")
 
     config = None
-    logging = None
     photo_manager = None
     plugins_manager = None
     pid_manager = None

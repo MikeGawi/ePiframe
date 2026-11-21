@@ -7,12 +7,15 @@ import os
 import signal
 import subprocess
 from threading import Thread
+from epiframe.core.logs import get_logger, setup_logging
 from misc.daemon import Daemon
 from modules.statsmanager import STATS_STEP
 import modules.backendmanager as backend
 from modules.telebotmanager import TelebotManager
 from modules.webuimanager import WebUIManager
 from modules.statsmanager import StatsManager
+
+log = get_logger("service")
 
 
 class Service(Daemon):
@@ -59,7 +62,9 @@ class Service(Daemon):
 
     def run(self, args=None):
         self.__backend = backend.BackendManager(self.event, self.__config_path)
-        self.__backend.log(self.__SERVICE_LOG_STARTED, silent=True)
+        # the service runs in the background: log to the file only
+        setup_logging(self.__backend.get_config().get("log_files"), console=False)
+        log.info(self.__SERVICE_LOG_STARTED)
 
         self.__scheduler = sched.scheduler(time.time, time.sleep)
         self.__event = self.__scheduler.enter(
@@ -109,9 +114,7 @@ class Service(Daemon):
                 try:
                     self.__stats_man.feed_stats()
                 except Exception as exception:
-                    self.__backend.log(
-                        self.__ERROR_STATS.format(exception), silent=True
-                    )
+                    log.error(self.__ERROR_STATS.format(exception))
                     pass
 
             time.sleep(STATS_STEP)
@@ -121,11 +124,11 @@ class Service(Daemon):
             self.__backend.refresh()
             if self.__backend.is_web_enabled():
                 try:
-                    self.__backend.log(self.__SERVICE_WEB_START, silent=True)
+                    log.info(self.__SERVICE_WEB_START)
                     self.__web_man = WebUIManager(self.__backend)
                     self.__web_man.start()
                 except Exception as exception:
-                    self.__backend.log(self.__ERROR_WEB.format(exception), silent=True)
+                    log.error(self.__ERROR_WEB.format(exception))
                     pass
 
             time.sleep(self.__WAIT_EVENT_TIME)
@@ -135,17 +138,17 @@ class Service(Daemon):
             self.__backend.refresh()
             if self.__backend.is_telebot_enabled():
                 try:
-                    self.__backend.log(self.__SERVICE_TGBOT_START, silent=True)
+                    log.info(self.__SERVICE_TGBOT_START)
                     self.__telebot = TelebotManager(self.__backend)
                     self.__telebot.start()
                 except Exception as e:
-                    self.__backend.log(self.__ERROR_TELE_BOT.format(e), silent=True)
+                    log.error(self.__ERROR_TELE_BOT.format(e))
                     pass
 
             time.sleep(self.__WAIT_EVENT_TIME)
 
     def event(self, params=None):
-        self.__backend.log(self.__SERVICE_TRIGGER, silent=True)
+        log.info(self.__SERVICE_TRIGGER)
         if self.__scheduler and self.__event:
             self.__scheduler.cancel(self.__event)
         self.task(params)
@@ -172,9 +175,7 @@ class Service(Daemon):
 
     def __log_next(self, sleep: bool):
         if not sleep:
-            self.__backend.log(
-                self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()), silent=True
-            )
+            log.info(self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()))
 
     def __work(self, params, sleep: bool) -> bool:
         if self.__backend.should_i_work_now() or (
@@ -187,7 +188,7 @@ class Service(Daemon):
 
     def __do_work(self, params):
         self.__NUMBER_OF_NOTIF = 0
-        self.__backend.log(self.__SERVICE_LOG_STARTING, silent=True)
+        log.info(self.__SERVICE_LOG_STARTING)
         self.__backend.display_power_config(True)
         par = params if params != self.__backend.get_empty_params() else str()
         args = (self.__script + par.split()) if par else self.__script
@@ -196,7 +197,7 @@ class Service(Daemon):
     def __no_work(self) -> bool:
         self.__backend.display_power_config(False)
         if self.__NUMBER_OF_NOTIF == 0:
-            self.__backend.log(self.__SERVICE_LOG_SLEEPING, silent=True)
+            log.info(self.__SERVICE_LOG_SLEEPING)
         self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1) % 10
         return True
 
@@ -208,7 +209,7 @@ class Service(Daemon):
         if interval > 0:
             interval -= 1
             self.__backend.save_interval(interval)
-            self.__backend.log(self.__SERVICE_LOG_MULT, silent=True)
+            log.info(self.__SERVICE_LOG_MULT)
         else:
             self.__backend.remove_interval()
             interval = -1

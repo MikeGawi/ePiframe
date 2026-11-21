@@ -4,7 +4,7 @@ import os
 import importlib
 from glob import glob
 from typing import List
-from misc.logs import Logs
+from epiframe.core.logs import get_logger
 from modules.base.pluginbase import PluginBase
 from typing import TYPE_CHECKING
 
@@ -20,12 +20,9 @@ class PluginsManager:
     __PLUGINS = []
     __ORDER_FILE = __PLUGINS_DIR + "order.cfg"
 
-    def __init__(
-        self, path: str, pid_manager: PIDManager, logging: Logs, config: ConfigManager
-    ):
+    def __init__(self, path: str, pid_manager: PIDManager, config: ConfigManager):
         self.__config = config
         self.__pid_manager = pid_manager
-        self.__logging = logging
         self.__global_path = path
 
         self.discover()
@@ -89,7 +86,7 @@ class PluginsManager:
                         os.path.dirname(elements[modules]),
                     ),
                     self.__pid_manager,
-                    self.__logging,
+                    get_logger(f"plugins.{modules.split('.')[-1]}"),
                     self.__config,
                 )
             )

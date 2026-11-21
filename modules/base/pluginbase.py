@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 from typing import List, Any
 from misc.configproperty import ConfigProperty
-from misc.logs import Logs
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import logging
+
     from ePiframe_service import Service
     from modules.backendmanager import BackendManager
     from modules.base.configbase import ConfigBase
@@ -32,11 +33,11 @@ class PluginBase:
         self,
         path: str,
         pid_manager: PIDManager,
-        logging: Logs,
+        logger: logging.Logger,
         global_config: ConfigBase,
     ):
         self.pid_manager = pid_manager
-        self.logging = logging
+        self.logger = logger
         self.global_config = global_config
         self.path = path
         self.load_config()

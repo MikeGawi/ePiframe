@@ -13,6 +13,7 @@ from modules.configmanager import ConfigManager
 from modules.usersmanager import UsersManager
 from modules.webuimanager import WebUIManager
 from tests.helpers.capturing import Capturing
+from tests.helpers.config import Config
 from tests.helpers.helpers import not_raises
 from tests.helpers.backend_doubles import get_backend_manager
 from tests.helpers.plugins import get_plugins_manager
@@ -320,8 +321,14 @@ def test_upload_photo(client_no_login, url):
 
 
 @pytest.mark.parametrize("url", ["/_log_stream", "/api/get_log"])
-def test_log_stream(client_no_login, url):
-    response = client_no_login.get(url)
+def test_log_stream(app_no_config, url):
+    log_file = Config.settings["log_files"]
+    with open(log_file, "w") as file:
+        file.write("2026-11-21 12:00:00 : test_message\n")
+    try:
+        response = app_no_config.test_client().get(url)
+    finally:
+        os.remove(log_file)
     assert not response.location
     assert response.status_code == HTTPStatus.OK
     assert "test_message" in response.data.decode()

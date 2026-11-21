@@ -9,7 +9,6 @@ import modules.pluginsmanager as plugins_manager
 import modules.timermanager as timer_manager
 from epiframe.core.files import last_modified
 from epiframe.config import paths
-from misc.logs import Logs
 from modules.displaymanager import DisplayManager
 from modules.weathermanager import WeatherManager
 
@@ -56,11 +55,9 @@ class BackendManager:
         )
         self.remove_interval()
         self.update_time()
-        self.__logging = Logs(self.__config.get("log_files"))
         self.__plugins = plugins_manager.PluginsManager(
             self.__path,
             pid_manager.PIDManager(self.__config.get("pid_file")),
-            self.__logging,
             self.__config,
         )
 
@@ -82,9 +79,6 @@ class BackendManager:
             self.__last_date = self.get_last_date(paths.CONFIG_FILE)
         except Exception as exception:
             raise Exception(self.__ERROR_CONF_FILE.format(paths.CONFIG_FILE, exception))
-
-    def log(self, text: str, silent: bool):
-        self.__logging.log(text, silent)
 
     def refresh(self):
         date = self.get_last_date(paths.CONFIG_FILE)

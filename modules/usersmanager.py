@@ -13,7 +13,7 @@ from modules.databasemanager import (
     USERS_TABLE_NAME,
     USERS_TABLE_USERNAME_HEADER,
 )
-from misc.logs import Logs
+from epiframe.core.logs import get_logger
 from misc.user import User
 import secrets
 import string
@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 
 USERS_ACTIONS_TAG = "--------Users management: "
+
+log = get_logger("users")
 
 
 class UsersManager:
@@ -236,14 +238,14 @@ class UsersManager:
 
         return new_password
 
-    def manage(self, log: Logs):
+    def manage(self):
         valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
         loop = True
 
         while loop:
-            loop = self.__loop(log, loop, valid)
+            loop = self.__loop(loop, valid)
 
-    def __loop(self, log: Logs, loop: bool, valid: dict) -> bool:
+    def __loop(self, loop: bool, valid: dict) -> bool:
         self.__show_help()
         choice = input("Enter your choice [1-6]: ")
 
@@ -269,7 +271,7 @@ class UsersManager:
             ]
 
             print(5 * "-", choices[int(choice) - 1], 5 * "-")
-            methods[int(choice) - 1].__call__(log, valid)
+            methods[int(choice) - 1](valid)
             return loop
 
         print("Exiting...")
@@ -291,18 +293,18 @@ class UsersManager:
         print("6. Exit")
         print(len(title) * "-")
 
-    def _test_password(self, _log: Logs, _valid: dict):
+    def _test_password(self, _valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         self.__result("YOU HAVE LOGGED IN")
 
-    def _show_api_key(self, _log: Logs, _valid: dict):
+    def _show_api_key(self, _valid: dict):
         username = self.__user_check()
         self.__password(username, "Password: ")
         user_obj = self.get_by_username(username)[0]
         self.__result(f"USER {username} API KEY: {user_obj.api}", False)
 
-    def _change_password(self, log: Logs, _valid: dict):
+    def _change_password(self, _valid: dict):
         username = self.__user_check()
         current_password = self.__password(username, "Current password: ")
         new_password = self.__new_password(
@@ -310,10 +312,10 @@ class UsersManager:
             "Confirm new password [empty possible]: ",
         )
         self.change_password(username, current_password, new_password)
-        log.log(USERS_ACTIONS_TAG + f"User {username} password changed!")
+        log.info(USERS_ACTIONS_TAG + f"User {username} password changed!")
         self.__result("PASSWORD CHANGED")
 
-    def _delete_user(self, log: Logs, valid: dict):
+    def _delete_user(self, valid: dict):
         username = self.__user_check()
         while True:
             choice = (
@@ -322,7 +324,7 @@ class UsersManager:
             if choice in valid:
                 if valid[choice]:
                     self.delete(username)
-                    log.log(USERS_ACTIONS_TAG + f"User {username} deleted!")
+                    log.info(USERS_ACTIONS_TAG + f"User {username} deleted!")
                     self.__result("USER DELETED")
                 else:
                     self.__result("USER WAS NOT DELETED")
@@ -330,11 +332,11 @@ class UsersManager:
             else:
                 print("Please respond with 'yes' or 'no' (or 'y' or 'n')")
 
-    def _add_user(self, log: Logs, _valid: dict):
+    def _add_user(self, _valid: dict):
         username = self.__user_check(False)
         password = self.__new_password(
             "Password [empty possible]: ", "Confirm password [empty possible]: "
         )
         self.add(User("", username, password, self.__gen_api()))
-        log.log(USERS_ACTIONS_TAG + f"User {username} added!")
+        log.info(USERS_ACTIONS_TAG + f"User {username} added!")
         self.__result("USER ADDED")

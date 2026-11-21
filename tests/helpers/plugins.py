@@ -23,5 +23,5 @@ def get_plugins_manager():
             new_callable=PropertyMock,
         ),
     ):
-        manager = PluginsManager("", None, None, None)
+        manager = PluginsManager("", None, None)
     return manager
