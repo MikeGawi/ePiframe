@@ -8,7 +8,7 @@ import modules.pidmanager as pid_manager
 import modules.pluginsmanager as plugins_manager
 import modules.timermanager as timer_manager
 from epiframe.core.files import last_modified
-from misc.constants import Constants
+from epiframe.config import paths
 from misc.logs import Logs
 from modules.displaymanager import DisplayManager
 from modules.weathermanager import WeatherManager
@@ -76,20 +76,18 @@ class BackendManager:
     def __load_config(self):
         try:
             self.__config = configuration_manager.ConfigManager(
-                os.path.join(self.__path, Constants.CONFIG_FILE),
-                os.path.join(self.__path, Constants.CONFIG_FILE_DEFAULT),
+                os.path.join(self.__path, paths.CONFIG_FILE),
+                os.path.join(self.__path, paths.CONFIG_FILE_DEFAULT),
             )
-            self.__last_date = self.get_last_date(Constants.CONFIG_FILE)
+            self.__last_date = self.get_last_date(paths.CONFIG_FILE)
         except Exception as exception:
-            raise Exception(
-                self.__ERROR_CONF_FILE.format(Constants.CONFIG_FILE, exception)
-            )
+            raise Exception(self.__ERROR_CONF_FILE.format(paths.CONFIG_FILE, exception))
 
     def log(self, text: str, silent: bool):
         self.__logging.log(text, silent)
 
     def refresh(self):
-        date = self.get_last_date(Constants.CONFIG_FILE)
+        date = self.get_last_date(paths.CONFIG_FILE)
 
         if not date or not self.__last_date or date != self.__last_date:
             self.__load_config()

@@ -18,7 +18,7 @@ database_manager: DatabaseManager
 logger: Logs
 
 
-@patch("misc.constants.Constants.USERS_DB_FILE", db_filename)
+@patch("epiframe.config.paths.USERS_DB_FILE", db_filename)
 def test_add():
     remove_file(db_filename)
     remove_file(logs_filename)

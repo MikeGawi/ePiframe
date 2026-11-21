@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from misc.constants import Constants
+from epiframe.config.paths import CONFIG_FILE, CONFIG_FILE_DEFAULT
 from modules import configmanager, timermanager, intervalmanager
 from modules.backendmanager import BackendManager
 from tests.helpers.capturing import Capturing
@@ -30,7 +30,7 @@ def test_init():
 
 def test_last_date():
     manager = get_backend_manager()
-    assert manager.get_last_date(Constants.CONFIG_FILE)
+    assert manager.get_last_date(CONFIG_FILE)
 
 
 def test_get_path():
@@ -236,7 +236,7 @@ def test_get_state_busy():
         patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
     ):
         manager = BackendManager(event_mock, ".")
-        config.set("pid_file", Constants.CONFIG_FILE_DEFAULT)
+        config.set("pid_file", CONFIG_FILE_DEFAULT)
         assert manager.get_state() == "Busy"
 
 

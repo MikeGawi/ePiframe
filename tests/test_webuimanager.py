@@ -6,7 +6,8 @@ from unittest.mock import patch
 import pytest
 from http import HTTPStatus
 
-from misc.constants import Constants
+from epiframe.config.paths import CONFIG_FILE_DEFAULT
+from epiframe.version import VERSION
 from misc.user import User
 from modules.configmanager import ConfigManager
 from modules.usersmanager import UsersManager
@@ -17,7 +18,7 @@ from tests.helpers.backend_doubles import get_backend_manager
 from tests.helpers.plugins import get_plugins_manager
 
 
-@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
+@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def test_init():
     with not_raises(Exception):
         WebUIManager(get_backend_manager())
@@ -144,7 +145,7 @@ def test_add_menu_entries():
 def test_adapt_name_no_deps():
     assert (
         WebUIManager.adapt_name(
-            ConfigManager(Constants.CONFIG_FILE_DEFAULT, Constants.CONFIG_FILE_DEFAULT),
+            ConfigManager(CONFIG_FILE_DEFAULT, CONFIG_FILE_DEFAULT),
             "use_local",
         )
         == "Use Local"
@@ -154,7 +155,7 @@ def test_adapt_name_no_deps():
 def test_adapt_name_deps():
     assert (
         WebUIManager.adapt_name(
-            ConfigManager(Constants.CONFIG_FILE_DEFAULT, Constants.CONFIG_FILE_DEFAULT),
+            ConfigManager(CONFIG_FILE_DEFAULT, CONFIG_FILE_DEFAULT),
             "local_path",
         )
         == "- Local Path"
@@ -307,7 +308,7 @@ def test_get_status(client_no_login, url):
         assert json["state"] == "Idle"
         assert json["temp"] == "data°C"
         assert json["uptime"] == "data"
-        assert json["version"] == Constants.EPIFRAME_VERSION
+        assert json["version"] == VERSION
         assert json["update"]
 
 
@@ -330,7 +331,7 @@ def test_export(client_no_login):
     response = client_no_login.get("/export")
     assert not response.location
     assert response.status_code == HTTPStatus.OK
-    with open(Constants.CONFIG_FILE_DEFAULT, "r") as file:
+    with open(CONFIG_FILE_DEFAULT, "r") as file:
         assert "".join(file.readlines()) == response.data.decode()
 
 
@@ -452,7 +453,7 @@ def test_login_ok(client):
         )
         assert not response.location
         assert response.status_code == HTTPStatus.OK
-        assert Constants.EPIFRAME_VERSION in response.data.decode()
+        assert VERSION in response.data.decode()
 
 
 def test_login_nok(client):
@@ -465,7 +466,7 @@ def test_login_nok(client):
             follow_redirects=True,
         )
         assert response.status_code == HTTPStatus.OK
-        assert Constants.EPIFRAME_VERSION not in response.data.decode()
+        assert VERSION not in response.data.decode()
         assert "Remember me" in response.data.decode()
         assert (
             "Please check your login details and try again!" in response.data.decode()
@@ -480,7 +481,7 @@ def test_login_nok_empty(client):
             follow_redirects=True,
         )
         assert response.status_code == HTTPStatus.OK
-        assert Constants.EPIFRAME_VERSION not in response.data.decode()
+        assert VERSION not in response.data.decode()
         assert "Remember me" in response.data.decode()
         assert "Please fill in all required data!" in response.data.decode()
 
@@ -603,7 +604,7 @@ def test_action_power_off(client_no_login, url):
 
 
 def test_settings_pages(client_no_login):
-    config = ConfigManager(Constants.CONFIG_FILE_DEFAULT, Constants.CONFIG_FILE_DEFAULT)
+    config = ConfigManager(CONFIG_FILE_DEFAULT, CONFIG_FILE_DEFAULT)
     for section in config.get_sections():
         response = client_no_login.get(f"/settings/{section}")
         assert response.status_code == HTTPStatus.OK
@@ -680,6 +681,6 @@ def web_mocked_system(*args, **kwargs):
     return WebMockRead()
 
 
-@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
+@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def get_webui_manager():
     return WebUIManager(get_backend_manager())

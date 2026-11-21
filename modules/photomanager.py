@@ -1,6 +1,13 @@
 import pandas as pd
 
 
+# photo list (DataFrame) column labels, also passed to plugins
+PHOTOS_ID_HEADER = "id"
+PHOTOS_CREATIONTIME_HEADER = "creationTime"
+PHOTOS_SOURCE_LABEL = "source"
+LOCAL_SOURCE = "Local"
+
+
 class PhotoManager:
     @staticmethod
     def get_num_of_photos(photos) -> int:

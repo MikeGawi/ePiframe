@@ -5,11 +5,15 @@ import subprocess
 from typing import List, Optional
 from typing import TYPE_CHECKING
 
-from misc.constants import Constants
+from epiframe.display.options import Background
 from modules.displaymanager import DisplayManager
 
 if TYPE_CHECKING:
     from modules.configmanager import ConfigManager
+
+
+# ImageMagick frame selector: only the first frame of an animated GIF is used
+FIRST_FRAME_GIF = "[0]"
 
 
 class ConvertManager:
@@ -17,12 +21,7 @@ class ConvertManager:
 
     __INVERT_FLAG = "-negate "
     __ROTATE_CODE = "-rotate {} "
-    __BACK_COLORS = [
-        Constants.BACK_BLACK,
-        Constants.BACK_WHITE,
-        Constants.BACK_PHOTO,
-        Constants.BACK_CROP,
-    ]
+    __BACK_COLORS = Background.values()
     __GRAYSCALE_FLAG = "-colorspace Gray "
     __COLORS_FLAG = "-colors {} "
 
@@ -173,8 +172,8 @@ class ConvertManager:
         )
 
     def __get_background(self, back, height, original_height, original_width, width):
-        if back == Constants.BACK_PHOTO:
-            back = Constants.BACK_WHITE
+        if back == Background.PHOTO:
+            back = Background.WHITE
             # this takes more time to progress
             aspect_ratio = int(original_width) / int(original_height)
             new_height = max(int(width / aspect_ratio), height)
@@ -182,8 +181,8 @@ class ConvertManager:
             code = self.__PHOTO_BACK_CODE.format(
                 new_height, scale, width, new_height, width, width, height
             )
-        elif back == Constants.BACK_CROP:
-            back = Constants.BACK_WHITE
+        elif back == Background.CROP:
+            back = Background.WHITE
             code = self.__PHOTO_CROP_CODE.format(width, height, width, height)
         else:
             code = self.__PHOTO_RESIZE_CODE.format(width, height)
@@ -201,7 +200,7 @@ class ConvertManager:
 
     def __get_back(self, back: str) -> str:
         if back not in self.__BACK_COLORS:
-            back = Constants.BACK_WHITE
+            back = Background.WHITE
         return back
 
     def __get_auto_gamma(self, value: bool) -> str:

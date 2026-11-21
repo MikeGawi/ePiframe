@@ -1,7 +1,18 @@
 from __future__ import annotations
 
 from typing import List
-from misc.constants import Constants
+from modules.databasemanager import (
+    DB_ALL,
+    DB_NULL,
+    SALTS_TABLE_NAME,
+    SALTS_TABLE_SALT_HEADER,
+    SALTS_TABLE_USERID_HEADER,
+    USERS_TABLE_API_HEADER,
+    USERS_TABLE_HASH_HEADER,
+    USERS_TABLE_ID_HEADER,
+    USERS_TABLE_NAME,
+    USERS_TABLE_USERNAME_HEADER,
+)
 from misc.logs import Logs
 from misc.user import User
 import secrets
@@ -14,6 +25,9 @@ if TYPE_CHECKING:
     from modules.databasemanager import DatabaseManager
 
 
+USERS_ACTIONS_TAG = "--------Users management: "
+
+
 class UsersManager:
     __ADD_ERROR = "There was a problem during user insertion to DB"
     __IN_ERROR = "User already exists!"
@@ -23,7 +37,7 @@ class UsersManager:
     def __init__(self, database_manager: DatabaseManager):
         self.__choice = None
         self.__databasemanager = database_manager
-        self.__schema = database_manager.get_schema(Constants.USERS_TABLE_NAME)
+        self.__schema = database_manager.get_schema(USERS_TABLE_NAME)
 
         self.__populate_api_key()
 
@@ -39,10 +53,10 @@ class UsersManager:
 
     def __update_api_key(self, item):
         self.__databasemanager.update(
-            Constants.USERS_TABLE_NAME,
-            Constants.USERS_TABLE_API_HEADER,
+            USERS_TABLE_NAME,
+            USERS_TABLE_API_HEADER,
             f"'{str(self.__gen_api())}'",
-            Constants.USERS_TABLE_ID_HEADER + " IS " + str(item),
+            USERS_TABLE_ID_HEADER + " IS " + str(item),
         )
 
     def __get_column(self, name: str):
@@ -54,36 +68,34 @@ class UsersManager:
             for row in rows:
                 result.append(
                     User(
-                        row[self.__get_column(Constants.USERS_TABLE_ID_HEADER)],
-                        row[self.__get_column(Constants.USERS_TABLE_USERNAME_HEADER)],
-                        row[self.__get_column(Constants.USERS_TABLE_HASH_HEADER)],
-                        row[self.__get_column(Constants.USERS_TABLE_API_HEADER)],
+                        row[self.__get_column(USERS_TABLE_ID_HEADER)],
+                        row[self.__get_column(USERS_TABLE_USERNAME_HEADER)],
+                        row[self.__get_column(USERS_TABLE_HASH_HEADER)],
+                        row[self.__get_column(USERS_TABLE_API_HEADER)],
                     )
                 )
         return result
 
     def get(self) -> List[User]:
         return self.__to_object(
-            self.__databasemanager.select(
-                Constants.DB_ALL, Constants.USERS_TABLE_NAME, ""
-            )
+            self.__databasemanager.select(DB_ALL, USERS_TABLE_NAME, "")
         )
 
     def get_by_username(self, username: str) -> List[User]:
         return self.__to_object(
             self.__databasemanager.select(
-                Constants.DB_ALL,
-                Constants.USERS_TABLE_NAME,
-                Constants.USERS_TABLE_USERNAME_HEADER + " IS " + f"'{username}'",
+                DB_ALL,
+                USERS_TABLE_NAME,
+                USERS_TABLE_USERNAME_HEADER + " IS " + f"'{username}'",
             )
         )
 
     def get_by_api(self, api: str) -> List[User]:
         return self.__to_object(
             self.__databasemanager.select(
-                Constants.DB_ALL,
-                Constants.USERS_TABLE_NAME,
-                Constants.USERS_TABLE_API_HEADER + " IS " + f"'{api}'",
+                DB_ALL,
+                USERS_TABLE_NAME,
+                USERS_TABLE_API_HEADER + " IS " + f"'{api}'",
             )
         )
 
@@ -115,15 +127,15 @@ class UsersManager:
         if not ids:
             password, salt = self.__add_salt(user_obj.password)
             self.__databasemanager.insert(
-                Constants.USERS_TABLE_NAME,
-                [Constants.DB_NULL, user_obj.username, str(password), user_obj.api],
+                USERS_TABLE_NAME,
+                [DB_NULL, user_obj.username, str(password), user_obj.api],
             )
             ids = self.get_by_username(user_obj.username)
 
             if ids and len(ids) > 0:
                 self.__databasemanager.insert(
-                    Constants.SALTS_TABLE_NAME,
-                    [Constants.DB_NULL, str(ids[0].id), str(salt)],
+                    SALTS_TABLE_NAME,
+                    [DB_NULL, str(ids[0].id), str(salt)],
                 )
             else:
                 raise Exception(self.__ADD_ERROR)
@@ -134,12 +146,12 @@ class UsersManager:
         ids = self.get_by_username(username)
         if ids and len(ids) > 0:
             self.__databasemanager.delete(
-                Constants.USERS_TABLE_NAME,
-                Constants.USERS_TABLE_USERNAME_HEADER + f" IS '{username}'",
+                USERS_TABLE_NAME,
+                USERS_TABLE_USERNAME_HEADER + f" IS '{username}'",
             )
             self.__databasemanager.delete(
-                Constants.SALTS_TABLE_NAME,
-                Constants.SALTS_TABLE_USERID_HEADER + " IS " + str(ids[0].id),
+                SALTS_TABLE_NAME,
+                SALTS_TABLE_USERID_HEADER + " IS " + str(ids[0].id),
             )
         else:
             raise Exception(self.__NO_USER_ERROR)
@@ -151,16 +163,16 @@ class UsersManager:
             if ids and len(ids) > 0:
                 password, salt = self.__add_salt(new_password)
                 self.__databasemanager.update(
-                    Constants.USERS_TABLE_NAME,
-                    Constants.USERS_TABLE_HASH_HEADER,
+                    USERS_TABLE_NAME,
+                    USERS_TABLE_HASH_HEADER,
                     f"'{str(password)}'",
-                    Constants.USERS_TABLE_ID_HEADER + " IS " + str(ids[0].id),
+                    USERS_TABLE_ID_HEADER + " IS " + str(ids[0].id),
                 )
                 self.__databasemanager.update(
-                    Constants.SALTS_TABLE_NAME,
-                    Constants.SALTS_TABLE_SALT_HEADER,
+                    SALTS_TABLE_NAME,
+                    SALTS_TABLE_SALT_HEADER,
                     f"'{str(salt)}'",
-                    Constants.SALTS_TABLE_USERID_HEADER + " IS " + str(ids[0].id),
+                    SALTS_TABLE_USERID_HEADER + " IS " + str(ids[0].id),
                 )
             else:
                 raise Exception(self.__NO_USER_ERROR)
@@ -171,9 +183,9 @@ class UsersManager:
         ids = self.get_by_username(username)
         if ids and len(ids) > 0:
             salt = self.__databasemanager.select(
-                Constants.SALTS_TABLE_SALT_HEADER,
-                Constants.SALTS_TABLE_NAME,
-                Constants.SALTS_TABLE_USERID_HEADER + " IS " + str(ids[0].id),
+                SALTS_TABLE_SALT_HEADER,
+                SALTS_TABLE_NAME,
+                SALTS_TABLE_USERID_HEADER + " IS " + str(ids[0].id),
             )[0]
             if salt:
                 password = self.__add_salt(password, salt[0])
@@ -298,7 +310,7 @@ class UsersManager:
             "Confirm new password [empty possible]: ",
         )
         self.change_password(username, current_password, new_password)
-        log.log(Constants.USERS_ACTIONS_TAG + f"User {username} password changed!")
+        log.log(USERS_ACTIONS_TAG + f"User {username} password changed!")
         self.__result("PASSWORD CHANGED")
 
     def _delete_user(self, log: Logs, valid: dict):
@@ -310,7 +322,7 @@ class UsersManager:
             if choice in valid:
                 if valid[choice]:
                     self.delete(username)
-                    log.log(Constants.USERS_ACTIONS_TAG + f"User {username} deleted!")
+                    log.log(USERS_ACTIONS_TAG + f"User {username} deleted!")
                     self.__result("USER DELETED")
                 else:
                     self.__result("USER WAS NOT DELETED")
@@ -324,5 +336,5 @@ class UsersManager:
             "Password [empty possible]: ", "Confirm password [empty possible]: "
         )
         self.add(User("", username, password, self.__gen_api()))
-        log.log(Constants.USERS_ACTIONS_TAG + f"User {username} added!")
+        log.log(USERS_ACTIONS_TAG + f"User {username} added!")
         self.__result("USER ADDED")

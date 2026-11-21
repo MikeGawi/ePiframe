@@ -2,6 +2,17 @@ from typing import Any, List
 import requests
 
 
+WEATHER_BASE_URL = (
+    "https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&appid={}"
+)
+WEATHER_TIMEOUT = 5
+WEATHER_ICON_MAINTAG = "weather"
+WEATHER_ICON_POSITION = 0
+WEATHER_ICON_TAG = "icon"
+WEATHER_TEMP_MAINTAG = "main"
+WEATHER_TEMP_TAG = "temp"
+
+
 class WeatherManager:
     __UNITS_VALUES = ["metric", "imperial"]
 

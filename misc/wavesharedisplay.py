@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from PIL import Image
 
-from misc.constants import Constants
+from epiframe.display.options import ColorMode
 from modules.base.displaybase import DisplayBase
 
 if TYPE_CHECKING:
@@ -46,12 +46,12 @@ class WaveshareDisplay(DisplayBase):
 
             if color_schema.lower() in no_convert:
                 self.__epd.display(self.__epd.getbuffer(image))
-            elif color_schema.lower() == Constants.COLOR_BWR.lower():
+            elif color_schema.lower() == ColorMode.BWR.lower():
                 black, red = self.convert(image, [255, 0, 0])
                 self.__epd.display(
                     self.__epd.getbuffer(black), self.__epd.getbuffer(red)
                 )
-            elif color_schema.lower() == Constants.COLOR_BWY.lower():
+            elif color_schema.lower() == ColorMode.BWY.lower():
                 black, yellow = self.convert(image, [255, 255, 0])
                 self.__epd.display(
                     self.__epd.getbuffer(black), self.__epd.getbuffer(yellow)
@@ -67,10 +67,10 @@ class WaveshareDisplay(DisplayBase):
         return [
             schema.lower()
             for schema in [
-                Constants.COLOR_BW,
-                Constants.COLOR_4C,
-                Constants.COLOR_7C,
-                Constants.COLOR_OTHER,
+                ColorMode.BW,
+                ColorMode.C4,
+                ColorMode.C7,
+                ColorMode.OTHER,
             ]
         ]
 

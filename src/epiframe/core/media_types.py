@@ -39,3 +39,45 @@ def extension_to_type(mapping: ExtensionMap) -> dict[str, str]:
 def all_extensions(mapping: ExtensionMap) -> list[str]:
     """Return all extensions without duplicates, in mapping order."""
     return list(extension_to_type(mapping))
+
+
+MIME_PREFIX = "image/"
+
+# Supported image MIME types and their extensions, the preferred extension first.
+MIME_TO_EXTENSIONS: ExtensionMap = {
+    "image/x-sony-arw": "arw",
+    "image/x-canon-cr2": "cr2",
+    "image/x-canon-crw": "crw",
+    "image/x-kodak-dcr": "dcr",
+    "image/x-adobe-dng": "dng",
+    "image/x-epson-erf": "erf",
+    "image/x-kodak-k25": "k25",
+    "image/x-kodak-kdc": "kdc",
+    "image/x-minolta-mrw": "mrw",
+    "image/x-nikon-nef": "nef",
+    "image/x-olympus-orf": "orf",
+    "image/x-pentax-pef": "pef",
+    "image/x-fuji-raf": "raf",
+    "image/x-panasonic-raw": "raw",
+    "image/x-sony-sr2": "sr2",
+    "image/x-sony-srf": "srf",
+    "image/x-sigma-x3f": "x3f",
+    "image/x-dcraw": "cr2",
+    "image/raw": "raw",
+    # only the first frame of a GIF is shown
+    "image/gif": "gif",
+    "image/webp": "webp",
+    "image/jpeg": ("jpg", "jpeg", "jfif", "pjpeg", "pjp"),
+    "image/png": "png",
+    "image/tiff": ("tiff", "tif"),
+    "image/vnd.microsoft.icon": "ico",
+    "image/ico": "ico",
+    "image/icon": "ico",
+    "image/x-icon": "ico",
+    "image/bmp": "bmp",
+    "image/heif": ("heic", "heif"),
+}
+
+TYPE_TO_EXTENSION = type_to_extension(MIME_TO_EXTENSIONS)
+EXTENSION_TO_TYPE = extension_to_type(MIME_TO_EXTENSIONS)
+EXTENSIONS = all_extensions(MIME_TO_EXTENSIONS)
