@@ -6,19 +6,12 @@ import os
 import shutil
 import signal
 import sys
-from datetime import datetime
 from typing import List
 
-import pandas
-from http import HTTPStatus
 from pandas import DataFrame
-from requests import HTTPError
 
-from misc.connection import Connection
 from misc.constants import Constants
 from misc.logs import Logs
-from misc.tools import Tools
-from modules.albummanager import AlbumManager
 from modules.base.pluginbase import PluginBase
 from modules.configmanager import ConfigManager
 from modules.convertmanager import ConvertManager
@@ -28,7 +21,6 @@ from modules.filteringmanager import FilteringManager
 from modules.indexmanager import IndexManager
 from modules.intervalmanager import IntervalManager
 from modules.localsourcemanager import LocalSourceManager
-from modules.oauthmanager import OAuthManager
 from modules.photomanager import PhotoManager
 from modules.pidmanager import PIDManager
 from modules.pluginsmanager import PluginsManager
@@ -142,20 +134,12 @@ class EPiframe:
                 self.logging.log("Retrying with the new photo...")
 
     def get_photo_id(self, photo):
-        return self.photo_manager.get_photo_attribute(
-            photo, Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER
-        )
+        return self.photo_manager.get_photo_attribute(photo, Constants.PHOTOS_ID_HEADER)
 
     def get_next_photo(self, photo) -> tuple:
         returned_value = Constants.OK_STATUS_ERRORCODE
-        if photo[Constants.PHOTOS_SOURCE_LABEL] == Constants.GOOGLE_PHOTOS_SOURCE:
-            filename = self.get_photo(photo)
-            returned_value = self.try_download_file(
-                self.get_download_url(photo), self.get_photo_id(photo), filename
-            )
-        else:
-            plugin_with_source = self.get_plugin_with_source(photo)
-            filename = self.get_filename(photo, plugin_with_source, returned_value)
+        plugin_with_source = self.get_plugin_with_source(photo)
+        filename = self.get_filename(photo, plugin_with_source, returned_value)
         return filename, returned_value
 
     def get_filename(
@@ -168,13 +152,13 @@ class EPiframe:
                 photo,
                 self.config.get("photo_convert_path"),
                 self.config.get("photo_download_name"),
-                Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
-                Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                Constants.PHOTOS_ID_HEADER,
+                Constants.PHOTOS_CREATIONTIME_HEADER,
                 Constants.PHOTOS_SOURCE_LABEL,
                 self.photo_manager,
             )
         else:
-            source_file = photo[Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER]
+            source_file = photo[Constants.PHOTOS_ID_HEADER]
             error, image_type = ConvertManager().get_image_format(
                 self.config.get("convert_bin_path"),
                 source_file,
@@ -201,66 +185,6 @@ class EPiframe:
             None,
         )
 
-    def try_download_file(self, download_url: str, photo_id: str, filename: str) -> str:
-        returned_value = self.download_or_retry(download_url, filename, photo_id)
-
-        if returned_value != Constants.OK_STATUS_ERRORCODE:
-            self.logging.log(f"Fail! Server error: {str(returned_value)}")
-        return returned_value
-
-    def download_or_retry(self, download_url, filename, photo_id):
-        returned_value = None
-        count = 2
-        while not returned_value:
-            try:
-                returned_value = Connection.download_file(
-                    download_url,
-                    self.config.get("photo_convert_path"),
-                    filename,
-                    Constants.OK_STATUS_ERRORCODE,
-                    Constants.CHECK_CONNECTION_TIMEOUT,
-                )
-            except HTTPError as exception:
-                if self.is_403_exception(exception) and count:
-                    download_url = self.get_download_url(
-                        self.auth_manager.get_item(photo_id)
-                    )
-                    self.logging.log(
-                        "Photo download URL expired! - Refreshing URL in Google Photos..."
-                    )
-                    count -= 1
-                    continue
-                returned_value = str(exception)
-        return returned_value
-
-    @staticmethod
-    def is_403_exception(exception):
-        return (
-            hasattr(exception, "response")
-            and exception.response.status_code == HTTPStatus.FORBIDDEN
-        )
-
-    def get_download_url(self, photo) -> str:
-        return (
-            self.photo_manager.get_photo_attribute(
-                photo,
-                Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_BASEURL_HEADER,
-            )
-            + Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_GET_DETAILS
-        )
-
-    def get_photo(self, photo) -> str:
-        return (
-            self.config.get("photo_download_name")
-            + "."
-            + Constants.TYPE_TO_EXTENSION[
-                self.photo_manager.get_photo_attribute(
-                    photo,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_MIMETYPE_HEADER,
-                )
-            ]
-        )
-
     def get_random_photo(self, filter_number: int, photos):
         if not bool(self.config.getint("randomize")):
             # find previous photo
@@ -269,7 +193,7 @@ class EPiframe:
                     photos[
                         self.photo_manager.get_photos_attribute(
                             photos,
-                            Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
+                            Constants.PHOTOS_ID_HEADER,
                         )
                         == self.index_manager.get_id()
                     ].index
@@ -289,7 +213,7 @@ class EPiframe:
             self.random_manager = RandomManager(
                 self.config.get("photo_list_file"),
                 photos,
-                Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
+                Constants.PHOTOS_ID_HEADER,
             )
             self.index_manager.set_index(
                 self.random_manager.get_random(
@@ -318,8 +242,8 @@ class EPiframe:
             try:
                 self.logging.log(f"Changing photo list by plugin '{plugin.name}'...")
                 photos = plugin.change_photos_list(
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                    Constants.PHOTOS_ID_HEADER,
+                    Constants.PHOTOS_CREATIONTIME_HEADER,
                     Constants.PHOTOS_SOURCE_LABEL,
                     photos,
                     self.photo_manager,
@@ -335,8 +259,8 @@ class EPiframe:
     def sort_photos(self, photos):
         return FilteringManager.sort(
             photos,
-            Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
-            photos[Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER],
+            Constants.PHOTOS_CREATIONTIME_HEADER,
+            photos[Constants.PHOTOS_CREATIONTIME_HEADER],
             self.config.get("sorting"),
         )
 
@@ -359,7 +283,7 @@ class EPiframe:
                 photos = FilteringManager.filter_by_to_date(
                     photos,
                     self.config.get("photos_to"),
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                    Constants.PHOTOS_CREATIONTIME_HEADER,
                 )
             except Exception as exception:
                 self.logging.log(
@@ -374,7 +298,7 @@ class EPiframe:
                 photos = FilteringManager.filter_by_from_date(
                     photos,
                     self.config.get("photos_from"),
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                    Constants.PHOTOS_CREATIONTIME_HEADER,
                 )
             except Exception as exception:
                 self.logging.log(
@@ -396,75 +320,13 @@ class EPiframe:
 
     def exit_if_no_photos(self, total_number: int):
         if total_number == 0:
-            self.logging.log("No photos in albums!")
+            self.logging.log("No photos in sources!")
             sys.exit(1)
 
     def get_from_sources(self) -> DataFrame:
-        photos: DataFrame = DataFrame()
-        if bool(self.config.getint("use_google_photos")):
-            photos = self.get_google_photos()
-        photos = self.get_local_source(photos)
+        photos = self.get_local_source(DataFrame())
         photos = self.get_plugin_sources(photos)
         return photos
-
-    @staticmethod
-    def should_data_be_refreshed(filename: str) -> bool:
-        if not os.path.exists(filename):
-            return True
-
-        mod_time = Tools.get_last_date(filename)
-        if not mod_time:
-            return True
-
-        return datetime.now().date() > datetime.fromtimestamp(int(mod_time)).date()
-
-    def read_stored_photos(self):
-        photos = DataFrame()
-        filename: str = self.config.get("photo_list_file") + ".pickle"
-        should_refresh: bool = self.should_data_be_refreshed(filename)
-        if (
-            self.config.get("refresh_rate") == Constants.REFRESH_ONCE
-            and not self.check_arguments("--refresh")
-            and not should_refresh
-        ):
-            try:
-                self.logging.log(
-                    "Trying to read saved Google Photos data (according to refresh_rate setting set to "
-                    "'once' a day)..."
-                )
-                photos = pandas.read_pickle(filename)
-                self.logging.log("Success!")
-            except Exception:
-                pass
-
-        return photos
-
-    def get_google_photos(self) -> DataFrame:
-        self.logging.log("Getting data from Google Photos source...")
-        self.logging.log("Checking connection...")
-        self.check_connection()
-        self.logging.log("OK!")
-        self.logging.log("Loading credentials...")
-        self.create_auth_manager()
-        self.logging.log("Success!")
-        self.logging.log("Trying to build service with given credentials...")
-        self.build_service()
-        self.logging.log("Success!")
-
-        photos = self.read_stored_photos()
-        if not photos.empty:
-            return photos
-
-        self.logging.log("Getting all albums...")
-        self.get_albums_data()
-        self.logging.log("Success!")
-        self.logging.log("Getting desired album(s)...")
-        self.album_manager = AlbumManager(
-            self.auth_manager.get_response(),
-            self.config.get("album_names"),
-            Constants.GOOGLE_PHOTOS_ALBUMS_TITLE_HEADER,
-        )
-        return self.get_albums()
 
     def process_test_convert(self):
         if self.check_arguments("--test-convert"):
@@ -484,110 +346,12 @@ class EPiframe:
         )
         return total_number
 
-    def get_albums_data(self):
-        try:
-            self.auth_manager.get(
-                Constants.GOOGLE_PHOTOS_PAGESIZE,
-                bool(Constants.GOOGLE_PHOTOS_EXCLUDENONAPPCREATEDDATA),
-                Constants.GOOGLE_PHOTOS_NEXTTOKENPAGE_RESPONSE_HEADER,
-                Constants.GOOGLE_PHOTOS_ALBUMS_RESPONSE,
-            )
-        except Exception as exception:
-            error = str(exception)
-            self.logging.log(f"Fail! {error}")
-            raise Exception(f"Fail! {error}")
-
-    def build_service(self):
-        try:
-            self.auth_manager.build_service(
-                Constants.SERVICE_NAME, Constants.SERVICE_VERSION
-            )
-        except Exception as exception:
-            error = str(exception)
-            self.logging.log(f"Fail! {error}")
-            raise
-
-    def create_auth_manager(self):
-        try:
-            self.auth_manager = OAuthManager()
-            self.auth_manager.manage_pickle(
-                self.config.get("pickle_file"),
-                self.config.get("cred_file"),
-                Constants.SCOPES,
-            )
-        except Exception as exception:
-            self.logging.log(f"Error! {exception}")
-            raise
-
-    def check_connection(self):
-        connection = Connection.check_internet(
-            Constants.SCOPES[0], Constants.CHECK_CONNECTION_TIMEOUT
-        )
-        if connection:
-            self.logging.log(f"Error! {connection} - No connection to the Internet")
-            if not bool(self.config.getint("use_local")):
-                raise Exception(f"Error! {connection} - No connection to the Internet")
-            else:
-                self.logging.log("Continuing with local source...")
-
     def check_all_sources(self):
-        if not bool(self.config.getint("use_google_photos")) and not bool(
-            self.config.getint("use_local")
+        if not bool(self.config.getint("use_local")) and not (
+            self.plugins_manager.plugin_source()
         ):
             self.logging.log("No photo sources picked! Check the configuration!")
             raise Exception("No photo sources picked! Check the configuration!")
-
-    def get_albums(self) -> DataFrame:
-        if self.album_manager.get_albums().empty:
-            self.logging.log(
-                "Fail! Can't find album {}".format(self.config.get("album_names"))
-            )
-            raise Exception(
-                "Fail! Can't find album {}".format(self.config.get("album_names"))
-            )
-
-        self.logging.log("Success!")
-        self.logging.log("Fetching albums data...")
-        try:
-            for (
-                index,
-                album_id,
-            ) in self.album_manager.get_albums()[
-                Constants.GOOGLE_PHOTOS_ALBUMS_ID_HEADER
-            ].iteritems():
-                items = self.auth_manager.get_items(
-                    Constants.GOOGLE_PHOTOS_ALBUMS_ALBUMID_HEADER,
-                    album_id,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_MEDIAITEMS_HEADER,
-                    Constants.GOOGLE_PHOTOS_PAGESIZE,
-                    Constants.GOOGLE_PHOTOS_PAGESIZE_HEADER,
-                    Constants.GOOGLE_PHOTOS_NEXTTOKENPAGE_HEADER,
-                    Constants.GOOGLE_PHOTOS_NEXTTOKENPAGE_RESPONSE_HEADER,
-                )
-                self.album_manager.append_data(items)
-        except Exception as exception:
-            error = str(exception)
-            self.logging.log(f"Fail! {error}")
-            raise
-        return self.get_google_source()
-
-    def get_google_source(self) -> DataFrame:
-        if self.album_manager.get_data().empty:
-            self.logging.log("Fail! Couldn't retrieve albums!")
-            raise
-        photos: DataFrame = self.photo_manager.set_photos(
-            self.album_manager,
-            Constants.GOOGLE_PHOTOS_ALBUMS_MEDIAMETADATA_HEADER,
-            Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_HEADER,
-            Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_MIMETYPE_HEADER,
-            Constants.IMAGE_MIMETYPE_STARTING_STRING,
-            Constants.PHOTOS_SOURCE_LABEL,
-            Constants.GOOGLE_PHOTOS_SOURCE,
-        )
-        self.logging.log("Success!")
-        if not photos.empty:
-            photos.to_pickle(self.config.get("photo_list_file") + ".pickle")
-        return photos
 
     def get_local_source(self, photos: DataFrame) -> DataFrame:
         if bool(self.config.getint("use_local")):
@@ -598,8 +362,8 @@ class EPiframe:
                 Constants.EXTENSIONS,
             )
             local_photos = self.local_source_manager.get_local_photos(
-                Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
-                Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                Constants.PHOTOS_ID_HEADER,
+                Constants.PHOTOS_CREATIONTIME_HEADER,
                 Constants.PHOTOS_SOURCE_LABEL,
                 Constants.LOCAL_SOURCE,
             )
@@ -612,8 +376,8 @@ class EPiframe:
             try:
                 self.logging.log(f"Getting data from plugin '{plugin.name}' source...")
                 plugin_photos = plugin.add_photo_source(
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                    Constants.PHOTOS_ID_HEADER,
+                    Constants.PHOTOS_CREATIONTIME_HEADER,
                     Constants.PHOTOS_SOURCE_LABEL,
                     self.photo_manager,
                 )
@@ -720,9 +484,7 @@ class EPiframe:
         if self.check_arguments("--help"):
             print("Command line options:")
             print("--check-config		checks configuration file")
-            print(
-                "--test			tests credentials, pickle file and downloads photo"
-            )
+            print("--test			runs the whole chain: gets and converts the photo")
             print("			without sending it to the display")
             print(
                 "--test-display [file]	displays the photo file on attached display"
@@ -738,9 +500,6 @@ class EPiframe:
                 "                        [target_file_or_loc] (if location - the filename is the same)"
             )
             print("--no-skip		like --test but is not skipping to another photo")
-            print(
-                "--refresh		force Google API data refresh even if refresh_rate flag is set to 'once'"
-            )
             print("--users			manage users")
             print("--help			this help")
 
@@ -775,7 +534,15 @@ class EPiframe:
                     )
                     raise
 
+    def warn_obsolete_config(self):
+        obsolete = self.config.get_obsolete()
+        if obsolete:
+            self.logging.log(
+                f"Warning! Obsolete configuration entries removed: {', '.join(obsolete)}"
+            )
+
     def verify_config(self):
+        self.warn_obsolete_config()
         try:
             self.config.verify()
         except Warning as warning:
@@ -815,23 +582,9 @@ class EPiframe:
     def process_interval(self, filename, photo):
         try:
             if not self.check_arguments("--no-skip"):
-                if (
-                    photo[Constants.PHOTOS_SOURCE_LABEL]
-                    == Constants.GOOGLE_PHOTOS_SOURCE
-                ):
-                    comment = str(
-                        self.photo_manager.get_photo_attribute(
-                            photo,
-                            Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER,
-                        )
-                    )
-                else:
-                    (
-                        error,
-                        comment,
-                    ) = ConvertManager().get_image_comment(
-                        self.config.get("convert_bin_path"), filename
-                    )
+                _, comment = ConvertManager().get_image_comment(
+                    self.config.get("convert_bin_path"), filename
+                )
                 self.interval_manager.save_interval(
                     comment,
                     self.config.get("interval_mult_hotword"),
@@ -953,11 +706,7 @@ class EPiframe:
         if not os.path.exists(source):
             self.logging.log(f"Fail! File was not retrieved! : {str(returned_value)}")
         else:
-            import pandas as pandas_engine
-
-            if not self.convert(
-                source, target_filename, pandas_engine.DataFrame(), thumbs
-            ):
+            if not self.convert(source, target_filename, DataFrame(), thumbs):
                 self.logging.log("Fail!")
 
     def test_display(self):
@@ -1067,8 +816,8 @@ class EPiframe:
                     bool(self.config.getint("horizontal")),
                     ConvertManager(),
                     photo,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                    Constants.PHOTOS_ID_HEADER,
+                    Constants.PHOTOS_CREATIONTIME_HEADER,
                     Constants.PHOTOS_SOURCE_LABEL,
                 )
                 self.logging.log("Success!")
@@ -1091,8 +840,8 @@ class EPiframe:
                     bool(self.config.getint("horizontal")),
                     ConvertManager(),
                     photo,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER,
-                    Constants.GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER,
+                    Constants.PHOTOS_ID_HEADER,
+                    Constants.PHOTOS_CREATIONTIME_HEADER,
                     Constants.PHOTOS_SOURCE_LABEL,
                 )
                 self.logging.log("Success!")
@@ -1153,8 +902,6 @@ class EPiframe:
     index_manager = None
     display_manager = None
     interval_manager = None
-    auth_manager = None
-    album_manager = None
     database_manager = None
     users_manager = None
     local_source_manager = None

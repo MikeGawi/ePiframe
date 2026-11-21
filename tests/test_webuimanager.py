@@ -145,9 +145,9 @@ def test_adapt_name_no_deps():
     assert (
         WebUIManager.adapt_name(
             ConfigManager(Constants.CONFIG_FILE_DEFAULT, Constants.CONFIG_FILE_DEFAULT),
-            "use_google_photos",
+            "use_local",
         )
-        == "Use Google Photos"
+        == "Use Local"
     )
 
 
@@ -155,9 +155,9 @@ def test_adapt_name_deps():
     assert (
         WebUIManager.adapt_name(
             ConfigManager(Constants.CONFIG_FILE_DEFAULT, Constants.CONFIG_FILE_DEFAULT),
-            "cred_file",
+            "local_path",
         )
-        == "- Cred File"
+        == "- Local Path"
     )
 
 

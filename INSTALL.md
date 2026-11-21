@@ -10,9 +10,6 @@
 			* [Cloud sync](#cloud-sync)
 			* [Other sources](#other-sources)
 			* [Pre-process photos](#pre-process-photos)
-	  	* [Google Photos](#google-photos)
-			* [Activate from ePiframe device](#activate-from-epiframe-device)
-			* [Activate from other device](#activate-from-other-device)
       	* [Weather Stamp](#weather-stamp)
       	* [Telegram Bot](#telegram-bot)
       	* [Web User Interface](#web-user-interface)
@@ -124,7 +121,7 @@ Move to [next steps](#next-steps)
 ## Next steps
 
 * Connect display to Raspberry Pi
-* [Activate](#google-photos) ePiframe token and credentials for using Google Photos API and/or use local source option
+* Put photos into the [local source](#local-source) folder (or use a plugin source)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
 * Check configuration with ```./ePiframe.py --check-config```
 * Do a test with ```./ePiframe.py --test``` without sending photo to display
@@ -155,66 +152,7 @@ It is possible to download photos to a local storage (and use them by ePiframe) 
 
 If you want photos to be pre-processed and ready for display in the frame (to save resources during conversion or to convert them earlier, on another device), this is possible using the `--convert` option command in [ePiframe commands](#command-line) and disabling conversion in [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) by switching the `convert` flag off.
 
-## Google Photos
-
-ePiframe needs to have credentials and *access token* to access Google Photos of Google account in an unsupervised way when Google Photos source is enabled in the configuration. For this You need to activate Google Photos API for the account used by ePiframe and configure application in Google Cloud Console.
-
-**_NOTE_** - Google Photos can be the only one or one of the photo sources enabled along with other possible options.
-
-Usually You will be asked to do that after [automatic installation](#automatic) and there are two ways to do that: with the ePiframe Activation Tool website with visual guide or in the console but if not already done, here are the steps needed on Google Cloud Console:
-
-<details>
-<summary>Click to expand</summary>
-
-* Create new or use an existing Google account for **ePiframe** and log in.
-* Go to [Google Cloud Console](https://console.cloud.google.com/).
-* Click on *Select a project*.
-* Click on *NEW PROJECT*
-* Put *ePiframe* in the *Project name* field and click *CREATE* You have created **ePiframe** project!
-* Now select *ePiframe* project by clicking on it
-* Click *APIs & Services* in the panel on the left hand side and pick *Library*
-* Search for *Photos* and then click *Photos Library API*
-* Click on *ENABLE*. Now You have given Your **ePiframe** project support to Google Photos API
-* Go to *Credentials* in the panel on the left hand side under *APIs & Services* and click *CONFIGURE CONSENT SCREEN*
-* Choose *External* and click *CREATE*
-* Put *ePiframe* in the *App name* field, type Google email used for Your **ePiframe** where necessary, scroll down and click on *SAVE AND CONTINUE* three times until You get to **Summary**.
-* Click *BACK TO DASHBOARD*. Your application consent screen is ready!
-* Click on *PUBLISH APP* in *Oauth consent screen* section under *APIs & Services* to publish Your application
-* Click on *+CREATE CREDENTIALS* and choose *OAuth client ID*
-* Pick *Desktop app* as *Application type* and put *ePiframe* in the *Name* field. Click *CREATE*
-* You have created OAuth client for Your **ePiframe**! Click on *DOWNLOAD JSON* to download JSON formatted credentials file
-* You can always get it from the *Credentials* dashboard by clicking download icon in *Actions* column of Your desired Client ID
-
-Now go to next steps for ePiframe activation.
-
-</details>
-
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/actweb.png" width="200">
-
-#### Activate from ePiframe device
-
-If not already done during [automatic installation](#automatic) start the ePiframe Activation Tool with `./install.sh --activate` command in the main path and follow the instructions.
-
-You can choose if You want to activate on website with visual guide or in the console.
-
-#### Activate from other device
-
-It is possible to activate the access to Google Photos API for ePiframe on any other device with Python 3.
-
-<img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/actcon.png" width="200">
-
-You need to have these prerequisites installed:
-```
-sudo -H pip3 install -I --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
-```
-
-Then:
-* ```wget https://raw.githubusercontent.com/MikeGawi/ePiframe/master/activate.py && chmod +x activate.py && ./activate.py```
-* Only console mode is possible as there are too many dependencies needed for website mode
-* Script will produce *token.pickle* and *credentials.json* files
-* Copy these files to ePiframe device inside installation path (using [*rsync*](https://ss64.com/bash/rsync.html) or [*scp*](https://ss64.com/bash/scp.html))
-
-### Weather Stamp
+## Weather Stamp
 
 <img align="right" src="https://github.com/MikeGawi/ePiframe/blob/master/docs/assets/weather.gif" width="400">
 
@@ -327,8 +265,6 @@ rm install_update.sh
 <summary>Click to expand</summary>
 
 * Save Your [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file in other location.
-* Save Your *credentials.json* file in other location. It may be under different name specified in the ```[Credentials]->cred_file``` entry in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file.
-* Save Your *token.pickle* file in other location. It may be under different name specified in the ```[Credentials]->pickle_file``` entry in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file.
 * Save Your *misc/users.db* file in other location.
 
 </details>
@@ -370,9 +306,7 @@ Move to [next steps](#next-steps-1)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. The service restart is needed only for all service related features (i.e. WebUI, Telegram Bot, etc.) and it's indicated in the config file, the other settings are loaded per run/refresh
 * **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
 
-**_NOTE_** - Interval multiplication option which can prolong the photo display time, uses *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the **photo description** field. You can change this attribute only for your own photos or for all *only* when you're an owner of the album. It's description in the photo information panel not photo comment. Comments are inaccessible from Google Photos level (unfortunately) as [are stored in different database](https://support.google.com/photos/thread/3272278?hl=en) 😟
-
-**_NOTE_** - Interval multiplication is also possible for photos from local source. The comment (i.e. *hotword #*, where # is interval multiplicator value) can be added with ImageMagick tool by ```convert <photo_name> -set comment <comment> <photo_name>``` and checked with ```convert <photo_name> -format "%c" info:```
+**_NOTE_** - Interval multiplication option can prolong the photo display time. It uses a *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the photo comment. The comment (i.e. *hotword #*, where # is interval multiplicator value) can be added with ImageMagick tool by ```convert <photo_name> -set comment <comment> <photo_name>``` and checked with ```convert <photo_name> -format "%c" info:```
 
 ### Display
 
@@ -409,7 +343,7 @@ Main ePiframe script *ePiframe.py* is written in Python and can work from CLI, t
 
 Syntax: ```ePiframe.py [option]```
 * ```--check-config``` - checks configuration file syntax
-* ```--test``` - tests whole chain: credentials, pickle file and downloads photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
+* ```--test``` - tests whole chain: gets and converts the photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
 * ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
 * ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
 * ```--convert [source file] [target file or location]``` - converts the photo ```source file``` to target file or under specified location with current ePiframe configuration. Just convert, no thumbnails, no pre file. Used just to convert file to ePiframe quality.

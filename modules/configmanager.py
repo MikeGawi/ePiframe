@@ -8,7 +8,6 @@ from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
 from modules.filteringmanager import FilteringManager
 from modules.localsourcemanager import LocalSourceManager
-from modules.photomanager import PhotoManager
 from modules.telebotmanager import TelebotManager
 from modules.timermanager import TimerManager
 from modules.weathermanager import WeatherManager
@@ -34,30 +33,6 @@ class ConfigManager(ConfigBase):
 
     def load_settings(self):
         self.SETTINGS = [
-            ConfigProperty(
-                "use_google_photos", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-            ),
-            ConfigProperty(
-                "cred_file",
-                self,
-                prop_type=ConfigProperty.FILE_TYPE,
-                dependency="use_google_photos",
-            ),
-            ConfigProperty(
-                "pickle_file",
-                self,
-                prop_type=ConfigProperty.FILE_TYPE,
-                dependency="use_google_photos",
-            ),
-            ConfigProperty(
-                "album_names", self, not_empty=False, dependency="use_google_photos"
-            ),
-            ConfigProperty(
-                "refresh_rate",
-                self,
-                possible=PhotoManager.get_refresh_rates(),
-                dependency="use_google_photos",
-            ),
             ConfigProperty("use_local", self, prop_type=ConfigProperty.BOOLEAN_TYPE),
             ConfigProperty(
                 "local_path",

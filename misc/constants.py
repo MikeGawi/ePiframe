@@ -14,39 +14,10 @@ class Constants:
     CONFIG_FILE = "config.cfg"
     CONFIG_FILE_DEFAULT = "misc/config.default"
 
-    # If modifying these scopes, delete the file token.pickle.
-    # scopes of Google Photos Service
-    SCOPES = ["https://www.googleapis.com/auth/photoslibrary.readonly"]
-
-    SERVICE_NAME = "photoslibrary"
-    SERVICE_VERSION = "v1"
-
-    # google photos API specific
-    GOOGLE_PHOTOS_PAGESIZE = 50
-    GOOGLE_PHOTOS_PAGESIZE_HEADER = "pageSize"
-    GOOGLE_PHOTOS_NEXTTOKENPAGE_HEADER = "pageToken"
-    GOOGLE_PHOTOS_NEXTTOKENPAGE_RESPONSE_HEADER = "nextPageToken"
-    GOOGLE_PHOTOS_EXCLUDENONAPPCREATEDDATA = False
-
-    GOOGLE_PHOTOS_ALBUMS_RESPONSE = "albums"
-    GOOGLE_PHOTOS_ALBUMS_TITLE_HEADER = "title"
-    GOOGLE_PHOTOS_ALBUMS_ID_HEADER = "id"
-    GOOGLE_PHOTOS_ALBUMS_ALBUMID_HEADER = "albumId"
-    GOOGLE_PHOTOS_ALBUMS_MEDIAITEMS_HEADER = "mediaItems"
-    GOOGLE_PHOTOS_ALBUMS_MEDIAMETADATA_HEADER = "mediaMetadata"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_HEADER = "photo"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_MIMETYPE_HEADER = "mimeType"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_CREATIONTIME_HEADER = "creationTime"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_DESCRIPTION_HEADER = "description"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_BASEURL_HEADER = "baseUrl"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_ID_HEADER = "id"
-    GOOGLE_PHOTOS_ALBUMS_MEDIA_ITEM_ID_HEADER = "mediaItemId"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_HEIGHT_HEADER = "height"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_WIDTH_HEADER = "width"
-    GOOGLE_PHOTOS_ALBUMS_PHOTO_GET_DETAILS = "=d"
-
+    # photo list (DataFrame) column labels, also passed to plugins
+    PHOTOS_ID_HEADER = "id"
+    PHOTOS_CREATIONTIME_HEADER = "creationTime"
     PHOTOS_SOURCE_LABEL = "source"
-    GOOGLE_PHOTOS_SOURCE = "Google Photos"
     LOCAL_SOURCE = "Local"
 
     CHECK_CONNECTION_TIMEOUT = 5
@@ -59,8 +30,6 @@ class Constants:
 
     WEATHER_TEMP_MAINTAG = "main"
     WEATHER_TEMP_TAG = "temp"
-
-    IMAGE_MIMETYPE_STARTING_STRING = "image"
 
     # image mime type to extension dictionary
     EXTEN = {
@@ -148,6 +117,3 @@ class Constants:
     BACK_BLACK = "black"
     BACK_PHOTO = "photo"
     BACK_CROP = "crop"
-
-    REFRESH_ALWAYS = "always"
-    REFRESH_ONCE = "once"
