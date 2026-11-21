@@ -24,4 +24,5 @@ def test_extensions():
         extension if isinstance(extension, list) else [extension]
         for extension in list(Constants.EXTEN.values())
     ]
-    assert sorted(Constants.EXTENSIONS) == sorted(list(chain(*extensions)))
+    assert set(Constants.EXTENSIONS) == set(chain(*extensions))
+    assert len(Constants.EXTENSIONS) == len(set(Constants.EXTENSIONS))

@@ -1,5 +1,5 @@
 from epiframe.version import VERSION
-from misc.tools import Tools
+from epiframe.core import media_types
 
 
 class Constants:
@@ -70,9 +70,9 @@ class Constants:
     GIF_EXTENSION = "gif"
     FIRST_FRAME_GIF = "[0]"
 
-    TYPE_TO_EXTENSION = Tools.get_type_to_extension(EXTEN)
-    EXTENSION_TO_TYPE = Tools.get_extension_to_type(EXTEN)
-    EXTENSIONS = Tools.get_extensions(list(EXTEN.values()))
+    TYPE_TO_EXTENSION = media_types.type_to_extension(EXTEN)
+    EXTENSION_TO_TYPE = media_types.extension_to_type(EXTEN)
+    EXTENSIONS = media_types.all_extensions(EXTEN)
 
     NOMATCH_INDICATOR_STRING = "no match"
 

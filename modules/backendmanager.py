@@ -7,9 +7,9 @@ import modules.intervalmanager as interval_manager
 import modules.pidmanager as pid_manager
 import modules.pluginsmanager as plugins_manager
 import modules.timermanager as timer_manager
+from epiframe.core.files import last_modified
 from misc.constants import Constants
 from misc.logs import Logs
-from misc.tools import Tools
 from modules.displaymanager import DisplayManager
 from modules.weathermanager import WeatherManager
 
@@ -64,8 +64,8 @@ class BackendManager:
             self.__config,
         )
 
-    def get_last_date(self, file: str) -> float:
-        return Tools.get_last_date(os.path.join(self.__path, file))
+    def get_last_date(self, file: str) -> float | None:
+        return last_modified(os.path.join(self.__path, file))
 
     def get_path(self) -> str:
         return self.__path
