@@ -1,6 +1,7 @@
 import os
 import subprocess
 from unittest.mock import patch
+from misc.configproperty import ConfigProperty
 from modules.configmanager import ConfigManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.helpers import remove_file, not_raises
@@ -73,12 +74,20 @@ def test_re_read():
     assert config.get_default("dark_theme") == 0
 
 
-def test_verify():
+def test_verify(tmp_path):
     remove_file(filename)
     config: ConfigManager = ConfigManager(
         path=filename,
         default_path=default_path,
     )
+    # FILE entries must exist; the defaults (/usr/bin/convert, credentials.json, ...)
+    # depend on the machine, so point them to a file that surely exists
+    existing_file = tmp_path / "existing_file"
+    existing_file.touch()
+    for setting in config.SETTINGS:
+        if setting.get_type() == ConfigProperty.FILE_TYPE:
+            config.set(setting.get_name(), str(existing_file))
+
     with not_raises(Exception):
         config.verify()
 
