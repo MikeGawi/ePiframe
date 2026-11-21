@@ -1,13 +1,14 @@
+from epiframe.version import VERSION
 from misc.tools import Tools
 
 
 class Constants:
-
-    EPIFRAME_VERSION = "v1.9.6"
+    # single source of truth: `version` in pyproject.toml
+    EPIFRAME_VERSION = VERSION
     EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
 
     # minimal needed python version
-    MINIMAL_PYTHON_VERSION = 3
+    MINIMAL_PYTHON_VERSION = (3, 11)
 
     # config filename
     CONFIG_FILE = "config.cfg"

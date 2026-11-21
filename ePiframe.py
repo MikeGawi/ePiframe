@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import List
 
 import pandas
-import starlette.status
+from http import HTTPStatus
 from pandas import DataFrame
 from requests import HTTPError
 
@@ -237,7 +237,7 @@ class EPiframe:
     def is_403_exception(exception):
         return (
             hasattr(exception, "response")
-            and exception.response.status_code == starlette.status.HTTP_403_FORBIDDEN
+            and exception.response.status_code == HTTPStatus.FORBIDDEN
         )
 
     def get_download_url(self, photo) -> str:
@@ -549,7 +549,10 @@ class EPiframe:
         self.logging.log("Success!")
         self.logging.log("Fetching albums data...")
         try:
-            for (index, album_id,) in self.album_manager.get_albums()[
+            for (
+                index,
+                album_id,
+            ) in self.album_manager.get_albums()[
                 Constants.GOOGLE_PHOTOS_ALBUMS_ID_HEADER
             ].iteritems():
                 items = self.auth_manager.get_items(
@@ -717,12 +720,18 @@ class EPiframe:
         if self.check_arguments("--help"):
             print("Command line options:")
             print("--check-config		checks configuration file")
-            print("--test			tests credentials, pickle file and downloads photo")
+            print(
+                "--test			tests credentials, pickle file and downloads photo"
+            )
             print("			without sending it to the display")
-            print("--test-display [file]	displays the photo file on attached display")
+            print(
+                "--test-display [file]	displays the photo file on attached display"
+            )
             print("			with current ePiframe configuration")
             print("--test-convert [file]	converts the photo file to configured")
-            print("			photo_convert_filename with current ePiframe configuration")
+            print(
+                "			photo_convert_filename with current ePiframe configuration"
+            )
             print("--convert [source_file] [target_file_or_loc]")
             print("                        converts the [source_file] photo file to")
             print(
@@ -788,8 +797,9 @@ class EPiframe:
 
     @staticmethod
     def check_python_version():
-        if sys.version_info[0] < Constants.MINIMAL_PYTHON_VERSION:
-            raise Exception(f"Must be using Python {Constants.MINIMAL_PYTHON_VERSION}!")
+        if sys.version_info < Constants.MINIMAL_PYTHON_VERSION:
+            version = ".".join(map(str, Constants.MINIMAL_PYTHON_VERSION))
+            raise Exception(f"Must be using Python {version} or newer!")
 
     def interval_multiplication(self, filename: str, photo):
         if bool(self.config.getint("interval_mult")):
@@ -816,7 +826,10 @@ class EPiframe:
                         )
                     )
                 else:
-                    (error, comment,) = ConvertManager().get_image_comment(
+                    (
+                        error,
+                        comment,
+                    ) = ConvertManager().get_image_comment(
                         self.config.get("convert_bin_path"), filename
                     )
                 self.interval_manager.save_interval(
@@ -895,7 +908,7 @@ class EPiframe:
     def convert_command(self):
         files = list(self.get_files())
         if not files or len(files) != 2:
-            raise Exception(f"Files not specified!")
+            raise Exception("Files not specified!")
 
         source, target = files
         self.check_file_exist(source)
