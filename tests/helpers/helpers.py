@@ -7,7 +7,7 @@ def not_raises(ExpectedException):
     try:
         yield
 
-    except ExpectedException as err:
+    except ExpectedException:
         raise AssertionError(
             "Did raise exception {0} when it should not!".format(
                 repr(ExpectedException)

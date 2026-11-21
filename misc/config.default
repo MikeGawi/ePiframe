@@ -205,7 +205,7 @@ stop_times=23:30,23:30,23:30,23:30,23:30,23:30,23:30
 control_display_power=1
 
 # This will allow to trigger (from web, bots, etc.) photo change or update
-# during off hours. Disabling will respect sleep time and supress triggers.
+# during off hours. Disabling will respect sleep time and suppress triggers.
 # Default:1 (Enable triggers).
 allow_triggers=1
 

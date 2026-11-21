@@ -12,17 +12,16 @@ if TYPE_CHECKING:
 
 
 class TelebotManager:
-
     __STATUS_OS_CMD = (
         '/usr/bin/free --mega -t | /usr/bin/awk \'{print (NR==1?"Type":""), $1, $2, $3,'
-        "(NR==1?\"\":$4)}' | column -t | /bin/sed 's/ \+/ /g' && /usr/bin/uptime | /bin/sed 's/ \+/ /g' | "
+        "(NR==1?\"\":$4)}' | column -t | /bin/sed 's/ \\+/ /g' && /usr/bin/uptime | /bin/sed 's/ \\+/ /g' | "
         "/bin/sed 's/^ //g' && vcgencmd measure_temp"
     )
     __STATUS_OS_CMD_F = (
         '/usr/bin/free --mega -t | /usr/bin/awk \'{print (NR==1?"Type":""), $1, $2, $3,'
-        "(NR==1?\"\":$4)}' | column -t | /bin/sed 's/ \+/ /g' && /usr/bin/uptime | /bin/sed 's/ "
-        "\+/ /g' | /bin/sed 's/^ //g' && echo \"temp=\"$(awk \"BEGIN {print `vcgencmd measure_temp | "
-        "egrep -o '[0-9]*\.[0-9]*'`*1.8+32}\")\"'F\""
+        "(NR==1?\"\":$4)}' | column -t | /bin/sed 's/ \\+/ /g' && /usr/bin/uptime | /bin/sed 's/ "
+        "\\+/ /g' | /bin/sed 's/^ //g' && echo \"temp=\"$(awk \"BEGIN {print `vcgencmd measure_temp | "
+        "egrep -o '[0-9]*\\.[0-9]*'`*1.8+32}\")\"'F\""
     )
 
     def __init__(self, backend: BackendManager):

@@ -104,7 +104,7 @@ function check_pi {
 function check_spi {
 	echo -e '\n\033[0;30mChecking/enabling SPI support\033[0m'
 	printf '\e[1;37m%-30s\e[m' "Enabling SPI:"
-	
+
 	spi1=$(lsmod | grep spi_)
 	spi2=$(ls -l /dev/spidev* 2> /dev/null)
 	spi3=$(raspi-config nonint get_spi)
@@ -113,7 +113,7 @@ function check_spi {
 		sudo raspi-config nonint do_spi 0
 		sudo sed -i "s/#dtparam=spi=/dtparam=spi=/g" /boot/config.txt
 	fi
-	
+
 	if [ "$(raspi-config nonint get_spi)" -eq 0 ]; then
 		echo -e '\033[1;32mcheck!\033[0m'
 	else
@@ -130,9 +130,9 @@ function display_libs_waveshare {
 	cmds["Unpacking"]='sudo unzip -q waveshare.zip'
 	cmds["Copying"]='sudo cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .'
 	cmds["Cleanup"]='sudo rm -r e-Paper-master/ waveshare.zip'
-	
+
 	declare -a order;
-	order+=( "Preparing" )	
+	order+=( "Preparing" )
 	order+=( "Downloading" )
 	order+=( "Unpacking" )
 	order+=( "Copying" )
@@ -195,7 +195,7 @@ function epi_code {
 	cmds["Unpacking"]='sudo unzip -q ePiframe.zip'
 	cmds["Copying"]='sudo cp -r ePiframe-master/* .'
 	cmds["Cleanup"]='sudo rm -r ePiframe-master/ ePiframe.zip'
-	
+
 	declare -a order;
 	order+=( "Preparing" )
 	order+=( "Downloading" )
@@ -226,7 +226,7 @@ function install_service {
 	pwdesc=$(echo "$1"'/' | sed 's_/_\\/_g')
 	cmds["Configuring"]="sudo sed -i s/EPIEPIEPI/$pwdesc/g ePiframe.service"
 	cmds["Installing"]="sudo systemctl --quiet enable $1/ePiframe.service"
-	
+
 	declare -a order;
 	order+=( "Copying" )
 	order+=( "Configuring" )
@@ -236,7 +236,7 @@ function install_service {
 	do
 		printf '\e[1;37m%-30s\e[m' "$i:"
 		out=$(${cmds[$i]} 2>&1 > /dev/null)
-		
+
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
@@ -310,12 +310,12 @@ fi
 
 if [ "$1" = "--update" ]; then
 	echo -e "\n\033[0;30mUpdating ePiframe!\033[0m"
-	
+
 	server_version=$(wget --connect-timeout=3 -q -O - https://raw.githubusercontent.com/MikeGawi/ePiframe/master/misc/constants.py 2>/dev/null | grep EPIFRAME_VERSION)
 	local_version=$(grep EPIFRAME_VERSION misc/constants.py)
-	
+
 	if [ "$server_version" = "$local_version" ]; then
-		echo -e '\n\033[0;31mYou already have the latest version of ePiframe.\033[0m'		
+		echo -e '\n\033[0;31mYou already have the latest version of ePiframe.\033[0m'
 		while true; do
 			read -p $'\n\e[1;37mContinue anyway to reinstall it? [y/N]\e[0m' -n 1 -r -e yn
 			case "${yn:-N}" in
@@ -334,9 +334,9 @@ if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ]; then
 			sudo systemctl stop ePiframe.service
 			sudo systemctl disable ePiframe.service
 	fi
-	
+
 	if [ "$1" = "--uninstall" ]; then
-		show_uninstall	
+		show_uninstall
 		exit 0
 	fi
 fi
@@ -359,16 +359,16 @@ check_spi
 
 if [ "$1" = "--update" ]; then
 	path=$(pwd)
-	
+
 	mkdir -p backup
-	
+
 	if [ -f "config.cfg" ]; then
 		cp config.cfg backup/config.cfg.bak
 		cp config.cfg backup/config-"$(date +"%Y%m%d-%H%M%S")".cfg.bak
 		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg and a copy with timestamp as well) in backup folder\033[0m'
-	else	
+	else
 		while true; do
-			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'		
+			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'
 			read -p $'\n\e[1;37mDo You want to continue? [Y/n]\e[0m' -n 1 -r -e yn
 			case "${yn:-Y}" in
 				[Yy]* ) echo -e '\n\033[0;31mThe update will continue'; break;;
@@ -392,7 +392,7 @@ if [ "$1" = "--update" ]; then
 	if [ -f "static/data/load.rrd" ]; then
 		cp static/data/*.rrd backup/
 		echo -e '\n\033[0;30mSaved a copy of Statistics RRD files (static/data/*.rrd) in backup folder\033[0m'
-	fi	
+	fi
 else
 	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
 	if [ -z "$path" ]; then

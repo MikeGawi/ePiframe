@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 
 class PluginsManager:
-
     __PLUGINS_DIR = "plugins/"
     __PLUGIN_NAME = "_plugin.py"
     __PLUGIN_CLASS = "_plugin"

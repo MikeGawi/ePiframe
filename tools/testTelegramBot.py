@@ -26,7 +26,7 @@ if "--help" not in [argument.lower() for argument in sys.argv]:
             res = valid[choice]
             break
         else:
-            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
     if res:
         DEBUG = True
 

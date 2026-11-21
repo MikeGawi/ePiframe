@@ -1,5 +1,4 @@
 class MockedBackendManager:
-
     pid = True
     metric = True
     interval = 5

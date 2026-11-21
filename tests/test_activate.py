@@ -16,7 +16,7 @@ from tests.helpers.credentials import Flow
 from tests.helpers.helpers import remove_file, not_raises
 from tests.helpers.oauth_service import OauthService
 from tests.helpers.request import MockedRequest, MockedStream
-from tests.test_usersmanager_manage import MockedInput
+from tests.helpers.inputs import MockedInput
 
 mocked_code = (
     "http://localhost:1/?state=VOT2v2x5aq1chctSbL1qhjDGq66WHz&code=ABCDEFGHIJKLMNOPQRSTVXYZ0123456789&scope"
@@ -294,17 +294,19 @@ def test_get_generate_fail():
     activate.flow = Flow
     MockedRequest.form = {"no_code": "not a code"}
 
-    with app.app_context(), app.test_request_context(), not_raises(
-        Exception
-    ), Capturing() as output, patch.object(flask, "flash", mocked_flash), patch.object(
-        flask, "redirect", mocked_redirect
-    ), patch.object(
-        flask, "request", MockedRequest
+    with (
+        app.app_context(),
+        app.test_request_context(),
+        not_raises(Exception),
+        Capturing() as output,
+        patch.object(flask, "flash", mocked_flash),
+        patch.object(flask, "redirect", mocked_redirect),
+        patch.object(flask, "request", MockedRequest),
     ):
         response = activate.generate()
 
     assert output == [
-        "Flash msg='Error: expected string or bytes-like object'",
+        "Flash msg=\"Error: expected string or bytes-like object, got 'NoneType'\"",
         "Flash msg='Error: The URL should be an exact copy of the generated URL and should not be empty!'",
         "Flash msg='If something is still wrong then try to re-upload the credentials and try again'",
     ]
@@ -321,12 +323,14 @@ def test_get_generate_ok():
     activate.flow = Flow
     MockedRequest.form = {"code": mocked_code}
 
-    with app.app_context(), app.test_request_context(), not_raises(
-        Exception
-    ), Capturing() as output, patch.object(flask, "flash", mocked_flash), patch.object(
-        flask, "redirect", mocked_redirect
-    ), patch.object(
-        flask, "request", MockedRequest
+    with (
+        app.app_context(),
+        app.test_request_context(),
+        not_raises(Exception),
+        Capturing() as output,
+        patch.object(flask, "flash", mocked_flash),
+        patch.object(flask, "redirect", mocked_redirect),
+        patch.object(flask, "request", MockedRequest),
     ):
         response = activate.generate()
 
@@ -348,12 +352,14 @@ def test_upload_fail():
     app = get_app()
     MockedRequest.form = {"no_file": "not a file"}
 
-    with app.app_context(), app.test_request_context(), not_raises(
-        Exception
-    ), Capturing() as output, patch.object(flask, "flash", mocked_flash), patch.object(
-        flask, "redirect", mocked_redirect
-    ), patch.object(
-        flask, "request", MockedRequest
+    with (
+        app.app_context(),
+        app.test_request_context(),
+        not_raises(Exception),
+        Capturing() as output,
+        patch.object(flask, "flash", mocked_flash),
+        patch.object(flask, "redirect", mocked_redirect),
+        patch.object(flask, "request", MockedRequest),
     ):
         response = activate.upload()
 
@@ -368,12 +374,14 @@ def test_upload_ok():
     MockedRequest.files = {"file": MockedStream()}
     activate.save_creds = mocked_save
 
-    with app.app_context(), app.test_request_context(), not_raises(
-        Exception
-    ), Capturing() as output, patch.object(flask, "flash", mocked_flash), patch.object(
-        flask, "redirect", mocked_redirect
-    ), patch.object(
-        flask, "request", MockedRequest
+    with (
+        app.app_context(),
+        app.test_request_context(),
+        not_raises(Exception),
+        Capturing() as output,
+        patch.object(flask, "flash", mocked_flash),
+        patch.object(flask, "redirect", mocked_redirect),
+        patch.object(flask, "request", MockedRequest),
     ):
         response = activate.upload()
 
@@ -500,7 +508,7 @@ def test_get_ip(param):
             results = activate.get_ip()
 
     assert results is param or "0.0.0.0"
-    assert output is ["IP = 0.0.0.0"] or [f"IP = {param}"]
+    assert output == ["IP = 0.0.0.0"] or [f"IP = {param}"]
 
 
 @pytest.mark.parametrize(
@@ -540,7 +548,7 @@ def test_get_port(param):
             results = activate.get_port()
 
     assert results is param or "80"
-    assert output is [
+    assert output == [
         "Any port below 5000 will need root privileges - start script with 'sudo'",
         "Port = 80",
     ] or [f"Port = {param}"]
@@ -760,7 +768,7 @@ def import_fail(name, globals, locals, fromlist, level):
 
 
 def mocked_prepare():
-    print(f"Prepare_app")
+    print("Prepare_app")
 
 
 def mocked_flash(msg: str):

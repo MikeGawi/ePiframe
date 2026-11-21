@@ -3,7 +3,6 @@ import requests
 
 
 class WeatherManager:
-
     __UNITS_VALUES = ["metric", "imperial"]
 
     def __init__(self, apikey, units, lat, lon):

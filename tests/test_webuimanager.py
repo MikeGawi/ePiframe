@@ -4,9 +4,8 @@ from typing import List
 from unittest.mock import patch
 
 import pytest
-from starlette import status
+from http import HTTPStatus
 
-import tests.test_pluginsmanager
 from misc.constants import Constants
 from misc.user import User
 from modules.configmanager import ConfigManager
@@ -14,13 +13,14 @@ from modules.usersmanager import UsersManager
 from modules.webuimanager import WebUIManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.helpers import not_raises
-from tests.test_backendmanager import get_manager
+from tests.helpers.backend_doubles import get_backend_manager
+from tests.helpers.plugins import get_plugins_manager
 
 
 @patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def test_init():
     with not_raises(Exception):
-        WebUIManager(get_manager())
+        WebUIManager(get_backend_manager())
 
 
 def test_menu_entries():
@@ -180,109 +180,110 @@ def test_load_user_ok():
 def test_get_image_login(client):
     response = client.get("/get_image")
     assert response.location == "/login?next=%2Fget_image"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_logout_login(client):
     response = client.get("/logout")
     assert response.location == "/login?next=%2Flogout"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_get_status_login(client):
     response = client.get("/get_status")
     assert response.location == "/login?next=%2Fget_status"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_upload_photo_login(client):
     response = client.post("/_upload_photo")
     assert response.location == "/login?next=%2F_upload_photo"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_log_stream_login(client):
     response = client.get("/_log_stream")
     assert response.location == "/login?next=%2F_log_stream"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_export_login(client):
     response = client.get("/export")
     assert response.location == "/login?next=%2Fexport"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_import_login(client):
     response = client.post("/import")
     assert response.location == "/login?next=%2Fimport"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_plugins_login(client):
     response = client.post("/plugins")
     assert response.location == "/login?next=%2Fplugins"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_stats_login(client):
     response = client.post("/stats")
     assert response.location == "/login?next=%2Fstats"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_logs_login(client):
     response = client.post("/logs")
     assert response.location == "/login?next=%2Flogs"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_tools_login(client):
     response = client.post("/tools")
     assert response.location == "/login?next=%2Ftools"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_settings_login(client):
     response = client.post("/settings")
     assert response.location == "/login?next=%2Fsettings"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_login_login(client):
     response = client.get("/login")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_get_image(client_no_login):
     response = client_no_login.get("/get_image")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.data == b"No Photo!"
 
 
 def test_get_image_binary(app_no_config):
     response = app_no_config.test_client().get("/get_image")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.mimetype == "image/bmp"
 
 
 def test_logout(client_no_login):
     response = client_no_login.get("/logout")
     assert response.location == "/"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 @pytest.mark.parametrize("url", ["/get_status", "/api/get_status"])
 def test_get_status(client_no_login, url):
-    with patch.object(os, "popen", web_mocked_system), patch.object(
-        os, "system", web_mocked_system
+    with (
+        patch.object(os, "popen", web_mocked_system),
+        patch.object(os, "system", web_mocked_system),
     ):
         response = client_no_login.get(url)
         assert not response.location
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json
         json = response.json
         assert json.keys() == {
@@ -314,21 +315,21 @@ def test_get_status(client_no_login, url):
 def test_upload_photo(client_no_login, url):
     response = client_no_login.post(url)
     assert not response.location
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize("url", ["/_log_stream", "/api/get_log"])
 def test_log_stream(client_no_login, url):
     response = client_no_login.get(url)
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert "test_message" in response.data.decode()
 
 
 def test_export(client_no_login):
     response = client_no_login.get("/export")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     with open(Constants.CONFIG_FILE_DEFAULT, "r") as file:
         assert "".join(file.readlines()) == response.data.decode()
 
@@ -336,7 +337,7 @@ def test_export(client_no_login):
 def test_import(client_no_login):
     response = client_no_login.post("/import")
     assert not response.location
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_plugins(client_no_login):
@@ -344,57 +345,57 @@ def test_plugins(client_no_login):
     assert (
         response.location == "http://localhost/plugins?plugin=Plugin1&variable=General"
     )
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_stats(client_no_login):
     response = client_no_login.post("/stats")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_logs(client_no_login):
     response = client_no_login.post("/logs")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_tools(client_no_login):
     response = client_no_login.post("/tools")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_settings(client_no_login):
     response = client_no_login.post("/settings")
     assert response.location == "/settings/Sources"
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_dummy(client_no_login):
     response = client_no_login.post("/dummy")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_get_image_api_thumb(client_no_login):
     response = client_no_login.get("/api/get_image?thumb")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.data == b"No Photo!"
 
 
 def test_get_image_api_original(client_no_login):
     response = client_no_login.get("/api/get_image?original")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.data == b"No Photo!"
 
 
 def test_get_image_api_original_thumb(client_no_login):
     response = client_no_login.get("/api/get_image?original&thumb")
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.data == b"No Photo!"
 
 
@@ -402,7 +403,7 @@ def test_get_image_api_original_thumb(client_no_login):
 def test_get_image_api_original_binary(app_no_config, url):
     response = app_no_config.test_client().get(url)
     assert not response.location
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.mimetype == "image/bmp"
 
 
@@ -410,20 +411,20 @@ def test_display_power_empty(client_no_login):
     with patch.object(os, "popen", web_mocked_system):
         response = client_no_login.get("/api/display_power=")
         assert not response.location
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"state": "data"}
 
 
 def test_display_power_wrong(client_no_login):
     response = client_no_login.post("/api/display_power=")
-    assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
 @pytest.mark.parametrize("action", ["0", "false", "off"])
 def test_display_power_off(client_no_login, action):
     with patch.object(os, "popen", web_mocked_system), Capturing() as output:
         response = client_no_login.get(f"/api/display_power={action}")
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
 
     assert output == ["sudo vcgencmd display_power 0 2> /dev/null"]
 
@@ -432,14 +433,15 @@ def test_display_power_off(client_no_login, action):
 def test_display_power_on(client_no_login, action):
     with patch.object(os, "popen", web_mocked_system), Capturing() as output:
         response = client_no_login.get(f"/api/display_power={action}")
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
 
     assert output == ["sudo vcgencmd display_power 1 2> /dev/null"]
 
 
 def test_login_ok(client):
-    with patch.object(UsersManager, "check", mock_check), patch.object(
-        UsersManager, "get_by_username", mock_load_user
+    with (
+        patch.object(UsersManager, "check", mock_check),
+        patch.object(UsersManager, "get_by_username", mock_load_user),
     ):
         response = client.post(
             "/login",
@@ -449,7 +451,7 @@ def test_login_ok(client):
             follow_redirects=True,
         )
         assert not response.location
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert Constants.EPIFRAME_VERSION in response.data.decode()
 
 
@@ -462,7 +464,7 @@ def test_login_nok(client):
             ),
             follow_redirects=True,
         )
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert Constants.EPIFRAME_VERSION not in response.data.decode()
         assert "Remember me" in response.data.decode()
         assert (
@@ -477,42 +479,45 @@ def test_login_nok_empty(client):
             data=dict(password="test", login_form="", remember=True),
             follow_redirects=True,
         )
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert Constants.EPIFRAME_VERSION not in response.data.decode()
         assert "Remember me" in response.data.decode()
         assert "Please fill in all required data!" in response.data.decode()
 
 
 def test_load_from_request(client):
-    with patch.object(os, "popen", web_mocked_system), patch.object(
-        UsersManager, "get_by_api", mock_get_by_api
+    with (
+        patch.object(os, "popen", web_mocked_system),
+        patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=?api_key=api_key",
         )
         assert not response.location
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"state": "data"}
 
 
 def test_load_from_request_nok(client):
-    with patch.object(os, "popen", web_mocked_system), patch.object(
-        UsersManager, "get_by_api", mock_get_by_api
+    with (
+        patch.object(os, "popen", web_mocked_system),
+        patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=?api_key=not_an_api_key",
         )
         assert (
             response.location
-            == "/login?next=%2Fapi%2Fdisplay_power%253D%3Fapi_key%3Dnot_an_api_key"
+            == "/login?next=%2Fapi%2Fdisplay_power%3D%3Fapi_key%3Dnot_an_api_key"
         )
-        assert response.status_code == status.HTTP_302_FOUND
+        assert response.status_code == HTTPStatus.FOUND
         assert not response.json
 
 
 def test_load_from_header(client):
-    with patch.object(os, "popen", web_mocked_system), patch.object(
-        UsersManager, "get_by_api", mock_get_by_api
+    with (
+        patch.object(os, "popen", web_mocked_system),
+        patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=",
@@ -521,13 +526,14 @@ def test_load_from_header(client):
             },
         )
         assert not response.location
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"state": "data"}
 
 
 def test_load_from_header_nok(client):
-    with patch.object(os, "popen", web_mocked_system), patch.object(
-        UsersManager, "get_by_api", mock_get_by_api
+    with (
+        patch.object(os, "popen", web_mocked_system),
+        patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=",
@@ -535,8 +541,8 @@ def test_load_from_header_nok(client):
                 "Authorization": f"Basic {base64.b64encode('not_an_api_key'.encode()).decode()}"
             },
         )
-        assert response.location == "/login?next=%2Fapi%2Fdisplay_power%253D"
-        assert response.status_code == status.HTTP_302_FOUND
+        assert response.location == "/login?next=%2Fapi%2Fdisplay_power%3D"
+        assert response.status_code == HTTPStatus.FOUND
         assert not response.json
 
 
@@ -544,7 +550,7 @@ def test_load_from_header_nok(client):
 def test_action_empty(client_no_login, url):
     with patch.object(os, "popen", web_mocked_system):
         response = client_no_login.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"error": "No Action!"}
 
 
@@ -552,7 +558,7 @@ def test_action_empty(client_no_login, url):
 def test_action_wrong(client_no_login, url):
     with patch.object(os, "popen", web_mocked_system):
         response = client_no_login.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"error": "Action Unknown!"}
 
 
@@ -560,7 +566,7 @@ def test_action_wrong(client_no_login, url):
 def test_action_next(client_no_login, url):
     with Capturing() as output:
         response = client_no_login.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
     assert output == ["IntervalManager_remove", "Event triggered params='NOPARAMS'"]
@@ -570,7 +576,7 @@ def test_action_next(client_no_login, url):
 def test_action_restart(client_no_login, url):
     with patch.object(os, "system", web_mocked_system), Capturing() as output:
         response = client_no_login.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
     assert output == ["sudo systemctl restart ePiframe.service"]
@@ -580,7 +586,7 @@ def test_action_restart(client_no_login, url):
 def test_action_reboot(client_no_login, url):
     with patch.object(os, "system", web_mocked_system), Capturing() as output:
         response = client_no_login.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
     assert output == ["sudo reboot"]
@@ -590,7 +596,7 @@ def test_action_reboot(client_no_login, url):
 def test_action_power_off(client_no_login, url):
     with patch.object(os, "system", web_mocked_system), Capturing() as output:
         response = client_no_login.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
     assert output == ["sudo poweroff"]
@@ -600,19 +606,19 @@ def test_settings_pages(client_no_login):
     config = ConfigManager(Constants.CONFIG_FILE_DEFAULT, Constants.CONFIG_FILE_DEFAULT)
     for section in config.get_sections():
         response = client_no_login.get(f"/settings/{section}")
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
         for setting in config.get_section_properties(section):
             assert WebUIManager.adapt_name(config, setting) in response.data.decode()
 
 
 def test_plugin_settings_pages(client_no_login):
-    plugins = tests.test_pluginsmanager.get_manager()
+    plugins = get_plugins_manager()
     for plugin in plugins.get_plugins():
         for section in plugin.config.get_sections():
             response = client_no_login.get(
                 f"/plugins?plugin={plugin.name.title()}&variable={section}"
             )
-            assert response.status_code == status.HTTP_200_OK
+            assert response.status_code == HTTPStatus.OK
             for setting in plugin.config.get_section_properties(section):
                 assert (
                     WebUIManager.adapt_name(plugin.config, setting)
@@ -622,13 +628,13 @@ def test_plugin_settings_pages(client_no_login):
 
 def test_plugin_api(client_no_login):
     response = client_no_login.get("/api/get_text/my_text")
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert response.data.decode() == '{"text_label":"my_text"}\n'
 
 
 def test_plugin_menu(client_no_login):
     response = client_no_login.get("/")
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == HTTPStatus.OK
     assert (
         '<a href="127.0.0.1" class="nav-link align-middle px-1 link-secondary server-menu d-none d-md-block">'
         in response.data.decode()
@@ -642,7 +648,7 @@ def test_plugin_menu(client_no_login):
 def test_plugin_action(client_no_login):
     with Capturing() as output:
         response = client_no_login.get("/api/action=lightoff")
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == HTTPStatus.OK
     assert "I'm dummy" in output
 
 
@@ -676,4 +682,4 @@ def web_mocked_system(*args, **kwargs):
 
 @patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def get_webui_manager():
-    return WebUIManager(get_manager())
+    return WebUIManager(get_backend_manager())

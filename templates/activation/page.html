@@ -9,7 +9,7 @@
 				position: relative;
 				overflow: hidden;
 			}
-		
+
 			.btn-file input[type=file] {
 				position: absolute;
 				top: 0;
@@ -20,7 +20,7 @@
 				text-align: right;
 				filter: alpha(opacity=0);
 				opacity: 0;
-				outline: none;   
+				outline: none;
 				cursor: inherit;
 				display: block;
 			}
@@ -69,7 +69,7 @@
 						<button class='btn-primary btn-sm btn text-nowrap px-1 mx-1' type="submit" form="stop_form">Stop authentication tool</button>
 					</form>{% endif %}
 					{% with messages = get_flashed_messages() %}
-					{% if messages %}					
+					{% if messages %}
 						{% for message in messages %}<div class="text-center text-danger">
 							{{ message }}
 						</div>{% endfor %}
@@ -98,7 +98,7 @@
 				});
     		}
 		};{% endif %}
-		
+
 		$("#step_{{ page }}").addClass("link-dark");
 		$("#step_{{ last }}").addClass("disabled");
 	</script>

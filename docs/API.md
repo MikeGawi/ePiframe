@@ -7,7 +7,7 @@ General API command:
 ```
 <ePiframe IP with port>/api/<command>?api_key=<api key value>[&<optional parameter>=<optional value>&...]
 ```
-e.g.: 
+e.g.:
 
 ```
 192.168.0.123:8080/api/get_image?api_key=1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p&original&thumb
@@ -165,7 +165,7 @@ For ```/api/display_power=```, e.g.:
 |--|--|--|
 | ```/api/upload_photo``` | POST | None |
 
-Upload photo target that will automatically convert and display uploaded image. The next update time will be resetted.
+Upload photo target that will automatically convert and display uploaded image. The next update time will be reset.
 
 **Examples:**
 * ```/api/upload_photo```
