@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import telebot
 from typing import Union
-from misc.connection import Connection
+from epiframe.core.network import check_internet
 from misc.telebotcmd import TelebotCmd
 from typing import TYPE_CHECKING
 
@@ -33,7 +33,7 @@ class TelebotManager:
 
     @staticmethod
     def check_token(token: str) -> telebot:
-        return_value = Connection.check_internet(
+        return_value = check_internet(
             "http://" + TelebotCmd.API_URL, int(TelebotCmd.API_CONNECTION_TIMEOUT)
         )
         if return_value:

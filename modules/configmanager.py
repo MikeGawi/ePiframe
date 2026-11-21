@@ -2,7 +2,7 @@ import subprocess
 from typing import List
 
 from misc.configproperty import ConfigProperty
-from misc.connection import Connection
+from epiframe.core.network import validate_ip
 from modules.base.configbase import ConfigBase
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
@@ -294,7 +294,7 @@ class ConfigManager(ConfigBase):
                 reset_needed=True,
             ),
             ConfigProperty(
-                "web_host", self, dependency="use_web", check_function=Connection.is_ip
+                "web_host", self, dependency="use_web", check_function=validate_ip
             ),
             ConfigProperty(
                 "web_port",
