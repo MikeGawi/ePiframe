@@ -2,13 +2,13 @@ import os.path
 from unittest.mock import patch
 import pytest
 import telebot
-from starlette import status
+from http import HTTPStatus
 from misc.telebotcmd import TelebotCmd
 from modules.telebotmanager import TelebotManager
 from tests.helpers.backend_manager import MockedBackendManager
 from tests.helpers.bot import MockedBot, MockedBotFail
 from tests.helpers.capturing import Capturing
-from tests.helpers.helpers import remove_file, not_raises
+from tests.helpers.helpers import remove_file
 from tests.helpers.message import (
     MockedChat,
     MockedMessage,
@@ -18,7 +18,7 @@ from tests.helpers.message import (
 
 
 def test_init(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot):
         TelebotManager(backend)
@@ -27,13 +27,12 @@ def test_init(requests_mocker):
 
 
 def test_init_fail(requests_mocker):
-    requests_mocker.get(
-        url="http://api.telegram.org", status_code=status.HTTP_404_NOT_FOUND
-    )
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.NOT_FOUND)
     backend = MockedBackendManager()
-    with patch.object(telebot, "TeleBot", MockedBotFail), pytest.raises(
-        Warning
-    ) as warning:
+    with (
+        patch.object(telebot, "TeleBot", MockedBotFail),
+        pytest.raises(Warning) as warning,
+    ):
         TelebotManager(backend)
 
     assert warning
@@ -41,7 +40,7 @@ def test_init_fail(requests_mocker):
 
 
 def test_start(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot):
         TelebotManager(backend).start()
@@ -50,7 +49,7 @@ def test_start(requests_mocker):
 
 
 def test_message_unsupported(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(content_type="rubbish", text="text", chat=MockedChat(1))
@@ -63,7 +62,7 @@ def test_message_unsupported(requests_mocker):
 
 
 def test_message_unknown_command(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -78,7 +77,7 @@ def test_message_unknown_command(requests_mocker):
 
 
 def test_message_unknown_id(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -93,7 +92,7 @@ def test_message_unknown_id(requests_mocker):
 
 
 def test_message_ping(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -110,7 +109,7 @@ def test_message_ping(requests_mocker):
 
 
 def test_message_help(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -125,7 +124,7 @@ def test_message_help(requests_mocker):
 
 
 def test_message_start(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -140,7 +139,7 @@ def test_message_start(requests_mocker):
 
 
 def test_message_echo_empty(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -157,7 +156,7 @@ def test_message_echo_empty(requests_mocker):
 
 
 def test_message_echo(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -174,7 +173,7 @@ def test_message_echo(requests_mocker):
 
 
 def test_message_reboot(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -192,7 +191,7 @@ def test_message_reboot(requests_mocker):
 
 
 def test_message_next_nok(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_pid(True)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
@@ -211,7 +210,7 @@ def test_message_next_nok(requests_mocker):
 
 
 def test_message_next_ok(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_pid(False)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
@@ -231,7 +230,7 @@ def test_message_next_ok(requests_mocker):
 
 
 def test_message_current(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -251,7 +250,7 @@ def test_message_current(requests_mocker):
 
 
 def test_message_original(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -271,7 +270,7 @@ def test_message_original(requests_mocker):
 
 
 def test_message_status_metric_nok(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_metric(True)
     backend.set_cmd(None)
@@ -295,7 +294,7 @@ def test_message_status_metric_nok(requests_mocker):
 
 
 def test_message_status_non_metric(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_metric(False)
     backend.set_cmd("cmd_response")
@@ -319,7 +318,7 @@ def test_message_status_non_metric(requests_mocker):
 
 
 def test_message_status_metric(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_metric(True)
     backend.set_cmd("cmd_response")
@@ -343,7 +342,7 @@ def test_message_status_metric(requests_mocker):
 
 
 def test_message_when(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
         msg = MockedMessage(
@@ -362,7 +361,7 @@ def test_message_when(requests_mocker):
 
 
 def test_message_longer_wrong(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_max_interval(5)
     backend.set_interval(1)
@@ -382,7 +381,7 @@ def test_message_longer_wrong(requests_mocker):
 
 
 def test_message_longer_off(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_max_interval(5)
     backend.set_interval(1)
@@ -403,7 +402,7 @@ def test_message_longer_off(requests_mocker):
 
 
 def test_message_longer_minus(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_max_interval(5)
     backend.set_interval(1)
@@ -424,7 +423,7 @@ def test_message_longer_minus(requests_mocker):
 
 
 def test_message_longer_max(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_max_interval(5)
     backend.set_interval(0)
@@ -450,7 +449,7 @@ def test_message_longer_max(requests_mocker):
 
 
 def test_message_longer_sum(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_max_interval(5)
     backend.set_interval(1)
@@ -477,7 +476,7 @@ def test_message_longer_sum(requests_mocker):
 
 
 def test_message_longer_ok(requests_mocker):
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_max_interval(5)
     backend.set_interval(0)
@@ -506,7 +505,7 @@ def test_message_photo(requests_mocker):
     file_name = "test_upload_file.jpg"
     file_content = b"12345"
     remove_file(file_name)
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_pid(False)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
@@ -538,7 +537,7 @@ def test_message_photo_nok(requests_mocker):
     file_name = "test_upload_file.jpg"
     file_content = b"12345"
     remove_file(file_name)
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_pid(True)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:
@@ -562,7 +561,7 @@ def test_message_photo_error(requests_mocker):
     file_name = "test_upload_file.jpg"
     file_content = "rubbish"
     remove_file(file_name)
-    requests_mocker.get(url="http://api.telegram.org", status_code=status.HTTP_200_OK)
+    requests_mocker.get(url="http://api.telegram.org", status_code=HTTPStatus.OK)
     backend = MockedBackendManager()
     backend.set_pid(False)
     with Capturing() as output, patch.object(telebot, "TeleBot", MockedBot) as bot:

@@ -1,7 +1,6 @@
 from typing import List
 import pandas as pd
 import dateutil
-from dateutil.parser import parser
 from datetime import datetime
 
 
@@ -17,8 +16,10 @@ class FilteringManager:
     def filter_by_from_date(cls, photos, date: str, header: str):
         start_date_time = datetime.strptime(date, cls.__DATE_MASK)
         time_filter = photos.apply(
-            lambda row: dateutil.parser.isoparse(row[header]).replace(tzinfo=None)
-            > start_date_time,
+            lambda row: (
+                dateutil.parser.isoparse(row[header]).replace(tzinfo=None)
+                > start_date_time
+            ),
             axis=1,
         )
         return photos[time_filter]
@@ -27,8 +28,10 @@ class FilteringManager:
     def filter_by_to_date(cls, photos, date: str, header: str):
         start_date_time = datetime.strptime(date, cls.__DATE_MASK)
         time_filter = photos.apply(
-            lambda row: dateutil.parser.isoparse(row[header]).replace(tzinfo=None)
-            < start_date_time,
+            lambda row: (
+                dateutil.parser.isoparse(row[header]).replace(tzinfo=None)
+                < start_date_time
+            ),
             axis=1,
         )
         return photos[time_filter]

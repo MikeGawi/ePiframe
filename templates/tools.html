@@ -11,9 +11,9 @@
 	  {% endfor %}
 	  <button class="btn btn-secondary" type="button" id="poweroff"><i class="bi bi-power px-2"></i>Power Off</button>
 	</div>
-	<script>		
+	<script>
 		$(".tools-menu").addClass("link-light");
-		
+
 		$(function() {
           $('button').on('click', function(e) {
             e.preventDefault()
@@ -21,7 +21,7 @@
 				var xmlHttp = new XMLHttpRequest();
     			xmlHttp.open( "GET", "{{ url_for('tools_functions') }}"+this.id, false );
     			xmlHttp.send( null );
-			} 
+			}
 			return false;
           });
         });

@@ -1,6 +1,6 @@
 import pytest
 import requests
-from starlette import status
+from http import HTTPStatus
 from misc.connection import Connection
 from tests.helpers.helpers import not_raises, remove_file
 
@@ -10,7 +10,7 @@ def test_check_internet_ok(requests_mocker):
 
     requests_mocker.get(
         url=url,
-        status_code=status.HTTP_200_OK,
+        status_code=HTTPStatus.OK,
     )
 
     response = Connection.check_internet(url=url, timeout=1)
@@ -50,17 +50,17 @@ def test_download_file_ok(requests_mocker):
     test_download_filename = "test_download_file"
     test_content = b"test_content"
 
-    requests_mocker.get(url=url, status_code=status.HTTP_200_OK, content=test_content)
+    requests_mocker.get(url=url, status_code=HTTPStatus.OK, content=test_content)
 
     response = Connection.download_file(
         url=url,
         destination_folder=".",
         file_name=test_download_filename,
-        code=status.HTTP_200_OK,
+        code=HTTPStatus.OK,
         timeout=1,
     )
 
-    assert response == status.HTTP_200_OK
+    assert response == HTTPStatus.OK
 
     with open(test_download_filename, "rb") as file:
         data = file.read()
@@ -71,13 +71,13 @@ def test_download_file_ok(requests_mocker):
 def test_download_file_nok(requests_mocker):
     url = "http://test-download.com"
 
-    requests_mocker.get(url=url, status_code=status.HTTP_404_NOT_FOUND)
+    requests_mocker.get(url=url, status_code=HTTPStatus.NOT_FOUND)
 
     with pytest.raises(requests.exceptions.HTTPError):
         Connection.download_file(
             url=url,
             destination_folder=".",
             file_name="filename",
-            code=status.HTTP_200_OK,
+            code=HTTPStatus.OK,
             timeout=1,
         )

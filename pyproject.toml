@@ -1,0 +1,143 @@
+[project]
+name = "epiframe"
+version = "2.0.0a1"
+description = "Photo frame for Raspberry Pi with e-Paper and HDMI displays"
+readme = "README.md"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+authors = [{ name = "MikeGawi" }]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "flask>=3.1",
+    "flask-login>=0.6.3",
+    "flask-wtf>=1.2",
+    "pillow>=11",
+    "pytelegrambotapi>=4.30",
+    "python-dateutil>=2.9",
+    "requests>=2.32",
+    "werkzeug>=3.1",
+    "wtforms>=3.3",
+    # Temporary: pandas is removed in Phase 3 (SQLite photo index).
+    "pandas>=2.2,<3",
+    # Direct dependency only so that ARM gets it from piwheels (pulled in by pandas and inky).
+    "numpy>=1.26",
+    # Temporary: Google Photos is removed in Phase 2.
+    "google-api-python-client>=2.150",
+    "google-auth-httplib2>=0.2",
+    "google-auth-oauthlib>=1.2",
+    # SPI access for e-Paper displays, only needed (and buildable) on the Raspberry Pi.
+    "spidev>=3.6; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+]
+
+[project.urls]
+Homepage = "https://github.com/MikeGawi/ePiframe"
+Issues = "https://github.com/MikeGawi/ePiframe/issues"
+
+[dependency-groups]
+test = [
+    "pytest>=9",
+    "pytest-cov>=7",
+    "pytest-mock>=3.14",
+    "requests-mock>=1.12",
+]
+dev = [
+    { include-group = "test" },
+    "genbadge[coverage,tests]>=1.1.3",
+    "mypy>=2",
+    "pre-commit>=4",
+    "radon>=6",
+    "ruff>=0.17",
+    "types-requests",
+    "xenon>=0.9.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+# ---------------------------------------------------------------------------- uv
+[tool.uv]
+default-groups = ["dev"]
+
+# piwheels hosts prebuilt ARMv6/ARMv7 wheels for Raspberry Pi OS. It is used only for the
+# packages with C extensions, and only on ARM, so x86 machines (dev, CI) keep using PyPI.
+[[tool.uv.index]]
+name = "piwheels"
+url = "https://www.piwheels.org/simple"
+explicit = true
+
+[tool.uv.sources]
+numpy = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+pandas = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+pillow = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+spidev = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+
+# -------------------------------------------------------------------------- ruff
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+extend-exclude = ["lib", "venv", "static", "templates"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "C90", "UP", "B", "SIM", "PL", "RUF", "PT", "S"]
+ignore = [
+    "PLR2004", # magic values in comparisons
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR0913", "PLR0915"]
+# 1.x code: only basic checks until each module is ported to src/epiframe (Phase 3).
+"{ePiframe,ePiframe_service,activate}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
+"{misc,modules,tools,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
+"tests/{test_*,conftest}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]
+"tests/{helpers,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]
+
+# -------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.11"
+files = ["src/epiframe", "scripts", "tests/epiframe", "tests/scripts"]
+strict = true
+warn_unreachable = true
+mypy_path = "src"
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["genbadge.*", "radon.*"]
+ignore_missing_imports = true
+
+# ------------------------------------------------------------------------ pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/epiframe", "scripts"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@overload",
+]
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# ------------------------------------------------------------------------ codespell
+[tool.codespell]
+skip = "./static/js,./lib,./venv,./.venv,*.svg,*.gif,*.png,*.jpg,uv.lock"
+ignore-words-list = "exten,valu"

@@ -25,9 +25,11 @@ def test_init():
 
 
 def test_feed():
-    with patch.object(os, "popen", mocked_system), patch.object(
-        os, "system", mocked_system
-    ), patch.object(os.path, "exists", mocked_exists):
+    with (
+        patch.object(os, "popen", mocked_system),
+        patch.object(os, "system", mocked_system),
+        patch.object(os.path, "exists", mocked_exists),
+    ):
         stats_manager = StatsManager(backend=MockBackend())
         with Capturing() as output:
             stats_manager.feed_stats()

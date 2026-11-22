@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1"/>	
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}"/>
     {% if dark_theme %}
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-dark.min.css') }}" crossorigin="anonymous"/>
@@ -18,8 +18,8 @@
 	<script>
 		original = 0;
 		converted = 0;
-		
-		function status() { $.getJSON("{{ url_for('get_status') }}", function(data) { 
+
+		function status() { $.getJSON("{{ url_for('get_status') }}", function(data) {
 				$("#state").text(data.state);
 				$("#load").text(data.load);
 				$("#uptime").text(data.uptime);
@@ -27,20 +27,20 @@
 				$("#memory").text(data.mem);
 				$("#service").text(data.service);
 				$("#update").text(data.update);
-				
+
 				var timestamp = new Date().getTime();
-				
+
 				if (original !== data.original) {
 					original = data.original;
 					$(".original").prop("src", "{{ url_for('get_image') }}?original=1&thumb=1&t=" + timestamp);
 				}
-				
+
 				if (converted !== data.converted) {
 					converted = data.converted;
 					$(".converted").prop("src", "{{ url_for('get_image') }}?thumb=1&t=" + timestamp);
 				}
 			});
-			return false; 
+			return false;
 		}
 		status();
 		setInterval(status, 10000);
@@ -87,7 +87,7 @@
 				</div>
 			</div>
 			<div class="col w-75">
-				<div class="row bg-dark"> 
+				<div class="row bg-dark">
 					<div class="col-auto text-white fw-lighter fs-1 align-middle align-cls-center px-0">ePiframe</div>
 					<div class="row col-auto ms-auto py-2">
 						<div class="col-auto text-white-50 font-monospace px-2" style="font-size:10px">
@@ -103,7 +103,7 @@
 						</div>
 					</div>
 					<div class="col-auto px-2"></div>
-				</div>   
+				</div>
 				<div class="row" id="content">{% block content %}{% endblock %}</div>
 			</div>
 		</div>

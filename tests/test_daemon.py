@@ -1,3 +1,4 @@
+import sys
 import os
 import time
 import pytest
@@ -9,7 +10,7 @@ pid_filename = "tests/test_pid.pid"
 def test_daemon_start():
     remove_file(pid_filename)
     os.popen(
-        f"python {os.path.dirname(os.path.realpath(__file__))}/helpers/daemon_test.py start"
+        f"{sys.executable} {os.path.dirname(os.path.realpath(__file__))}/helpers/daemon_test.py start"
     )
 
     time.sleep(1)
@@ -22,7 +23,7 @@ def test_daemon_start():
 
 def test_daemon_restart():
     os.popen(
-        f"python {os.path.dirname(os.path.realpath(__file__))}/helpers/daemon_test.py restart"
+        f"{sys.executable} {os.path.dirname(os.path.realpath(__file__))}/helpers/daemon_test.py restart"
     )
 
     time.sleep(1)
@@ -35,7 +36,7 @@ def test_daemon_restart():
 
 def test_daemon_stop():
     os.popen(
-        f"python {os.path.dirname(os.path.realpath(__file__))}/helpers/daemon_test.py stop"
+        f"{sys.executable} {os.path.dirname(os.path.realpath(__file__))}/helpers/daemon_test.py stop"
     )
 
     time.sleep(1)

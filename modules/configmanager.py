@@ -15,6 +15,19 @@ from modules.weathermanager import WeatherManager
 from modules.weatherstampmanager import WeatherStampManager
 
 
+class _Setting:
+    def __init__(self, section: str, name):
+        self.section = section
+        self.name = name
+
+
+class _Legacy:
+    def __init__(self, old: _Setting, new: _Setting, convert):
+        self.old = old
+        self.new = new
+        self.convert = convert
+
+
 class ConfigManager(ConfigBase):
     __SPI_CHECK1 = "ls -l /dev/spidev*"
     __SPI_CHECK2 = "lsmod | grep spi_"
@@ -333,21 +346,10 @@ class ConfigManager(ConfigBase):
     def legacy_convert(self):
         # legacy exceptional backward handling for converting one property to another property under different name
         # and the ones that convert could not handle
-        class Setting:
-            def __init__(self, section: str, name):
-                self.section = section
-                self.name = name
-
-        class Legacy:
-            def __init__(self, old: Setting, new: Setting, convert):
-                self.old = old
-                self.new = new
-                self.convert = convert
-
-        legacy: List[Legacy] = [
-            Legacy(
-                Setting("Album settings", "sort_desc"),
-                Setting("Filtering", "sorting"),
+        legacy: List[_Legacy] = [
+            _Legacy(
+                _Setting("Album settings", "sort_desc"),
+                _Setting("Filtering", "sorting"),
                 FilteringManager.get_descending,
             ),
         ]

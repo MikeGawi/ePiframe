@@ -4,7 +4,6 @@ from typing import AnyStr
 
 
 class PIDManager:
-
     __pid = None
     __path = None
 

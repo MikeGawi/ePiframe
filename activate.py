@@ -316,8 +316,8 @@ def get_text():
 
 def start():
     try:
-        from flask import Flask, render_template, request, redirect, flash
-        import crypt
+        # availability check only
+        from flask import Flask, render_template, request, redirect, flash  # noqa: F401
 
         check_templates()
 
@@ -348,12 +348,13 @@ def check_templates():
 
 
 def prepare_app():
+    import secrets
+
     from flask import Flask
-    import crypt
 
     global app
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = crypt.mksalt(crypt.METHOD_SHA512)
+    app.config["SECRET_KEY"] = secrets.token_hex(32)
     app.add_url_rule("/upload", view_func=upload, methods=["POST"])
     app.add_url_rule("/generate", view_func=generate, methods=["POST"])
     app.add_url_rule("/stop", view_func=stop, methods=["POST"])

@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 
 class StatsManager:
-
     __RRA_IND = "RRA:AVERAGE:{}"
     __RRA = ["0.5:1:8640", "0.5:6:2880", "0.5:60:2016", "0.5:180:1488", "0.5:360:8784"]
     __DS = "DS:{}:GAUGE:600:U:U"

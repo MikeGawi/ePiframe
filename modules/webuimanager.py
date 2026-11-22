@@ -14,7 +14,14 @@ from flask import (
 )
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, IntegerField, SelectField, FloatField
+from wtforms import (
+    StringField,
+    BooleanField,
+    IntegerField,
+    SelectChoice,
+    SelectField,
+    FloatField,
+)
 from wtforms.widgets import NumberInput, PasswordInput
 from misc.user import User
 from typing import TYPE_CHECKING
@@ -36,7 +43,6 @@ if TYPE_CHECKING:
 
 
 class WebUIManager:
-
     __SETTINGS_HTML = "settings.html"
     __PLUGINS_HTML = "plugins.html"
     __LOGS_HTML = "logs.html"
@@ -589,7 +595,11 @@ class WebUIManager:
         return SelectField(
             self.adapt_name(config, property_name),
             default=config.get_default(property_name),
-            choices=prop.get_possible(),
+            # WTForms >= 3.3 silently drops int choices and deprecates tuples
+            choices=[
+                SelectChoice(value=value, label=str(value))
+                for value in prop.get_possible()
+            ],
             render_kw=render,
             description=config.get_comment(property_name),
         )
@@ -710,12 +720,12 @@ class WebUIManager:
                 pass
             except Exception as exception:
                 getattr(form, iterator).errors = exception
-                getattr(form, iterator).render_kw[
-                    self.__HTML_CLASS
-                ] += self.__HTML_IS_INVALID
-                getattr(form, iterator).render_kw[
-                    self.__HTML_INVALID
-                ] = self.__HTML_IS_INVALID
+                getattr(form, iterator).render_kw[self.__HTML_CLASS] += (
+                    self.__HTML_IS_INVALID
+                )
+                getattr(form, iterator).render_kw[self.__HTML_INVALID] = (
+                    self.__HTML_IS_INVALID
+                )
 
     # @app.route('/settings/<variable>', methods=['GET', 'POST'])
     @login_required

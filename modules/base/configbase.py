@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 
 
 class ConfigBase(ABC):
-
     __ERROR_PARSE = "Error parsing {} configuration entry"
     __ERROR_SAVE = "Error saving config file!"
 

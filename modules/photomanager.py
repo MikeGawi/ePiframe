@@ -3,7 +3,6 @@ from misc.constants import Constants
 
 
 class PhotoManager:
-
     __album = pd.DataFrame()
     __photos = pd.DataFrame()
 
@@ -70,7 +69,7 @@ class PhotoManager:
     def append_photos(self, target_dataframe, source_dataframe):
         if target_dataframe is None:
             target_dataframe = pd.DataFrame()
-        merged = target_dataframe.append([source_dataframe])
+        merged = pd.concat([target_dataframe, source_dataframe])
         return self.reset_index(merged)
 
     @staticmethod

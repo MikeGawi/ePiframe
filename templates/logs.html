@@ -10,26 +10,26 @@
 	<script>
 		var scroll = 0;
 		function get_logs() {
-			$.get('{{ url_for('stream') }}', function(data) {	
+			$.get('{{ url_for('stream') }}', function(data) {
 				var output = document.getElementById('output');
 				if (data && data.length !== 0) { output.textContent = data; }
 			});
 		}
-		
-		setTimeout(get_logs, 1000);		
+
+		setTimeout(get_logs, 1000);
 		setInterval(get_logs, 3000);
-		
+
 		setInterval(function() {
 		    var div = document.getElementById('outputframe');
 			var isScrolledToBottom = div.scrollHeight - div.clientHeight - 500 <= div.scrollTop;
-			
-		    if (isScrolledToBottom || ( scroll <= 10 && scroll >= 0) ){ 
-				$('#outputframe').animate({scrollTop: div.scrollHeight - div.clientHeight}, 500); 
+
+		    if (isScrolledToBottom || ( scroll <= 10 && scroll >= 0) ){
+				$('#outputframe').animate({scrollTop: div.scrollHeight - div.clientHeight}, 500);
 				if ( div.scrollTop > div.clientHeight) { scroll = -1; }
 			}
 		}, 1000);
 	</script>
-	<script>		
+	<script>
 		$(".logs-menu").addClass("link-light");
 	</script>
 {% endblock %}
