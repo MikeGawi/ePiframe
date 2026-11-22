@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from ePiframe_service import Service
     from modules.backendmanager import BackendManager
     from epiframe.config.base import ConfigBase
-    from modules.convertmanager import ConvertManager
+    from epiframe.processing.imagemagick import ImageMagick
     from collections.abc import Iterable
 
     from epiframe.photos.model import Photo
@@ -63,7 +63,7 @@ class PluginBase:
         self,
         original_photo: str,
         is_horizontal: bool,
-        convert_manager: ConvertManager,
+        image_magick: ImageMagick,
         photo: Photo | None,
     ):
         pass
@@ -74,7 +74,7 @@ class PluginBase:
         width: int,
         height: int,
         is_horizontal: bool,
-        convert_manager: ConvertManager,
+        image_magick: ImageMagick,
         photo: Photo | None,
     ):
         pass
