@@ -1,5 +1,5 @@
-from misc.configproperty import ConfigProperty
-from modules.base.configbase import ConfigBase
+from epiframe.config.property import ConfigProperty, PropertyType
+from epiframe.config.base import ConfigBase
 from modules.base.pluginbase import PluginBase
 
 
@@ -12,11 +12,7 @@ class Plugin(PluginBase):
 
     class PluginConfigManager(ConfigBase):
         def load_settings(self):
-            self.SETTINGS = [
-                ConfigProperty(
-                    "is_enabled", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-                )
-            ]
+            return [ConfigProperty("is_enabled", type=PropertyType.BOOLEAN)]
 
     def __init__(
         self,

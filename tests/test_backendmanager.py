@@ -5,7 +5,8 @@ from unittest.mock import patch
 import pytest
 
 from epiframe.config.paths import CONFIG_FILE, CONFIG_FILE_DEFAULT
-from modules import configmanager, timermanager, intervalmanager
+from epiframe.config import manager as configmanager
+from modules import timermanager, intervalmanager
 from modules.backendmanager import BackendManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
@@ -224,6 +225,8 @@ def test_get_state_busy():
         patch.object(configmanager, "ConfigManager", Config) as config,
         patch.object(timermanager, "TimerManager", MockedTimerManager),
         patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        # Config.settings is shared by all tests, restore it
+        patch.dict(Config.settings),
     ):
         manager = BackendManager(event_mock, ".")
         config.set("pid_file", CONFIG_FILE_DEFAULT)

@@ -6,7 +6,8 @@ from unittest.mock import patch, PropertyMock
 import pytest
 import requests_mock
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
-from modules import timermanager, intervalmanager, configmanager
+from epiframe.config import manager as configmanager
+from modules import timermanager, intervalmanager
 from modules.backendmanager import BackendManager
 from modules.pluginsmanager import PluginsManager
 from modules.webuimanager import WebUIManager

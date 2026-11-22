@@ -9,7 +9,7 @@ from misc.pimoronidisplay import PimoroniDisplay
 from misc.wavesharedisplay import WaveshareDisplay
 
 if TYPE_CHECKING:
-    from modules.configmanager import ConfigManager
+    from epiframe.config.manager import ConfigManager
 
 
 class DisplayManager:

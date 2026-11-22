@@ -3,7 +3,8 @@
 from typing import List
 from unittest.mock import patch
 
-from modules import configmanager, intervalmanager, timermanager
+from epiframe.config import manager as configmanager
+from modules import intervalmanager, timermanager
 from modules.backendmanager import BackendManager
 from tests.helpers.config import Config
 

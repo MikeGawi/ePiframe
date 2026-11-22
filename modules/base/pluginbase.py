@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Any
-from misc.configproperty import ConfigProperty
+from typing import Any
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,8 +9,7 @@ if TYPE_CHECKING:
 
     from ePiframe_service import Service
     from modules.backendmanager import BackendManager
-    from modules.base.configbase import ConfigBase
-    from modules.configmanager import ConfigManager
+    from epiframe.config.base import ConfigBase
     from modules.convertmanager import ConvertManager
     from modules.filteringmanager import FilteringManager
     from modules.indexmanager import IndexManager
@@ -25,9 +23,8 @@ class PluginBase:
     CONFIG_FILE = "config.cfg"
     DEFAULT_CONFIG_FILE = "default/config.default"
     SOURCE = None
-    config: ConfigManager
+    config: ConfigBase
     name: str
-    SETTINGS: List[ConfigProperty]
 
     def __init__(
         self,
@@ -49,7 +46,6 @@ class PluginBase:
         self.config = self.PluginConfigManager(
             os.path.join(self.path, self.CONFIG_FILE),
             os.path.join(self.path, self.DEFAULT_CONFIG_FILE),
-            self,
         )
 
     def is_enabled(self):

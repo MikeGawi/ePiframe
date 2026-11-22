@@ -2,8 +2,8 @@ import subprocess
 from unittest.mock import patch
 import pytest
 
-from misc.configproperty import ConfigProperty
-from modules.base.configbase import ConfigBase
+from epiframe.config.property import ConfigProperty, PropertyType
+from epiframe.config.base import ConfigBase
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
 from tests.helpers.capturing import Capturing
@@ -1032,91 +1032,66 @@ def test_convert_colors_number():
 def get_config():
     class ConfigTest(ConfigBase):
         def load_settings(self):
-            self.SETTINGS = [
+            return [
                 ConfigProperty(
                     "colors_num",
-                    self,
-                    minvalue=1,
+                    min_value=1,
                     not_empty=False,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    type=PropertyType.INTEGER,
                 ),
                 ConfigProperty(
                     "convert_option",
-                    self,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    type=PropertyType.INTEGER,
                     possible=ConvertManager.get_convert_options(),
                 ),
                 ConfigProperty(
                     "image_width",
-                    self,
-                    minvalue=1,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    min_value=1,
+                    type=PropertyType.INTEGER,
                 ),
                 ConfigProperty(
                     "image_height",
-                    self,
-                    minvalue=1,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    min_value=1,
+                    type=PropertyType.INTEGER,
                 ),
                 ConfigProperty(
                     "rotation",
-                    self,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    type=PropertyType.INTEGER,
                     possible=ConvertManager.get_rotation(),
                 ),
                 ConfigProperty(
                     "background_color",
-                    self,
                     possible=ConvertManager.get_background_colors(),
                 ),
-                ConfigProperty(
-                    "convert_bin_path", self, prop_type=ConfigProperty.FILE_TYPE
-                ),
+                ConfigProperty("convert_bin_path", type=PropertyType.FILE),
                 ConfigProperty(
                     "turned",
-                    self,
-                    prop_type=ConfigProperty.BOOLEAN_TYPE,
+                    type=PropertyType.BOOLEAN,
                 ),
-                ConfigProperty(
-                    "auto_gamma", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-                ),
-                ConfigProperty(
-                    "auto_level", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-                ),
-                ConfigProperty(
-                    "normalize", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-                ),
+                ConfigProperty("auto_gamma", type=PropertyType.BOOLEAN),
+                ConfigProperty("auto_level", type=PropertyType.BOOLEAN),
+                ConfigProperty("normalize", type=PropertyType.BOOLEAN),
                 ConfigProperty(
                     "brightness",
-                    self,
-                    minvalue=-100,
-                    maxvalue=100,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    min_value=-100,
+                    max_value=100,
+                    type=PropertyType.INTEGER,
                 ),
                 ConfigProperty(
                     "contrast",
-                    self,
-                    minvalue=-100,
-                    maxvalue=100,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
+                    min_value=-100,
+                    max_value=100,
+                    type=PropertyType.INTEGER,
                 ),
                 ConfigProperty(
                     "grayscale",
-                    self,
-                    prop_type=ConfigProperty.BOOLEAN_TYPE,
+                    type=PropertyType.BOOLEAN,
                 ),
-                ConfigProperty(
-                    "horizontal", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-                ),
-                ConfigProperty(
-                    "invert_colors", self, prop_type=ConfigProperty.BOOLEAN_TYPE
-                ),
-                ConfigProperty(
-                    "photo_convert_path", self, prop_type=ConfigProperty.FILE_TYPE
-                ),
+                ConfigProperty("horizontal", type=PropertyType.BOOLEAN),
+                ConfigProperty("invert_colors", type=PropertyType.BOOLEAN),
+                ConfigProperty("photo_convert_path", type=PropertyType.FILE),
                 ConfigProperty(
                     "epaper_color",
-                    self,
                     possible=DisplayManager.get_colors(),
                 ),
             ]

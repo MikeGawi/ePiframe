@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch
-from misc.configproperty import ConfigProperty
-from modules.base.configbase import ConfigBase
+from epiframe.config.property import ConfigProperty, PropertyType
+from epiframe.config.base import ConfigBase
 from modules.base.displaybase import DisplayBase
 from modules.displaymanager import DisplayManager
 from tests.helpers.capturing import Capturing
@@ -59,24 +59,20 @@ def mocked_popen(cmd, mode="r", buffering=-1):
 def get_config():
     class ConfigTest(ConfigBase):
         def load_settings(self):
-            self.SETTINGS = [
-                ConfigProperty(
-                    "display_type", self, possible=DisplayManager.get_displays()
-                ),
+            return [
+                ConfigProperty("display_type", possible=DisplayManager.get_displays()),
                 ConfigProperty(
                     "tty",
-                    self,
-                    minvalue=0,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
-                    dependency=["display_type", DisplayManager.get_hdmi()],
+                    min_value=0,
+                    type=PropertyType.INTEGER,
+                    dependency="display_type",
+                    dependency_value=DisplayManager.get_hdmi(),
                 ),
-                ConfigProperty(
-                    "fbi_bin_path", self, prop_type=ConfigProperty.FILE_TYPE
-                ),
+                ConfigProperty("fbi_bin_path", type=PropertyType.FILE),
                 ConfigProperty(
                     "display",
-                    self,
-                    dependency=["display_type", DisplayManager.get_spi()],
+                    dependency="display_type",
+                    dependency_value=DisplayManager.get_spi(),
                 ),
             ]
 

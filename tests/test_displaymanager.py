@@ -2,10 +2,9 @@ import importlib
 import os
 from unittest.mock import patch
 import pytest
-from misc.configproperty import ConfigProperty
+from epiframe.config.property import ConfigProperty, PropertyType
 from epiframe.display.options import Background, ColorMode
-from modules.base.configbase import ConfigBase
-from modules.convertmanager import ConvertManager
+from epiframe.config.base import ConfigBase
 from modules.displaymanager import DisplayManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.helpers import not_raises, set_file, remove_file
@@ -308,53 +307,32 @@ def mocked_import_waveshare(name, package=None):
 def get_config():
     class ConfigTest(ConfigBase):
         def load_settings(self):
-            self.SETTINGS = [
-                ConfigProperty(
-                    "display_type", self, possible=DisplayManager.get_displays()
-                ),
+            return [
+                ConfigProperty("display_type", possible=DisplayManager.get_displays()),
                 ConfigProperty(
                     "tty",
-                    self,
-                    minvalue=0,
-                    prop_type=ConfigProperty.INTEGER_TYPE,
-                    dependency=["display_type", DisplayManager.get_hdmi()],
+                    min_value=0,
+                    type=PropertyType.INTEGER,
+                    dependency="display_type",
+                    dependency_value=DisplayManager.get_hdmi(),
                 ),
-                ConfigProperty(
-                    "fbi_bin_path", self, prop_type=ConfigProperty.FILE_TYPE
-                ),
+                ConfigProperty("fbi_bin_path", type=PropertyType.FILE),
                 ConfigProperty(
                     "display",
-                    self,
-                    dependency=["display_type", DisplayManager.get_spi()],
+                    dependency="display_type",
+                    dependency_value=DisplayManager.get_spi(),
                 ),
                 ConfigProperty(
                     "clear_display",
-                    self,
-                    dependency=["display_type", DisplayManager.get_spi()],
-                    prop_type=ConfigProperty.BOOLEAN_TYPE,
+                    dependency="display_type",
+                    dependency_value=DisplayManager.get_spi(),
+                    type=PropertyType.BOOLEAN,
                 ),
                 ConfigProperty(
                     "epaper_color",
-                    self,
                     possible=DisplayManager.get_colors(),
-                    dependency=["display_type", DisplayManager.get_spi()],
-                ),
-                ConfigProperty(
-                    "pimoroni_saturation",
-                    self,
-                    minvalue=0.0,
-                    maxvalue=0.99,
-                    prop_type=ConfigProperty.FLOAT_TYPE,
-                ),
-                ConfigProperty(
-                    "display",
-                    self,
-                    dependency=["display_type", DisplayManager.get_spi()],
-                ),
-                ConfigProperty(
-                    "background_color",
-                    self,
-                    possible=ConvertManager.get_background_colors(),
+                    dependency="display_type",
+                    dependency_value=DisplayManager.get_spi(),
                 ),
             ]
 
