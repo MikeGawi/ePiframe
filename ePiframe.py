@@ -17,6 +17,7 @@ from epiframe.photos.index import PhotoIndex
 from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection
 from epiframe.sources.drive import DRIVE_SOURCE, DriveClient, DriveSource, folder_ids
+from epiframe.sources.drive_setup_console import ConsoleSetup
 from epiframe.sources.local import LOCAL_SOURCE, LocalSource
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
@@ -58,6 +59,7 @@ class EPiframe:
         self.config = self.load_config()
 
         setup_logging(self.config.get("log_files"))
+        self.start_drive_setup()
         log.info("Verifying configuration...")
         self.verify_config()
 
@@ -384,6 +386,11 @@ class EPiframe:
             self.users_manager.manage()
             sys.exit(1)
 
+    def start_drive_setup(self):
+        # before the verification: an unfinished Drive setup must not block it
+        if self.check_arguments("--setup-drive"):
+            sys.exit(ConsoleSetup(self.config).run())
+
     def check_config(self):
         if self.check_arguments("--check-config"):
             sys.exit(0)
@@ -409,6 +416,9 @@ class EPiframe:
             )
             print("--no-skip		like --test but is not skipping to another photo")
             print("--users			manage users")
+            print(
+                "--setup-drive		set up the Google Drive source (service account)"
+            )
             print("--help			this help")
 
             sys.exit(0)

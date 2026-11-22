@@ -142,6 +142,11 @@ class ChangePage:
     token: str  # page token to continue from
 
 
+def is_photo(file: DriveFile, extensions: Collection[str]) -> bool:
+    """A known image type or, e.g. for RAW files sent as binary, a photo extension."""
+    return file.mime_type in TYPE_TO_EXTENSION or file.extension in extensions
+
+
 class Drive(Protocol):
     """The Drive API calls used by the source (``DriveClient``)."""
 
@@ -272,7 +277,7 @@ class DriveSource:
         return f"{','.join(self.roots)}|{int(self.recursive)}|{extensions}"
 
     def _is_photo(self, file: DriveFile) -> bool:
-        return file.mime_type in TYPE_TO_EXTENSION or file.extension in self.extensions
+        return is_photo(file, self.extensions)
 
     # ----------------------------------------------------------------- listing
 

@@ -159,7 +159,13 @@ ePiframe can show photos from Google Drive folders (and their subfolders). The f
 
 **_NOTE_** - Google Drive can be the only photo source or one of several (e.g. with the Local Source). When the frame is offline, photos found before are still listed, but only local ones can be shown.
 
-Setup:
+The easiest way is the setup tool, which shows the steps below with direct links, stores the key file (readable only by its owner), checks that every folder can be read (explaining what is wrong if not) and saves the configuration:
+
+```
+./ePiframe.py --setup-drive
+```
+
+Manual setup:
 
 1. In the [Google Cloud console](https://console.cloud.google.com/) create a project (or use an existing one) and enable the **Google Drive API** for it.
 2. In *IAM & Admin → Service Accounts* create a service account (no roles needed), open it, go to *Keys → Add key → Create new key → JSON* and download the key file.
@@ -368,6 +374,7 @@ Syntax: ```ePiframe.py [option]```
 * ```--convert [source file] [target file or location]``` - converts the photo ```source file``` to target file or under specified location with current ePiframe configuration. Just convert, no thumbnails, no pre file. Used just to convert file to ePiframe quality.
 * ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
 * ```--users``` - manage users for the WebUI: add, change passwords, delete, etc.
+* ```--setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
 * ```--help``` - show help
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.

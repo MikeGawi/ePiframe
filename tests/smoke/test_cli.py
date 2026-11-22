@@ -95,6 +95,24 @@ def test_check_config_reports_drive_errors(frame: Frame) -> None:
     assert "drive_folders configuration entry error" in result.stdout
 
 
+def test_setup_drive(frame: Frame) -> None:
+    # an unfinished Drive configuration doesn't block the setup
+    frame.configure(use_drive="1")
+    key = write_key(frame.directory / "downloaded.json")
+    # skip the steps, the key, the folder; offline check fails: don't check
+    # again, save anyway
+    answers = f"n\n{key}\n{DRIVE_FOLDER}\nn\ny\n"
+
+    result = frame.run("--setup-drive", env=OFFLINE, answers=answers)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "No connection to Google" in result.stdout
+    config = frame.config_file.read_text()
+    assert "drive_folders=1AbC-dEf_123456789" in config
+    assert (frame.directory / "drive_key.json").read_text() == key.read_text()
+    assert frame.run("--check-config").returncode == 0
+
+
 def test_no_photos(frame: Frame) -> None:
     result = frame.run("--test")
 
