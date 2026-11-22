@@ -2,12 +2,12 @@ import glob
 import os
 from datetime import datetime, timedelta
 
-import modules.configmanager as configuration_manager
 import modules.intervalmanager as interval_manager
 import modules.pidmanager as pid_manager
 import modules.pluginsmanager as plugins_manager
 import modules.timermanager as timer_manager
 from epiframe.core.files import last_modified
+from epiframe.config import manager as config_manager
 from epiframe.config import paths
 from modules.displaymanager import DisplayManager
 from modules.weathermanager import WeatherManager
@@ -72,7 +72,7 @@ class BackendManager:
 
     def __load_config(self):
         try:
-            self.__config = configuration_manager.ConfigManager(
+            self.__config = config_manager.ConfigManager(
                 os.path.join(self.__path, paths.CONFIG_FILE),
                 os.path.join(self.__path, paths.CONFIG_FILE_DEFAULT),
             )
@@ -93,7 +93,7 @@ class BackendManager:
                 self.__config.get("stop_times").split(","),
             )
 
-    def get_config(self) -> configuration_manager:
+    def get_config(self) -> config_manager.ConfigManager:
         return self.__config
 
     def next_time(self) -> str:

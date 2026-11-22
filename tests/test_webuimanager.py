@@ -9,7 +9,7 @@ from http import HTTPStatus
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
 from epiframe.version import VERSION
 from misc.user import User
-from modules.configmanager import ConfigManager
+from epiframe.config.manager import ConfigManager
 from modules.usersmanager import UsersManager
 from modules.webuimanager import WebUIManager
 from tests.helpers.capturing import Capturing

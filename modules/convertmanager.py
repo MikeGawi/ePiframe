@@ -9,7 +9,7 @@ from epiframe.display.options import Background
 from modules.displaymanager import DisplayManager
 
 if TYPE_CHECKING:
-    from modules.configmanager import ConfigManager
+    from epiframe.config.manager import ConfigManager
 
 
 # ImageMagick frame selector: only the first frame of an animated GIF is used

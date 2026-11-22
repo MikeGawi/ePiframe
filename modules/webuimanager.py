@@ -27,8 +27,8 @@ from misc.user import User
 from typing import TYPE_CHECKING
 import modules.usersmanager as users_manager
 import modules.databasemanager as database_manager
-import modules.configmanager as config_manager
-from misc.configproperty import ConfigProperty
+from epiframe.config.manager import ConfigManager
+from epiframe.config.property import PropertyType
 from epiframe.config import paths
 from epiframe.core.media_types import EXTENSIONS, EXTENSION_TO_TYPE
 from epiframe.version import VERSION
@@ -260,14 +260,14 @@ class WebUIManager:
             debug=False,
         )
 
-    def config(self) -> config_manager.ConfigManager:
+    def config(self) -> ConfigManager:
         return self.__backend.get_config()
 
     @staticmethod
-    def adapt_name(config: config_manager.ConfigManager, name: str) -> str:
-        return (
-            "- " if config.get_property(name).get_dependency() else str()
-        ) + name.replace("_", " ").title()
+    def adapt_name(config: ConfigManager, name: str) -> str:
+        return ("- " if config.get_property(name).dependency else str()) + name.replace(
+            "_", " "
+        ).title()
 
     # @app.route('/login')
     def login(self):
@@ -444,9 +444,7 @@ class WebUIManager:
                 file.save(temp)
 
                 try:
-                    temp_conf = config_manager.ConfigManager(
-                        temp, paths.CONFIG_FILE_DEFAULT
-                    )
+                    temp_conf = ConfigManager(temp, paths.CONFIG_FILE_DEFAULT)
                     temp_conf.verify()
                     temp_conf.save(paths.CONFIG_FILE)
                     self.__backend.refresh()
@@ -532,7 +530,7 @@ class WebUIManager:
             result = jsonify(error="Method Not Allowed!")
         return result
 
-    def __build_settings(self, config: config_manager.ConfigManager, properties):
+    def __build_settings(self, config: ConfigManager, properties):
         class MyForm(FlaskForm):
             pass
 
@@ -557,36 +555,34 @@ class WebUIManager:
 
     @staticmethod
     def __get_dependency_or_empty(prop):
-        return str(prop.get_dependency()) if prop.get_dependency() else ""
+        return prop.dependency or ""
 
-    def __get_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
-    ):
+    def __get_field(self, config: ConfigManager, prop, render: dict, property_name):
         type_to_field = {
-            ConfigProperty.STRING_TYPE: self.__get_list_field,
-            ConfigProperty.INTEGER_TYPE: self.__get_integer_field,
-            ConfigProperty.FLOAT_TYPE: self.__get_float_field,
-            ConfigProperty.INT_LIST_TYPE: self.__get_list_field,
-            ConfigProperty.STRING_LIST_TYPE: self.__get_list_field,
-            ConfigProperty.FILE_TYPE: self.__get_list_field,
-            ConfigProperty.BOOLEAN_TYPE: self.__get_bool_field,
-            ConfigProperty.PASSWORD_TYPE: self.__get_password_field,
+            PropertyType.STRING: self.__get_list_field,
+            PropertyType.INTEGER: self.__get_integer_field,
+            PropertyType.FLOAT: self.__get_float_field,
+            PropertyType.INT_LIST: self.__get_list_field,
+            PropertyType.STRING_LIST: self.__get_list_field,
+            PropertyType.FILE: self.__get_list_field,
+            PropertyType.BOOLEAN: self.__get_bool_field,
+            PropertyType.PASSWORD: self.__get_password_field,
         }
 
-        if prop.get_type() in [
-            ConfigProperty.STRING_TYPE,
-            ConfigProperty.INTEGER_TYPE,
-            ConfigProperty.FLOAT_TYPE,
+        if prop.type in [
+            PropertyType.STRING,
+            PropertyType.INTEGER,
+            PropertyType.FLOAT,
         ]:
-            if prop.get_possible():
+            if prop.choices:
                 return self.__get_select_field(config, prop, render, property_name)
 
-        return type_to_field.get(prop.get_type()).__call__(
+        return type_to_field.get(prop.type).__call__(
             config, prop, render, property_name
         )
 
     def __get_select_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+        self, config: ConfigManager, prop, render: dict, property_name
     ):
         render[self.__HTML_CLASS] = (
             self.__get_dependency_or_empty(prop)
@@ -598,41 +594,40 @@ class WebUIManager:
             default=config.get_default(property_name),
             # WTForms >= 3.3 silently drops int choices and deprecates tuples
             choices=[
-                SelectChoice(value=value, label=str(value))
-                for value in prop.get_possible()
+                SelectChoice(value=value, label=str(value)) for value in prop.choices
             ],
             render_kw=render,
             description=config.get_comment(property_name),
         )
 
     def __get_integer_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+        self, config: ConfigManager, prop, render: dict, property_name
     ):
         render[self.__HTML_FILL] = str()
 
         return IntegerField(
             self.adapt_name(config, property_name),
-            widget=NumberInput(min=prop.get_min(), max=prop.get_max()),
+            widget=NumberInput(min=prop.min_value, max=prop.max_value),
             default=config.get_default(property_name),
             render_kw=render,
             description=config.get_comment(property_name),
         )
 
     def __get_float_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+        self, config: ConfigManager, prop, render: dict, property_name
     ):
         render[self.__HTML_FILL] = str()
 
         return FloatField(
             self.adapt_name(config, property_name),
-            widget=NumberInput(min=prop.get_min(), max=prop.get_max(), step="0.1"),
+            widget=NumberInput(min=prop.min_value, max=prop.max_value, step="0.1"),
             default=config.get_default(property_name),
             render_kw=render,
             description=config.get_comment(property_name),
         )
 
     def __get_bool_field(
-        self, config: config_manager.ConfigManager, prop, render: dict, property_name
+        self, config: ConfigManager, prop, render: dict, property_name
     ):
         render[self.__HTML_CLASS] = (
             self.__get_dependency_or_empty(prop)
@@ -647,7 +642,7 @@ class WebUIManager:
         )
 
     def __get_list_field(
-        self, config: config_manager.ConfigManager, _prop, render: dict, property_name
+        self, config: ConfigManager, _prop, render: dict, property_name
     ):
         return StringField(
             self.adapt_name(config, property_name),
@@ -657,7 +652,7 @@ class WebUIManager:
         )
 
     def __get_password_field(
-        self, config: config_manager.ConfigManager, _prop, render: dict, property_name
+        self, config: ConfigManager, _prop, render: dict, property_name
     ):
         return StringField(
             self.adapt_name(config, property_name),
@@ -667,51 +662,39 @@ class WebUIManager:
             render_kw=render,
         )
 
-    def __render_disabled(
-        self, config: config_manager.ConfigManager, prop, render: dict
-    ) -> dict:
-        if prop.get_dependency():
+    def __render_disabled(self, config: ConfigManager, prop, render: dict) -> dict:
+        if prop.dependency:
             render[self.__HTML_PAD] = self.__HTML_PX3
-            render[self.__HTML_CLASS_DEP] = prop.get_dependency()
-            render[self.__HTML_CLASS_DEP_VAL] = (
-                prop.get_dependency_value() if prop.get_dependency_value() else "1"
-            )
+            render[self.__HTML_CLASS_DEP] = prop.dependency
+            render[self.__HTML_CLASS_DEP_VAL] = prop.dependency_value or "1"
             render = self.__check_dependency(config, prop, render)
 
         return render
 
-    def __check_dependency(
-        self, config: config_manager.ConfigManager, prop, render: dict
-    ) -> dict:
-        if (
-            not prop.get_dependency_value()
-            and not bool(config.getint(prop.get_dependency()))
-        ) or (
-            prop.get_dependency_value()
-            and not config.get(prop.get_dependency()) == prop.get_dependency_value()
-        ):
+    def __check_dependency(self, config: ConfigManager, prop, render: dict) -> dict:
+        if not prop.is_active(config):
             render[self.__HTML_DISABLED] = self.__HTML_DISABLED
 
         return render
 
     @staticmethod
-    def __get_form(config: config_manager.ConfigManager, properties):
+    def __get_form(config: ConfigManager, properties):
         return [
             (name, config.get(name))
             for name in properties
-            if config.get_property(name).get_type() != ConfigProperty.BOOLEAN_TYPE
+            if config.get_property(name).type != PropertyType.BOOLEAN
         ]
 
     @staticmethod
-    def __get_attributes(config: config_manager.ConfigManager, form, properties):
+    def __get_attributes(config: ConfigManager, form, properties):
         for iterator in [
             prop
             for prop in properties
-            if config.get_property(prop).get_type() == ConfigProperty.BOOLEAN_TYPE
+            if config.get_property(prop).type == PropertyType.BOOLEAN
         ]:
             getattr(form, iterator).data = config.getint(iterator)
 
-    def __verify_form(self, config: config_manager.ConfigManager, form, properties):
+    def __verify_form(self, config: ConfigManager, form, properties):
         for iterator in properties:
             try:
                 config.validate(iterator)
@@ -748,12 +731,12 @@ class WebUIManager:
         )
 
     @staticmethod
-    def get_property_from_form(config: config_manager.ConfigManager, regex):
+    def get_property_from_form(config: ConfigManager, regex):
         property_name = regex.group(0).replace("-<[", "").replace("]>-", "")
         config.set(property_name, str(config.get_default(property_name)))
 
     @staticmethod
-    def __verify_settings(config: config_manager.ConfigManager):
+    def __verify_settings(config: ConfigManager):
         try:
             config.verify_warnings()
         except Warning as exception:
@@ -767,17 +750,15 @@ class WebUIManager:
             pass
 
     @staticmethod
-    def __set_properties(properties: list, config: config_manager.ConfigManager):
+    def __set_properties(properties: list, config: ConfigManager):
         for property_name in properties:
             config.set(property_name, str(config.get_default(property_name)))
 
     @staticmethod
-    def __get_reset_needed(
-        properties: list, config: config_manager.ConfigManager
-    ) -> bool:
+    def __get_reset_needed(properties: list, config: ConfigManager) -> bool:
         reset_needed = False
         for property_name in properties:
-            if config.get_property(property_name).get_reset_needed():
+            if config.get_property(property_name).reset_needed:
                 reset_needed = True
                 break
         return reset_needed
@@ -822,9 +803,7 @@ class WebUIManager:
                 return self.__order_template(order)
         return self.__no_plugins_template()
 
-    def __process_post(
-        self, config: config_manager.ConfigManager, properties: list, regex
-    ):
+    def __process_post(self, config: ConfigManager, properties: list, regex):
         if regex:
             self.get_property_from_form(config, regex)
         elif request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
@@ -832,30 +811,25 @@ class WebUIManager:
         elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
             self.__set_properties(properties, config)
         elif request.form.get(self.__BUT_CANCEL) == self.__BUT_CANCEL:
-            config.read_config()
+            config.reload()
 
-    def __set_property_values(
-        self, config: config_manager.ConfigManager, properties: list
-    ):
+    def __set_property_values(self, config: ConfigManager, properties: list):
         for property_name in properties:
-            if (
-                config.get_property(property_name).get_type()
-                != ConfigProperty.BOOLEAN_TYPE
-            ):
+            if config.get_property(property_name).type != PropertyType.BOOLEAN:
                 if request.form.get(property_name) is not None:
                     config.set(property_name, str(request.form.get(property_name)))
             else:
                 self.set_boolean_value(config, property_name)
 
     @staticmethod
-    def set_boolean_value(config: config_manager.ConfigManager, property_name: str):
+    def set_boolean_value(config: ConfigManager, property_name: str):
         config.set(
             property_name,
             "1" if str(request.form.get(property_name)) == "y" else "0",
         )
 
     @staticmethod
-    def get_settings(config: config_manager.ConfigManager):
+    def get_settings(config: ConfigManager):
         return (
             request.args.get("variable")
             if request.args.get("variable")
@@ -885,7 +859,7 @@ class WebUIManager:
 
     def __plugin_settings_template(
         self,
-        config: config_manager.ConfigManager,
+        config: ConfigManager,
         curr_plugin,
         properties: list,
         reset_needed: bool,

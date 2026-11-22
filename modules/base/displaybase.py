@@ -4,7 +4,7 @@ import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from modules.configmanager import ConfigManager
+    from epiframe.config.manager import ConfigManager
 
 
 class DisplayBase:

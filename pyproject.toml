@@ -112,6 +112,12 @@ explicit_package_bases = true
 module = ["genbadge.*", "radon.*"]
 ignore_missing_imports = true
 
+# 1.x code imported by ported modules (e.g. epiframe.config.manager) until it is
+# ported too: not type checked, its names are Any.
+[[tool.mypy.overrides]]
+module = ["modules.*", "misc.*", "ePiframe", "ePiframe_service"]
+follow_imports = "skip"
+
 # ------------------------------------------------------------------------ pytest
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -135,5 +141,5 @@ output = "coverage.xml"
 
 # ------------------------------------------------------------------------ codespell
 [tool.codespell]
-skip = "./static/js,./lib,./venv,./.venv,*.svg,*.gif,*.png,*.jpg,uv.lock"
+skip = "./static/js,config_v1.cfg,./lib,./venv,./.venv,*.svg,*.gif,*.png,*.jpg,uv.lock"
 ignore-words-list = "exten,valu"

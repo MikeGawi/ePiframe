@@ -13,7 +13,7 @@ from epiframe.display.options import Background, ColorMode
 from modules.base.displaybase import DisplayBase
 
 if TYPE_CHECKING:
-    from modules.configmanager import ConfigManager
+    from epiframe.config.manager import ConfigManager
 
 
 library_directory = os.path.join(

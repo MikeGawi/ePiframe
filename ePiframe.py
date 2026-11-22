@@ -16,7 +16,8 @@ from epiframe.config import paths
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
 from modules.base.pluginbase import PluginBase
-from modules.configmanager import ConfigManager
+from epiframe.config.manager import ConfigManager
+from epiframe.display.system import spi_enabled
 from modules.convertmanager import FIRST_FRAME_GIF, ConvertManager
 from modules.databasemanager import DatabaseManager
 from modules.displaymanager import DisplayManager
@@ -456,7 +457,7 @@ class EPiframe:
 
     def process_check_system(self):
         try:
-            if not self.config.check_system():
+            if not spi_enabled():
                 raise Exception("SPI is disabled on system!")
         except Exception as exception:
             log.error(

@@ -129,7 +129,7 @@ def test_add_service_thread():
 
 class PluginMock(PluginBase, object):
     class PluginConfigManager:
-        def __init__(self, path: str, path2: str, self_object):
+        def __init__(self, path: str, path2: str):
             print(path, path2)
 
         def getint(self, name: str):
@@ -247,9 +247,8 @@ class PluginOverrideMock(PluginBase):
         print("add_photo_source")
 
     class PluginConfigManager:
-        def __init__(self, path: str, path2: str, self_object):
+        def __init__(self, path: str, path2: str):
             print(path, path2)
-            self.self_object = self_object
 
         def getint(self, name: str):
             return False

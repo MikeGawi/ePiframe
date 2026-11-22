@@ -9,7 +9,7 @@ from modules.base.pluginbase import PluginBase
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from modules.configmanager import ConfigManager
+    from epiframe.config.manager import ConfigManager
     from modules.pidmanager import PIDManager
 
 
