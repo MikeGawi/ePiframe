@@ -1,13 +1,5 @@
-def _is_command(value) -> bool:
-    # Python 3.13+ also puts non-str entries (e.g. __firstlineno__) into class locals()
-    return isinstance(value, str) and "/" in value and "?" not in value
-
-
-def _join_commands(names: dict) -> str:
-    return "-".join(filter(_is_command, names.values()))
-
-
 class TelebotCmd:
+
     OPTION_IND = " #"
 
     START_CMD = "/start"
@@ -38,14 +30,14 @@ class TelebotCmd:
     VALUE_REP = "Invalid number"
     ERROR_REP = "Error"
 
-    HELLO_MSG = "ePiframe (e-Paper Raspberry Pi Photo Frame) Telegram bot"
+    HELLO_MSG = "ePiframe (e-Paper RPi Google Photos frame) Telegram bot"
     UPLOAD_MSG = "Upload photo to display it on frame"
     COMMANDS_MSG = "Commands:"
     NEXT_UPDATE_MSG = "Next update:"
     LONGER_MSG = "Will be displayed {} time(s) longer"
     LONGER2_MSG = "\nMultiplication sum up if already set"
 
-    ALL = _join_commands(locals())
+    ALL = "-".join([key for key in locals().values() if "/" in key and "?" not in key])
 
     UPLOAD_PHOTO_TAG = "upload_photo"
     UPLOAD_PHOTO_FILEID_TAG = "FILEID"

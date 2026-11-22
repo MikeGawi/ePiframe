@@ -1,4 +1,3 @@
-import re
 import os
 from unittest.mock import patch
 import pytest
@@ -191,9 +190,3 @@ def test_login_needed_last_time():
     users_manager = UsersManager(database_manager)
     assert not users_manager.login_needed()
     remove_file(db_filename)
-
-
-def test_gen_salt_format():
-    salt = UsersManager._UsersManager__gen_salt()
-    assert re.fullmatch(r"\$6\$[./0-9A-Za-z]{16}", salt)
-    assert salt != UsersManager._UsersManager__gen_salt()

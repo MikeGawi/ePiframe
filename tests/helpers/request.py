@@ -5,6 +5,7 @@ class MockedRequest:
 
 
 class MockedStream:
+
     file = b"1234567890"
 
     def read(self):

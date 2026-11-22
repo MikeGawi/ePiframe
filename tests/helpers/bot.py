@@ -37,16 +37,16 @@ class MockedBot:
         print("infinity_polling")
 
     def download_file(self, file):
-        print("download_file")
+        print(f"download_file")
         return file
 
     def get_file(self, file):
-        print("get_file")
+        print(f"get_file")
         return file
 
     def reply_to(self, message, msg):
         print(f"reply_to {msg} to {message.chat.id}")
 
     def get_me(self):
-        print("get_me")
+        print(f"get_me")
         return "bot"

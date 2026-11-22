@@ -4,6 +4,7 @@ from typing import List
 
 
 class TimerManager:
+
     __DATE_MASK = "%H:%M"
     __NO_TIME_MARK = "-"
     __DELIMITER = ","

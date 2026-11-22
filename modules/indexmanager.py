@@ -4,6 +4,7 @@ from json import JSONDecodeError
 
 
 class IndexManager:
+
     __index = -1
     __id = None
     __path = None

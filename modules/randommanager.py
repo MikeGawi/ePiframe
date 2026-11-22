@@ -3,6 +3,7 @@ import pandas as pd
 
 
 class RandomManager:
+
     __COLUMN_NAME = "random"
 
     def __init__(self, path: str, photos, id_header: str):
@@ -24,7 +25,7 @@ class RandomManager:
                 self.__data[id_header].isin(old_data[id_header]), [self.__COLUMN_NAME]
             ] = old_data[self.__COLUMN_NAME]
 
-        self.__data[self.__COLUMN_NAME] = self.__data[self.__COLUMN_NAME].fillna(0)
+        self.__data[self.__COLUMN_NAME].fillna(0, inplace=True)
 
     def __save(self):
         self.__data.to_csv(self.__path)

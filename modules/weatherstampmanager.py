@@ -5,6 +5,7 @@ from modules.weathermanager import WeatherManager
 
 
 class WeatherStampManager:
+
     __POSITION_VALUES = [0, 1, 2, 3]
 
     __FONTS = {
@@ -65,7 +66,7 @@ class WeatherStampManager:
 
     @classmethod
     def verify_position(cls, value: str):
-        if int(value) not in cls.__POSITION_VALUES:
+        if not int(value) in cls.__POSITION_VALUES:
             raise Exception(cls.__ERROR_VALUE_TEXT.format(cls.__POSITION_VALUES))
 
     @classmethod

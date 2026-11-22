@@ -4,6 +4,31 @@
 
 [Sources]
 
+# Set 1 to get photos from Google Photos.
+; The rest of the values in this section regarding GP should be filled as well when enabled.
+# ACTIVATION IS NEEDED! Check documentation.
+# Default: 1 (enabled)
+use_google_photos=1
+
+# Google API credentials filename and path.
+# Default: credentials.json
+cred_file=credentials.json
+
+# Google API token pickle filename and path to save authentication token for further use.
+# Default: token.pickle
+pickle_file=token.pickle
+
+# Names of the photo slide source albums in Google Photos.
+; Multiple allowed - comma separated (e.g. Greece 2020,Tom's 2nd birthday).
+# Empty means all. Default: empty
+album_names=
+
+# Refresh rate for data from the Google Photos API.
+# Possible values: always = every frame refresh, once = once a day.
+# This is to prevent a large number of photos from hitting the daily API limit (10k calls).
+# Default: always
+refresh_rate=always
+
 # Set 1 to get photos from local storage.
 ; The rest of the values in this section regarding local should be filled as well when enabled.
 # Default: 1 (enabled)
@@ -180,7 +205,7 @@ stop_times=23:30,23:30,23:30,23:30,23:30,23:30,23:30
 control_display_power=1
 
 # This will allow to trigger (from web, bots, etc.) photo change or update
-# during off hours. Disabling will respect sleep time and suppress triggers.
+# during off hours. Disabling will respect sleep time and supress triggers.
 # Default:1 (Enable triggers).
 allow_triggers=1
 
@@ -311,7 +336,7 @@ photos_from=
 # Empty means no high limit. Default: empty
 photos_to=
 
-# Number of photos to show. Only n first photos from the sources (filtered if set) will be shown. Empty means no limit.
+# Number of photos to show. Only n first photos from the albums (and filtered if set) will be shown. Empty means no limit.
 ; This will work only with randomize option disabled
 # Default: empty
 no_photos=

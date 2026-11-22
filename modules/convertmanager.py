@@ -97,7 +97,7 @@ class ConvertManager:
 
     @classmethod
     def verify_background_color(cls, value):
-        if value.strip().lower() not in cls.__BACK_COLORS:
+        if not value.strip().lower() in cls.__BACK_COLORS:
             raise Exception(cls.__ERROR_VALUE_TEXT.format(cls.__BACK_COLORS))
 
     @classmethod
@@ -162,7 +162,7 @@ class ConvertManager:
             width,
         )
 
-        print(return_value.replace("(", r"\(").replace(")", r"\)"))
+        print(return_value.replace("(", "\(").replace(")", "\)"))
         return return_value
 
     def __get_option(self, option: int) -> int:

@@ -9,7 +9,7 @@
 				position: relative;
 				overflow: hidden;
 			}
-
+		
 			.btn-file input[type=file] {
 				position: absolute;
 				top: 0;
@@ -20,11 +20,11 @@
 				text-align: right;
 				filter: alpha(opacity=0);
 				opacity: 0;
-				outline: none;
+				outline: none;   
 				cursor: inherit;
 				display: block;
 			}
-
+			
 			.dropzone {
     			background-color: transparent !important;
 			}
@@ -38,16 +38,16 @@
 				<div class="row px-0 col-auto mx-auto border border-4 rounded-3" >
 					<a href="{{ url_for('get_image') }}?original=" target="_blank" data-bs-toggle="tooltip" class="px-0" title="Click to view original image" data-bs-placement="top" style="height: 120px; width: 200px;">
 						<img src="{{ url_for('get_image') }}?original=&thumb=" alt="No Photo!" width="200" height="120" class="original"/>
-					</a>
-				</div>
+					</a>																				  
+				</div>				
 			</div>
 			<div class="col-auto px-1 d-none d-md-block">
 				<div class="row px-1 col-auto text-center"><strong>Displayed</strong></div>
 				<div class="row px-0 col-auto mx-auto border border-4 rounded-3">
 					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" class="px-0" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 200px;">
 						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted"/>
-					</a>
-				</div>
+					</a>	
+				</div>	
 			</div>
 		</div>
 		<div class="d-flex justify-content-center px-2 mt-4 d-block d-md-none">
@@ -56,10 +56,10 @@
 				<div class="row px-0 col-auto mx-auto border border-4 rounded-3">
 					<a href="{{ url_for('get_image') }}" target="_blank" data-bs-toggle="tooltip" class="px-0" title="Click to view displayed image" data-bs-placement="top" style="height: 120px; width: 200px;">
 						<img src="{{ url_for('get_image') }}?thumb=" alt="No Photo!" width="200" height="120" class="converted"/>
-					</a>
-				</div>
+					</a>	
+				</div>	
 			</div>
-		</div>
+		</div>			
 		<div class="d-flex justify-content-center px-2 mt-4">
 			<div class="col-2 d-none d-md-block px-3" style="width: 230px;">
 				<form action="{{ url_for('upload_photo') }}" class="dropzone border border-5 rounded-3" id="dropzone">
@@ -86,7 +86,7 @@
 		$('document').ready(function(){
 			$('[data-bs-toggle=tooltip]').tooltip();
 		});
-
+		
 		Dropzone.options.dropzone = { uploadMultiple:false, maxFiles:1, clickable:false,
 			init: function() {
 				this.on("maxfilesexceeded", function(file) {
@@ -95,9 +95,9 @@
 				})
     		}
 		};
-
+				
 		$(".home-menu").addClass("link-light");
-
+		
 		$(function() {
           $('button#next').on('click', function(e) {
             e.preventDefault()
@@ -105,7 +105,7 @@
 				var xmlHttp = new XMLHttpRequest();
     			xmlHttp.open( "GET", "{{ url_for('tools_functions') }}next", false );
     			xmlHttp.send( null )
-			}
+			} 
 			return false;
           });
         });

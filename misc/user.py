@@ -2,6 +2,7 @@ from flask_login import UserMixin
 
 
 class User(UserMixin):
+
     id = None
     username = None
     password = None

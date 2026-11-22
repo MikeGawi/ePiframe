@@ -261,7 +261,7 @@ class ConfigProperty:
 
     def __process_possible(self):
         if self.__possible:
-            if self.__config_manager.get(self.__name) not in [
+            if not self.__config_manager.get(self.__name) in [
                 str(value) for value in self.__possible
             ]:
                 raise Exception(

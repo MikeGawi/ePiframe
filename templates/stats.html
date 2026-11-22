@@ -38,7 +38,7 @@
 			var gtype_format={'load1':{ title:'Load 1 min', label:'Load 1 min', color:"#FBD148", checked:true }, 'load5':{ title:'Load 5 min', label:'Load 5 min', color:'#F9975D', checked:true}, 'load15':{title:'Load 15 min', label:'Load 15 min', color:'#C85C5C', checked:true}};
 			var optionValue = document.getElementById("dropdown").value;
 			var graph_options = {tooltipOpts: { content: '<b>%s</b><br/>Value: %y.3' }}
-
+			
 			if (optionValue == 'temp') {
 				ds_op_list = ['temp'];
 				gtype_format={'temp':{ title:'Temperature', label:'Temperature', color:"#5584AC", checked:true }};
@@ -46,27 +46,27 @@
 				ds_op_list = ['total', 'used', 'free', 'available'];
 				gtype_format={'total':{ title:'Total Memory', label:'Total Memory', color: "#542E71", checked:true }, 'used':{ title:'Used Memory', label:'Used Memory', color:'#FB3640', checked:true }, 'free': { title:'Free Memory', label:'Free Memory', color:'#FDCA40', checked:true }, 'available': { title:'Available Memory', label:'Available Memory', color:'#A799B7', checked:true }};
 			}
-
+			
 			var graph = new rrdFlot("graph", new RRDFile(bf), graph_options, gtype_format, rrdflot_defaults);
    			$('#load-img').hide();
-		}
-
+		}		
+		
 		function act() {
    			$('#load-img').show();
 			$("#graph").html("");
 			var fname="{{ url_for('static', filename='data/load.rrd') }}";
 			var optionValue = document.getElementById("dropdown").value;
-
+			
 			if (optionValue == 'temp') {
 				fname="{{ url_for('static', filename='data/temp.rrd') }}";
 			} else if (optionValue == 'mem') {
-				fname="{{ url_for('static', filename='data/mem.rrd') }}";
+				fname="{{ url_for('static', filename='data/mem.rrd') }}";				
 			}
-
+			
 			FetchBinaryURLAsync(fname, draw)
 		}
-
-		act();
+		
+		act();		
 		$(".stats-menu").addClass("link-light");
 	</script>
 {% endblock %}

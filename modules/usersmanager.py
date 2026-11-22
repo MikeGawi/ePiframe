@@ -4,8 +4,7 @@ from typing import List
 from misc.constants import Constants
 from misc.logs import Logs
 from misc.user import User
-import secrets
-import string
+import crypt
 import hashlib
 import getpass
 from typing import TYPE_CHECKING
@@ -15,6 +14,7 @@ if TYPE_CHECKING:
 
 
 class UsersManager:
+
     __ADD_ERROR = "There was a problem during user insertion to DB"
     __IN_ERROR = "User already exists!"
     __NO_USER_ERROR = "User doesn't exist!"
@@ -91,20 +91,9 @@ class UsersManager:
         user = self.get()
         return user and len(user) > 0 or False
 
-    # same format as the removed (Python 3.13) crypt.mksalt(crypt.METHOD_SHA512)
-    __SALT_PREFIX = "$6$"
-    __SALT_CHARS = "./" + string.digits + string.ascii_letters
-    __SALT_LENGTH = 16
-
-    @classmethod
-    def __gen_salt(cls) -> str:
-        return cls.__SALT_PREFIX + "".join(
-            secrets.choice(cls.__SALT_CHARS) for _ in range(cls.__SALT_LENGTH)
-        )
-
-    @classmethod
-    def __add_salt(cls, password: str, salt: str = "") -> (str, str):
-        salt = cls.__gen_salt() if not salt else salt
+    @staticmethod
+    def __add_salt(password: str, salt: str = "") -> (str, str):
+        salt = crypt.mksalt(crypt.METHOD_SHA512) if not salt else salt
         return hashlib.md5((password + salt).encode()).hexdigest(), salt
 
     def __gen_api(self) -> str:
