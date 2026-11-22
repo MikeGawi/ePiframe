@@ -5,7 +5,7 @@ from unittest import mock
 from unittest.mock import patch, PropertyMock
 import pytest
 import requests_mock
-from misc.constants import Constants
+from epiframe.config.paths import CONFIG_FILE_DEFAULT
 from modules import timermanager, intervalmanager, configmanager
 from modules.backendmanager import BackendManager
 from modules.pluginsmanager import PluginsManager
@@ -27,8 +27,8 @@ def requests_mocker():
 
 
 @pytest.fixture()
-@patch("misc.constants.Constants.CONFIG_FILE", Constants.CONFIG_FILE_DEFAULT)
-@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
+@patch("epiframe.config.paths.CONFIG_FILE", CONFIG_FILE_DEFAULT)
+@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app_no_login():
     with (
         patch.object(timermanager, "TimerManager", MockedTimerManager),
@@ -59,7 +59,7 @@ def app_no_login():
 
 
 @pytest.fixture()
-@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
+@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app_no_config():
     with (
         patch.object(timermanager, "TimerManager", MockedTimerManager),
@@ -79,8 +79,8 @@ def app_no_config():
 
 
 @pytest.fixture()
-@patch("misc.constants.Constants.CONFIG_FILE", Constants.CONFIG_FILE_DEFAULT)
-@patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
+@patch("epiframe.config.paths.CONFIG_FILE", CONFIG_FILE_DEFAULT)
+@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app():
     with (
         patch.object(timermanager, "TimerManager", MockedTimerManager),

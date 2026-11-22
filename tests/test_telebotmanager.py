@@ -600,7 +600,7 @@ chat_response = normal_response + [
 ]
 
 help_response = chat_response + [
-    "send_message *ePiframe (e-Paper RPi Google Photos frame) Telegram bot*",
+    "send_message *ePiframe (e-Paper Raspberry Pi Photo Frame) Telegram bot*",
     "",
     "Commands:",
     "_start_ - Show help",

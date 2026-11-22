@@ -9,7 +9,7 @@ from types import ModuleType
 from PIL import Image
 from typing import TYPE_CHECKING
 
-from misc.constants import Constants
+from epiframe.display.options import Background, ColorMode
 from modules.base.displaybase import DisplayBase
 
 if TYPE_CHECKING:
@@ -26,9 +26,9 @@ if os.path.exists(library_directory):
 
 class PimoroniDisplay(DisplayBase):
     COLOR_MAP = {
-        Constants.COLOR_BW: "black",
-        Constants.COLOR_BWR: "red",
-        Constants.COLOR_BWY: "yellow",
+        ColorMode.BW: "black",
+        ColorMode.BWR: "red",
+        ColorMode.BWY: "yellow",
     }
 
     def __init__(self, config: ConfigManager):
@@ -78,8 +78,7 @@ class PimoroniDisplay(DisplayBase):
     def clear(self):
         self.__inky.set_border(
             self.__inky.BLACK
-            if self._config.get("background_color").lower().strip()
-            == Constants.BACK_BLACK
+            if self._config.get("background_color").lower().strip() == Background.BLACK
             else self.__inky.WHITE
         )
 
@@ -105,9 +104,9 @@ class PimoroniDisplay(DisplayBase):
             [255, 255, 255]
         )
 
-        if color == Constants.COLOR_BWR:
+        if color == ColorMode.BWR:
             palette.append([255, 0, 0])
-        elif color == Constants.COLOR_BWY:
+        elif color == ColorMode.BWY:
             palette.append([255, 255, 0])
         elif color == "7 colors":
             palette = self.__inky.SATURATED_PALETTE

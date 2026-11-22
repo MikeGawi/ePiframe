@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from misc.constants import Constants
 import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from modules.backendmanager import BackendManager
+
+
+# stats sampling interval in seconds
+STATS_STEP = 10
 
 
 class StatsManager:
@@ -54,7 +57,7 @@ class StatsManager:
                 self.__CREATE_CMD.format(
                     self.__tool,
                     path,
-                    Constants.STATS_STEP,
+                    STATS_STEP,
                     " ".join([self.__DS.format(value) for value in self.__FILES[file]]),
                     " ".join([self.__RRA_IND.format(value) for value in self.__RRA]),
                 )

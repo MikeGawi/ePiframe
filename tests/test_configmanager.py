@@ -27,7 +27,8 @@ def test_no_file():
         "Telegram bot",
         "Web interface",
     ]
-    assert config.getint("use_google_photos") == 1
+    assert config.getint("use_local") == 1
+    assert config.get_obsolete() == []
     assert config.get("units") == "metric"
     assert (
         config.get_comment("convert_bin_path")
@@ -80,7 +81,7 @@ def test_verify(tmp_path):
         path=filename,
         default_path=default_path,
     )
-    # FILE entries must exist; the defaults (/usr/bin/convert, credentials.json, ...)
+    # FILE entries must exist; the defaults (/usr/bin/convert, ...)
     # depend on the machine, so point them to a file that surely exists
     existing_file = tmp_path / "existing_file"
     existing_file.touch()
@@ -132,6 +133,46 @@ def test_legacy_convert():
 
     assert config.get("sorting") == "desc"
     remove_file(filename)
+
+
+def test_obsolete_entries_removed(tmp_path):
+    # 1.x config with Google Photos entries and a section that doesn't exist anymore
+    config_file = tmp_path / "config_v1.cfg"
+    config_file.write_text(
+        "\n".join(
+            [
+                "[Sources]",
+                "use_google_photos=1",
+                "cred_file=credentials.json",
+                "pickle_file=token.pickle",
+                "album_names=Greece",
+                "refresh_rate=once",
+                "use_local=0",
+                "[Old section]",
+                "old_entry=1",
+            ]
+        )
+    )
+
+    config = ConfigManager(path=str(config_file), default_path=default_path)
+
+    assert config.get_obsolete() == [
+        "use_google_photos",
+        "cred_file",
+        "pickle_file",
+        "album_names",
+        "refresh_rate",
+        "old_entry",
+    ]
+    assert config.getint("use_local") == 0
+    assert "Old section" not in config.get_sections()
+    saved = config_file.read_text()
+    for name in ("use_google_photos", "cred_file", "album_names", "old_entry"):
+        assert f"{name}=" not in saved
+    assert "use_local=0" in saved
+
+    # file was cleaned up, so nothing is reported on the next load
+    assert ConfigManager(str(config_file), default_path).get_obsolete() == []
 
 
 class MockedPopen:

@@ -1,32 +1,50 @@
 from typing import List
-from misc.constants import Constants
+from epiframe.config import paths
 import sqlite3
+
+
+DB_NULL = "NULL"
+DB_ALL = "*"
+DB_SQL_COL = "sql"
+DB_NAME_COL = "name"
+DB_SQLITE_MASTER_TAB = "sqlite_master"
+
+USERS_TABLE_NAME = "users"
+USERS_TABLE_ID_HEADER = "id"
+USERS_TABLE_USERNAME_HEADER = "username"
+USERS_TABLE_HASH_HEADER = "hash"
+USERS_TABLE_API_HEADER = "api"
+
+SALTS_TABLE_NAME = "salts"
+SALTS_TABLE_ID_HEADER = "id"
+SALTS_TABLE_USERID_HEADER = "userid"
+SALTS_TABLE_SALT_HEADER = "salt"
 
 
 class DatabaseManager:
     __SELECT_DB = (
         "SELECT "
-        + Constants.DB_NAME_COL
+        + DB_NAME_COL
         + " FROM "
-        + Constants.DB_SQLITE_MASTER_TAB
+        + DB_SQLITE_MASTER_TAB
         + " WHERE type='table' AND "
-        + Constants.DB_NAME_COL
+        + DB_NAME_COL
         + "='{}'"
     )
     __BACK_TAG = "_back"
 
     def __init__(self):
         self.__dbconnection = sqlite3.connect(
-            Constants.USERS_DB_FILE, check_same_thread=False
+            paths.USERS_DB_FILE, check_same_thread=False
         )
         cur = self.__dbconnection.cursor()
 
         dbs = {
-            Constants.USERS_TABLE_NAME: "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, username text, hash text, "
-            "api text)".format(Constants.USERS_TABLE_NAME),
-            Constants.SALTS_TABLE_NAME: "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, userid INTEGER, salt text, "
+            USERS_TABLE_NAME: "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, username text, hash text, "
+            "api text)".format(USERS_TABLE_NAME),
+            SALTS_TABLE_NAME: "CREATE TABLE {} (id INTEGER PRIMARY KEY ASC, userid INTEGER, salt text, "
             "FOREIGN KEY(userid) REFERENCES {}(id))".format(
-                Constants.SALTS_TABLE_NAME, Constants.USERS_TABLE_NAME
+                SALTS_TABLE_NAME, USERS_TABLE_NAME
             ),
         }
 
@@ -76,7 +94,7 @@ class DatabaseManager:
         for iterator, enumerator in enumerate(fields):
             values.append(
                 "'{}'".format(enumerator)
-                if isinstance(enumerator, str) and enumerator != Constants.DB_NULL
+                if isinstance(enumerator, str) and enumerator != DB_NULL
                 else enumerator
             )
         return values
@@ -109,7 +127,7 @@ class DatabaseManager:
 
     def get_create(self, _for: str) -> list:
         return self.select(
-            Constants.DB_SQL_COL,
-            Constants.DB_SQLITE_MASTER_TAB,
-            '{} IS "{}"'.format(Constants.DB_NAME_COL, _for),
+            DB_SQL_COL,
+            DB_SQLITE_MASTER_TAB,
+            '{} IS "{}"'.format(DB_NAME_COL, _for),
         )

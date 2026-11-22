@@ -3,7 +3,7 @@ import os
 from unittest.mock import patch
 import pytest
 from misc.configproperty import ConfigProperty
-from misc.constants import Constants
+from epiframe.display.options import Background, ColorMode
 from misc.pimoronidisplay import PimoroniDisplay
 from modules.base.configbase import ConfigBase
 from modules.convertmanager import ConvertManager
@@ -17,7 +17,7 @@ module = importlib.import_module("tests.helpers.pimoroni_display")
 
 
 def test_phat_display():
-    set_config(Constants.COLOR_BW, display="phat")
+    set_config(ColorMode.BW, display="phat")
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -37,7 +37,7 @@ def test_phat_display():
 
 
 def test_what_display():
-    set_config(Constants.COLOR_BWY, display="what", clear=1)
+    set_config(ColorMode.BWY, display="what", clear=1)
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -56,7 +56,7 @@ def test_what_display():
 
 
 def test_inky_ssd1608_display():
-    set_config(Constants.COLOR_BWR, display="inky_ssd1608")
+    set_config(ColorMode.BWR, display="inky_ssd1608")
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -75,7 +75,7 @@ def test_inky_ssd1608_display():
 
 
 def test_inky_uc8159_display():
-    set_config(Constants.COLOR_BWR, display="inky_uc8159")
+    set_config(ColorMode.BWR, display="inky_uc8159")
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -92,7 +92,7 @@ def test_inky_uc8159_display():
 
 
 def test_inky_ssd1683_display():
-    set_config(Constants.COLOR_BWR, display="inky_ssd1683")
+    set_config(ColorMode.BWR, display="inky_ssd1683")
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -110,7 +110,7 @@ def test_inky_ssd1683_display():
 
 
 def test_inky_inky_ac073tc1a():
-    set_config(Constants.COLOR_BWR, display="inky_ac073tc1a")
+    set_config(ColorMode.BWR, display="inky_ac073tc1a")
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -128,7 +128,7 @@ def test_inky_inky_ac073tc1a():
 
 
 def test_non_existing_display():
-    set_config(Constants.COLOR_BWR, display="non_existing_display")
+    set_config(ColorMode.BWR, display="non_existing_display")
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -143,7 +143,7 @@ def test_non_existing_display():
     remove_file(filename)
 
 
-def set_config(color_schema, clear=0, background=Constants.BACK_BLACK, display="phat"):
+def set_config(color_schema, clear=0, background=Background.BLACK, display="phat"):
     binary_value = filename
     display_value = "Pimoroni"
     tty_value = 1

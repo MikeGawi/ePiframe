@@ -34,7 +34,6 @@ CC_PATHS = (
     "scripts",
     "ePiframe.py",
     "ePiframe_service.py",
-    "activate.py",
     "misc",
     "modules",
     "tools",

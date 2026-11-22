@@ -1,6 +1,6 @@
 import datetime
 import os.path
-from misc.constants import Constants
+from epiframe.core.media_types import EXTENSIONS
 from modules.localsourcemanager import LocalSourceManager
 
 test_directory = "test.directory"
@@ -18,22 +18,22 @@ def test_directory_creation():
 
 
 def test_get_files_nok():
-    lsm = LocalSourceManager("tests/", False, Constants.EXTENSIONS)
+    lsm = LocalSourceManager("tests/", False, EXTENSIONS)
     assert lsm.get_files() == []
 
 
 def test_get_files_ok():
-    lsm = LocalSourceManager("tests/assets", False, Constants.EXTENSIONS)
+    lsm = LocalSourceManager("tests/assets", False, EXTENSIONS)
     assert lsm.get_files() == ["tests/assets/waveshare.bmp"]
 
 
 def test_get_files_path():
-    lsm = LocalSourceManager("tests/assets/", False, Constants.EXTENSIONS)
+    lsm = LocalSourceManager("tests/assets/", False, EXTENSIONS)
     assert lsm.get_files() == ["tests/assets/waveshare.bmp"]
 
 
 def test_get_files_recursive():
-    lsm = LocalSourceManager("tests/", True, Constants.EXTENSIONS)
+    lsm = LocalSourceManager("tests/", True, EXTENSIONS)
     assert lsm.get_files() == [
         "tests/assets/waveshare.bmp",
         "tests/assets/recursive/waveshare2.bmp",
@@ -46,7 +46,7 @@ def test_get_files_non_existing_extension():
 
 
 def test_get_date():
-    lsm = LocalSourceManager("tests/assets/", False, Constants.EXTENSIONS)
+    lsm = LocalSourceManager("tests/assets/", False, EXTENSIONS)
     assert lsm.get_files() == ["tests/assets/waveshare.bmp"]
     mtime = os.stat(lsm.get_files()[0]).st_mtime
     assert lsm.get_dates(lsm.get_files()) == [
@@ -55,7 +55,7 @@ def test_get_date():
 
 
 def test_get_photos():
-    lsm = LocalSourceManager("tests/assets/", False, Constants.EXTENSIONS)
+    lsm = LocalSourceManager("tests/assets/", False, EXTENSIONS)
     assert lsm.get_files() == ["tests/assets/waveshare.bmp"]
     mtime = os.stat(lsm.get_files()[0]).st_mtime
     time = datetime.datetime.fromtimestamp(mtime).strftime("%Y-%m-%dT%H:%M:%S") + "Z"

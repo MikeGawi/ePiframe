@@ -29,7 +29,9 @@ import modules.usersmanager as users_manager
 import modules.databasemanager as database_manager
 import modules.configmanager as config_manager
 from misc.configproperty import ConfigProperty
-from misc.constants import Constants
+from epiframe.config import paths
+from epiframe.core.media_types import EXTENSIONS, EXTENSION_TO_TYPE
+from epiframe.version import VERSION
 from werkzeug.utils import secure_filename
 from tempfile import mkstemp
 import re
@@ -40,6 +42,9 @@ import base64
 
 if TYPE_CHECKING:
     import modules.backendmanager as backend_manager
+
+
+EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
 
 
 class WebUIManager:
@@ -114,7 +119,7 @@ class WebUIManager:
         self.__users_manager = users_manager.UsersManager(self.__db_manager)
 
         self.app = Flask(__name__, root_path=backend.get_path())
-        self.app.config["SECRET_KEY"] = Constants.EPIFRAME_SECRET
+        self.app.config["SECRET_KEY"] = EPIFRAME_SECRET
 
         self.__add_menu()
         self.__add_websites()
@@ -349,9 +354,7 @@ class WebUIManager:
         return (
             send_file(
                 filename,
-                mimetype=Constants.EXTENSION_TO_TYPE[
-                    str(filename).rsplit(".")[-1].lower()
-                ],
+                mimetype=EXTENSION_TO_TYPE[str(filename).rsplit(".")[-1].lower()],
             )
             if filename
             else self.__NO_PHOTO_ERROR
@@ -385,7 +388,7 @@ class WebUIManager:
             converted=self.__backend.get_filename_modification_time_if_exists(
                 "thumb_photo_convert_filename"
             ),
-            version=Constants.EPIFRAME_VERSION,
+            version=VERSION,
         )
 
     # @app.route('/_upload_photo', methods=['POST'])
@@ -407,7 +410,7 @@ class WebUIManager:
         result = jsonify(status="OK")
         file = request.files[self.__FILE_TAG]
         extension = file.filename.rsplit(".")[-1].lower()
-        if file and extension in Constants.EXTENSIONS:
+        if file and extension in EXTENSIONS:
             secure_filename(file.filename)
             file.save(self.__backend.get_download_file() + "." + extension)
         else:
@@ -428,7 +431,7 @@ class WebUIManager:
     # @app.route('/export')
     @login_required
     def export(self):
-        return send_file(Constants.CONFIG_FILE, as_attachment=True)
+        return send_file(paths.CONFIG_FILE, as_attachment=True)
 
     # @app.route('/import', methods=['POST'])
     @login_required
@@ -442,10 +445,10 @@ class WebUIManager:
 
                 try:
                     temp_conf = config_manager.ConfigManager(
-                        temp, Constants.CONFIG_FILE_DEFAULT
+                        temp, paths.CONFIG_FILE_DEFAULT
                     )
                     temp_conf.verify()
-                    temp_conf.save(Constants.CONFIG_FILE)
+                    temp_conf.save(paths.CONFIG_FILE)
                     self.__backend.refresh()
                     flash("File has been imported successfully!")
                 except Exception as exception:
@@ -468,17 +471,17 @@ class WebUIManager:
         templates = {
             self.__TOOLS_HTML.replace(self.__HTML_IND, str()): render_template(
                 self.__TOOLS_HTML,
-                version=Constants.EPIFRAME_VERSION,
+                version=VERSION,
                 actions=list(self.ACTIONS.values()),
             ),
             self.__LOGS_HTML.replace(self.__HTML_IND, str()): render_template(
                 self.__LOGS_HTML
             ),
             self.__STATS_HTML.replace(self.__HTML_IND, str()): render_template(
-                self.__STATS_HTML, version=Constants.EPIFRAME_VERSION
+                self.__STATS_HTML, version=VERSION
             ),
             self.__STATS_HTML.replace(self.__HTML_IND, str()): render_template(
-                self.__STATS_HTML, version=Constants.EPIFRAME_VERSION
+                self.__STATS_HTML, version=VERSION
             ),
             self.__SETTINGS_HTML.replace(self.__HTML_IND, str()): redirect(
                 "/{}/{}".format(
@@ -491,9 +494,7 @@ class WebUIManager:
             ),
         }
 
-        return templates.get(
-            url, render_template(self.__INDEX_HTML, version=Constants.EPIFRAME_VERSION)
-        )
+        return templates.get(url, render_template(self.__INDEX_HTML, version=VERSION))
 
     # @app.route('/_tools$', methods=['GET'])
     # @app.route('/_tools$<action>', methods=['GET'])
@@ -743,7 +744,7 @@ class WebUIManager:
             form=self.__build_settings(self.config(), properties),
             navlabels=self.config().get_sections(),
             reset_needed=self.__get_reset_needed(properties, self.config()),
-            version=Constants.EPIFRAME_VERSION,
+            version=VERSION,
         )
 
     @staticmethod
@@ -901,7 +902,7 @@ class WebUIManager:
             form=self.__build_settings(config, properties),
             navlabels=config.get_sections(),
             reset_needed=reset_needed,
-            version=Constants.EPIFRAME_VERSION,
+            version=VERSION,
         )
 
     def __order_template(self, order: list) -> str:
@@ -918,7 +919,7 @@ class WebUIManager:
             form=None,
             navlabels="",
             reset_needed=False,
-            version=Constants.EPIFRAME_VERSION,
+            version=VERSION,
         )
 
     def __no_plugins_template(self) -> str:

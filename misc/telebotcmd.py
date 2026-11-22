@@ -38,7 +38,7 @@ class TelebotCmd:
     VALUE_REP = "Invalid number"
     ERROR_REP = "Error"
 
-    HELLO_MSG = "ePiframe (e-Paper RPi Google Photos frame) Telegram bot"
+    HELLO_MSG = "ePiframe (e-Paper Raspberry Pi Photo Frame) Telegram bot"
     UPLOAD_MSG = "Upload photo to display it on frame"
     COMMANDS_MSG = "Commands:"
     NEXT_UPDATE_MSG = "Next update:"

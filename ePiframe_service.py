@@ -8,7 +8,7 @@ import signal
 import subprocess
 from threading import Thread
 from misc.daemon import Daemon
-from misc.constants import Constants
+from modules.statsmanager import STATS_STEP
 import modules.backendmanager as backend
 from modules.telebotmanager import TelebotManager
 from modules.webuimanager import WebUIManager
@@ -114,7 +114,7 @@ class Service(Daemon):
                     )
                     pass
 
-            time.sleep(Constants.STATS_STEP)
+            time.sleep(STATS_STEP)
 
     def web_thread(self):
         while True:

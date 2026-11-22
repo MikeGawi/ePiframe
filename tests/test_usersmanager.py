@@ -15,7 +15,7 @@ password = "password"
 database_manager: DatabaseManager
 
 
-@patch("misc.constants.Constants.USERS_DB_FILE", db_filename)
+@patch("epiframe.config.paths.USERS_DB_FILE", db_filename)
 def test_api_key_fix():
     remove_file(db_filename)
     global database_manager

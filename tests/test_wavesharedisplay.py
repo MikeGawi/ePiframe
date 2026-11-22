@@ -2,7 +2,7 @@ import importlib
 import os
 from unittest.mock import patch
 from misc.configproperty import ConfigProperty
-from misc.constants import Constants
+from epiframe.display.options import ColorMode
 from misc.wavesharedisplay import WaveshareDisplay
 from modules.base.configbase import ConfigBase
 from modules.displaymanager import DisplayManager
@@ -15,7 +15,7 @@ module = importlib.import_module("tests.helpers.waveshare_display")
 
 
 def test_bw_display():
-    set_config(Constants.COLOR_BW)
+    set_config(ColorMode.BW)
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -35,7 +35,7 @@ def test_bw_display():
 
 
 def test_bwr_display():
-    set_config(Constants.COLOR_BWR)
+    set_config(ColorMode.BWR)
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):
@@ -54,7 +54,7 @@ def test_bwr_display():
 
 
 def test_bwy_display():
-    set_config(Constants.COLOR_BWY, clear=1)
+    set_config(ColorMode.BWY, clear=1)
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import):

@@ -3,7 +3,7 @@ import os
 from unittest.mock import patch
 import pytest
 from misc.configproperty import ConfigProperty
-from misc.constants import Constants
+from epiframe.display.options import Background, ColorMode
 from modules.base.configbase import ConfigBase
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
@@ -167,7 +167,7 @@ def test_get_display_power():
 
 def test_waveshare_display():
     remove_file(filename)
-    set_config_waveshare(Constants.COLOR_BW)
+    set_config_waveshare(ColorMode.BW)
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import_waveshare):
@@ -184,7 +184,7 @@ def test_waveshare_display():
 
 def test_pimoroni_display():
     remove_file(filename)
-    set_config_pimoroni(Constants.COLOR_BW)
+    set_config_pimoroni(ColorMode.BW)
 
     config = get_config()
     with patch.object(importlib, "import_module", mocked_import_pimoroni):
@@ -201,7 +201,7 @@ def test_pimoroni_display():
 
 def test_hdmi_display():
     remove_file(filename)
-    set_config_hdmi(Constants.COLOR_BW)
+    set_config_hdmi(ColorMode.BW)
 
     config = get_config()
     with Capturing() as output, patch.object(os, "popen", mocked_popen):
@@ -231,7 +231,7 @@ class MockRead:
 
 
 def set_config_pimoroni(
-    color_schema, clear=0, background=Constants.BACK_BLACK, display="phat"
+    color_schema, clear=0, background=Background.BLACK, display="phat"
 ):
     binary_value = filename
     display_value = "Pimoroni"

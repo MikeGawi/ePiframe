@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from misc.constants import Constants
+from epiframe.display.options import ColorMode
 from modules.base.displaybase import DisplayBase
 from misc.pimoronidisplay import PimoroniDisplay
 from misc.wavesharedisplay import WaveshareDisplay
@@ -65,8 +65,8 @@ class DisplayManager:
 
     @classmethod
     def verify_color(cls, value: str):
-        if value not in [key.lower() for key in Constants.COLOR_VALUES]:
-            raise Exception(cls.__ERROR_VALUE_TEXT_COLOR.format(Constants.COLOR_VALUES))
+        if value not in [key.lower() for key in ColorMode.values()]:
+            raise Exception(cls.__ERROR_VALUE_TEXT_COLOR.format(ColorMode.values()))
 
     @classmethod
     def get_displays(cls) -> list:
@@ -82,7 +82,7 @@ class DisplayManager:
 
     @classmethod
     def get_colors(cls) -> list:
-        return Constants.COLOR_VALUES
+        return ColorMode.values()
 
     @classmethod
     def get_hdmi(cls) -> str:
@@ -117,4 +117,4 @@ class DisplayManager:
 
     @classmethod
     def should_convert(cls, colors_schema: str) -> bool:
-        return colors_schema.lower() == Constants.COLOR_BW.lower()
+        return colors_schema.lower() == ColorMode.BW.lower()
