@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 
 
 class ConfigBase(ABC):
-
     __ERROR_PARSE = "Error parsing {} configuration entry"
     __ERROR_SAVE = "Error saving config file!"
 
@@ -24,6 +23,7 @@ class ConfigBase(ABC):
 
     def __init__(self, path: str, default_path: str, outer_class=None):
         self.__CONFIG_STRING = {}
+        self.__obsolete: List[str] = []
         self.config = configparser.ConfigParser()
         self.__path = path
         self.__default_path = default_path
@@ -107,10 +107,35 @@ class ConfigBase(ABC):
                 self.__CONFIG_STRING[property_name] = section
 
         self.legacy_convert()
+        return_value = self.__remove_obsolete()
         return_value = self.__read_properties(return_value)
         self.__CONFIG_STRING = {}
         self.__load_sections()
         return return_value
+
+    def __remove_obsolete(self) -> bool:
+        # entries (and sections) that are not in the default file anymore (e.g. 1.x Google Photos
+        # settings) are dropped; the file is saved again without them
+        self.__obsolete = []
+        for section in self.config.sections():
+            self.__remove_obsolete_section(section)
+        return bool(self.__obsolete)
+
+    def __remove_obsolete_section(self, section: str):
+        default_names = (
+            self.def_config.options(section)
+            if self.def_config.has_section(section)
+            else []
+        )
+        for property_name in self.config.options(section):
+            if property_name not in default_names:
+                self.config.remove_option(section, property_name)
+                self.__obsolete.append(property_name)
+        if not self.def_config.has_section(section):
+            self.config.remove_section(section)
+
+    def get_obsolete(self) -> List[str]:
+        return list(self.__obsolete)
 
     def __read_properties(self, return_value: bool) -> bool:
         for section in self.def_config.sections():

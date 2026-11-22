@@ -20,8 +20,7 @@ echo -e '
 \033[0;37m M\033[1;30mMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\033[0;30mM
 \033[0;37m M\033[0;30mMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\033[0m
 
-\033[1;37mePiframe - e-Paper Raspberry Pi Photo Frame
-            with Google Photos\033[0m\n'
+\033[1;37mePiframe - e-Paper Raspberry Pi Photo Frame\033[0m\n'
 }
 
 function install_apts {
@@ -45,7 +44,6 @@ function install_apts {
 function install_pips {
         echo -e '\n\033[0;30mInstalling Python components\033[0m'
         declare -A pips=( ["Requests"]="requests>=2.26.0" ["Pillow"]="pillow==9.3.0" ["Telebot"]="pyTelegramBotAPI" ["Dateutil"]="python-dateutil" ["ConfigParser"]="configparser>=5.0.0"\
-                                  ["Google components"]="google-api-python-client google-auth-httplib2 google-auth-oauthlib"\
                                   ["SPI Libs"]="spidev==3.5" ["Pandas"]="pandas==1.2.0 numpy==1.20" ["Flask"]="flask<2.2.0" ["Flask-WTF"]="flask-wtf==1.0.0" \
                                   ["Starlette"]="starlette" ["Flask-Login"]="flask-login==0.5.0" ["WTForms"]="wtforms>=3.0.0" ["SMBus"]="smbus2")
         declare -a order;
@@ -62,12 +60,11 @@ function install_pips {
         order+=( "WTForms" )
         order+=( "Flask-Login" )
         order+=( "Flask" )
-        order+=( "Google components" )
 
         for i in "${order[@]}"; do
                 pip=${pips[$i]}
                 printf '\e[1;37m%-30s\e[m' "Installing $i:"
-                if [ "$i" == "Google components" ] || [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ] || [ "$i" == "Flask" ]; then
+                if [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ] || [ "$i" == "Flask" ]; then
                         out=$(sudo -H pip3 -q install --upgrade $pip 2>&1 > /dev/null)
                 else
                         out=$(sudo -H pip3 -q install "$pip" 2>&1 > /dev/null)
@@ -78,7 +75,7 @@ function install_pips {
                         sleep 5
                 else
                         echo -e '\033[0;31merror!\033[0m'
-                        if [ "$i" == "Google components" ] || [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ] || [ "$i" == "Flask" ]; then
+                        if [ "$i" == "Telebot" ] || [ "$i" == "Pandas" ] || [ "$i" == "Flask" ]; then
                                 echo -e "\033[1;37mPlease try to install sudo -H pip3 install --upgrade $pip manually and run the script again\033[0m"
                         else
                                 echo -e "\033[1;37mPlease try to install sudo -H pip3 install '$pip' manually and run the script again\033[0m"
@@ -104,7 +101,7 @@ function check_pi {
 function check_spi {
 	echo -e '\n\033[0;30mChecking/enabling SPI support\033[0m'
 	printf '\e[1;37m%-30s\e[m' "Enabling SPI:"
-	
+
 	spi1=$(lsmod | grep spi_)
 	spi2=$(ls -l /dev/spidev* 2> /dev/null)
 	spi3=$(raspi-config nonint get_spi)
@@ -113,7 +110,7 @@ function check_spi {
 		sudo raspi-config nonint do_spi 0
 		sudo sed -i "s/#dtparam=spi=/dtparam=spi=/g" /boot/config.txt
 	fi
-	
+
 	if [ "$(raspi-config nonint get_spi)" -eq 0 ]; then
 		echo -e '\033[1;32mcheck!\033[0m'
 	else
@@ -130,9 +127,9 @@ function display_libs_waveshare {
 	cmds["Unpacking"]='sudo unzip -q waveshare.zip'
 	cmds["Copying"]='sudo cp -r e-Paper-master/RaspberryPi_JetsonNano/python/lib .'
 	cmds["Cleanup"]='sudo rm -r e-Paper-master/ waveshare.zip'
-	
+
 	declare -a order;
-	order+=( "Preparing" )	
+	order+=( "Preparing" )
 	order+=( "Downloading" )
 	order+=( "Unpacking" )
 	order+=( "Copying" )
@@ -195,7 +192,7 @@ function epi_code {
 	cmds["Unpacking"]='sudo unzip -q ePiframe.zip'
 	cmds["Copying"]='sudo cp -r ePiframe-master/* .'
 	cmds["Cleanup"]='sudo rm -r ePiframe-master/ ePiframe.zip'
-	
+
 	declare -a order;
 	order+=( "Preparing" )
 	order+=( "Downloading" )
@@ -226,7 +223,7 @@ function install_service {
 	pwdesc=$(echo "$1"'/' | sed 's_/_\\/_g')
 	cmds["Configuring"]="sudo sed -i s/EPIEPIEPI/$pwdesc/g ePiframe.service"
 	cmds["Installing"]="sudo systemctl --quiet enable $1/ePiframe.service"
-	
+
 	declare -a order;
 	order+=( "Copying" )
 	order+=( "Configuring" )
@@ -236,7 +233,7 @@ function install_service {
 	do
 		printf '\e[1;37m%-30s\e[m' "$i:"
 		out=$(${cmds[$i]} 2>&1 > /dev/null)
-		
+
 		if [ -z "$out" ]; then
 			echo -e '\033[1;32mcheck!\033[0m'
 		else
@@ -257,10 +254,6 @@ function show_next_steps {
 	printf '\e[1;37m9. Enjoy Your ePiframe!\e[m\n'
 }
 
-function start_activate {
-	sudo python3 activate.py
-}
-
 function show_uninstall {
 	echo -e '\033[0;30mNext steps:\033[0m'
 	printf '\e[1;37m1. Service has been stopped and uninstalled\e[m\n'
@@ -270,14 +263,13 @@ function show_uninstall {
 }
 
 function show_help {
-	echo -e '\033[1;37mePiframe - e-Paper Raspberry Pi Photo Frame with Google Photos\033[0m'
+	echo -e '\033[1;37mePiframe - e-Paper Raspberry Pi Photo Frame\033[0m'
 	echo -e '\033[0;30mScript arguments:\033[0m'
 	printf '\e[1;37m	none			- perform ePiframe installation\e[m\n'
 	printf '\e[1;37m	--help			- this help\e[m\n'
 	printf '\e[1;37m	--uninstall		- uninstalls ePiframe\e[m\n'
 	printf '\e[1;37m	--update		- update ePiframe\e[m\n'
 	printf '\e[1;37m	--next-steps 		- show next steps after installation\e[m\n'
-	printf '\e[1;37m	--activate 		- token and creds activation of Google Photos\e[m\n'
 }
 
 ###############################################MAIN###############################################
@@ -303,19 +295,14 @@ fi
 clear
 show_logo
 
-if [ "$1" = "--activate" ]; then
-	start_activate
-	exit 0
-fi
-
 if [ "$1" = "--update" ]; then
 	echo -e "\n\033[0;30mUpdating ePiframe!\033[0m"
-	
+
 	server_version=$(wget --connect-timeout=3 -q -O - https://raw.githubusercontent.com/MikeGawi/ePiframe/master/misc/constants.py 2>/dev/null | grep EPIFRAME_VERSION)
 	local_version=$(grep EPIFRAME_VERSION misc/constants.py)
-	
+
 	if [ "$server_version" = "$local_version" ]; then
-		echo -e '\n\033[0;31mYou already have the latest version of ePiframe.\033[0m'		
+		echo -e '\n\033[0;31mYou already have the latest version of ePiframe.\033[0m'
 		while true; do
 			read -p $'\n\e[1;37mContinue anyway to reinstall it? [y/N]\e[0m' -n 1 -r -e yn
 			case "${yn:-N}" in
@@ -334,9 +321,9 @@ if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ]; then
 			sudo systemctl stop ePiframe.service
 			sudo systemctl disable ePiframe.service
 	fi
-	
+
 	if [ "$1" = "--uninstall" ]; then
-		show_uninstall	
+		show_uninstall
 		exit 0
 	fi
 fi
@@ -359,16 +346,16 @@ check_spi
 
 if [ "$1" = "--update" ]; then
 	path=$(pwd)
-	
+
 	mkdir -p backup
-	
+
 	if [ -f "config.cfg" ]; then
 		cp config.cfg backup/config.cfg.bak
 		cp config.cfg backup/config-"$(date +"%Y%m%d-%H%M%S")".cfg.bak
 		echo -e '\n\033[0;30mSaved a copy of configuration file (config.cfg and a copy with timestamp as well) in backup folder\033[0m'
-	else	
+	else
 		while true; do
-			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'		
+			echo -e '\n\033[0;31mNo config.cfg file! Are You in the correct path? All settings will be set to default\033[0m'
 			read -p $'\n\e[1;37mDo You want to continue? [Y/n]\e[0m' -n 1 -r -e yn
 			case "${yn:-Y}" in
 				[Yy]* ) echo -e '\n\033[0;31mThe update will continue'; break;;
@@ -392,7 +379,7 @@ if [ "$1" = "--update" ]; then
 	if [ -f "static/data/load.rrd" ]; then
 		cp static/data/*.rrd backup/
 		echo -e '\n\033[0;30mSaved a copy of Statistics RRD files (static/data/*.rrd) in backup folder\033[0m'
-	fi	
+	fi
 else
 	read -p $'\n\e[1;37mPlease enter destination path for ePiframe installation\n[DEFAULT:/home/pi/ePiframe]: \e[0m' -r path
 	if [ -z "$path" ]; then
@@ -428,16 +415,6 @@ if [ "$1" = "--update" ]; then
 	fi
 	sudo systemctl start ePiframe.service
 else
-	while true; do
-		echo -e '\n\e[1;37mePiframe can use configured local storage as the source for photos but can also pull them from Google Photos but that needs to be activated.`\033[0m'
-		read -p $'\n\e[1;37mDo You want to activate (if not already done) Google Photos token and credentials for Your ePiframe now? You can always start it later by running ./install.sh --activate command in the main path. [Y/n]\e[0m' -n 1 -r -e yn
-		case "${yn:-Y}" in
-			[Yy]* ) start_activate; break;;
-			[Nn]* ) echo -e '\033[0;31mRemember to activate it later to allow ePiframe use Google Photos\033[0m'; break;;
-			* ) echo "Please answer yes or no.";;
-		esac
-	done
-
 	show_next_steps
 fi
 

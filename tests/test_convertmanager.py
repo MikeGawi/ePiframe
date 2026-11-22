@@ -147,10 +147,10 @@ def test_convert_1():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
-        "bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
@@ -201,10 +201,10 @@ def test_convert_2():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
-        "10 -dither FloydSteinberg -background white -gravity center -extent 800x600 -type bilevel -write target \) "
-        "\( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"10 -dither FloydSteinberg -background white -gravity center -extent 800x600 -type bilevel -write target \) "
+        r"\( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -background white -gravity center -extent 800x600 -type bilevel -write target ) ( "
@@ -255,10 +255,10 @@ def test_convert_3():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
-        "bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
@@ -309,10 +309,10 @@ def test_convert_4():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -ordered-dither o4x4 -background white -gravity center -extent 800x600 -type "
-        "bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -ordered-dither o4x4 -background white -gravity center -extent 800x600 -type "
@@ -363,10 +363,10 @@ def test_convert_5():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
-        "10 -background white -gravity center -extent 800x600 -type bilevel -write target \) \( +clone -thumbnail "
-        "200x120 -write path/convert_name \) NULL:",
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"10 -background white -gravity center -extent 800x600 -type bilevel -write target \) \( +clone -thumbnail "
+        r"200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -background white -gravity center -extent 800x600 -type bilevel -write target ) ( +clone -thumbnail "
@@ -417,10 +417,10 @@ def test_convert_6():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
-        "10 -colors 2 +dither -background white -gravity center -extent 800x600 -type bilevel -write target \) \( "
-        "+clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"10 -colors 2 +dither -background white -gravity center -extent 800x600 -type bilevel -write target \) \( "
+        r"+clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -colors 2 +dither -background white -gravity center -extent 800x600 -type bilevel -write target ) ( "
@@ -522,12 +522,12 @@ def test_convert_background():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone \( -clone 0 -gravity center -sample x640 "
-        "-scale 12.5% -resize 800x640^ -crop 800x+0+0 +repage \) \( -clone 0 -sample 800x600 \) -delete 0 -gravity "
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone \( -clone 0 -gravity center -sample x640 "
+        r"-scale 12.5% -resize 800x640^ -crop 800x+0+0 +repage \) \( -clone 0 -sample 800x600 \) -delete 0 -gravity "
         "center -compose over -composite -brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 "
-        "-background white -gravity center -extent 800x600 -type bilevel -write target \) \( +clone -thumbnail "
-        "200x120 -write path/convert_name \) NULL:",
+        r"-background white -gravity center -extent 800x600 -type bilevel -write target \) \( +clone -thumbnail "
+        r"200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone ( -clone 0 -gravity center -sample x640 "
         "-scale 12.5% -resize 800x640^ -crop 800x+0+0 +repage ) ( -clone 0 -sample 800x600 ) -delete 0 -gravity "
@@ -580,10 +580,10 @@ def test_convert_invert():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -negate -background black -gravity center -extent 800x600 "
-        "-type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"-type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -negate -background black -gravity center -extent 800x600 "
@@ -634,11 +634,11 @@ def test_convert_background_crop():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent "
-        "800x600 -thumbnail 200x120 -write path/download_name +delete \) \( +clone -resize 800x600^ "
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent "
+        r"800x600 -thumbnail 200x120 -write path/download_name +delete \) \( +clone -resize 800x600^ "
         "-gravity Center -extent 800x600 -brightness-contrast 0,10 -dither FloydSteinberg -remap "
         "pattern:gray50 -background white -gravity center -extent 800x600 -type bilevel -write target "
-        "\) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"\) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent "
         "800x600 -thumbnail 200x120 -write path/download_name +delete ) ( +clone -resize 800x600^ "
         "-gravity Center -extent 800x600 -brightness-contrast 0,10 -dither FloydSteinberg -remap "
@@ -690,10 +690,10 @@ def test_convert_rotation():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
-        "bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
@@ -744,10 +744,10 @@ def test_convert_horizontal():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -rotate 90 -sample 800x600 "
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -rotate 90 -sample 800x600 "
         "-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center "
-        "-extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"-extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -rotate 90 -sample 800x600 "
         "-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center "
@@ -798,10 +798,10 @@ def test_convert_turned():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -rotate 180 -sample 800x600 "
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -rotate 180 -sample 800x600 "
         "-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center "
-        "-extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"-extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -rotate 180 -sample 800x600 "
         "-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center "
@@ -852,11 +852,11 @@ def test_convert_quality():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -auto-gamma -channel rgb "
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -auto-gamma -channel rgb "
         "-auto-level -normalize -brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background "
-        "white -gravity center -extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write "
-        "path/convert_name \) NULL:",
+        r"white -gravity center -extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write "
+        r"path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -auto-gamma -channel rgb "
         "-auto-level -normalize -brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background "
@@ -908,10 +908,10 @@ def test_convert_grayscale():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -colorspace Gray "
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -colorspace Gray "
         "-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center "
-        "-extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"-extent 800x600 -type bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -colorspace Gray "
         "-brightness-contrast 0,10 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center "
@@ -962,10 +962,10 @@ def test_convert_brightness():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 90,"
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 90,"
         "0 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
-        "bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
+        r"bilevel -write target \) \( +clone -thumbnail 200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 90,"
         "0 -dither FloydSteinberg -remap pattern:gray50 -background white -gravity center -extent 800x600 -type "
@@ -1017,10 +1017,10 @@ def test_convert_colors_number():
         )
 
     assert output == [
-        "bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
-        "-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
-        "10 -background white -gravity center -extent 800x600 -colors 25 -write target \) \( +clone -thumbnail "
-        "200x120 -write path/convert_name \) NULL:",
+        r"bin [] -limit thread 1 \( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
+        r"-thumbnail 200x120 -write path/download_name +delete \) \( +clone -sample 800x600 -brightness-contrast 0,"
+        r"10 -background white -gravity center -extent 800x600 -colors 25 -write target \) \( +clone -thumbnail "
+        r"200x120 -write path/convert_name \) NULL:",
         "bin source -limit thread 1 ( +clone -background white -gravity center -sample 800x600 -extent 800x600 "
         "-thumbnail 200x120 -write path/download_name +delete ) ( +clone -sample 800x600 -brightness-contrast 0,"
         "10 -background white -gravity center -extent 800x600 -colors 25 -write target ) ( +clone -thumbnail 200x120 "

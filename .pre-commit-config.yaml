@@ -1,0 +1,59 @@
+# Install once: uv run pre-commit install
+# Run on everything: uv run pre-commit run --all-files
+# Tests are not run here (too slow); CI runs pytest with coverage.
+exclude: ^(static/(js|css)/|lib/|venv/|docs/assets/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-ast
+      - id: check-toml
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.6 # keep in sync with ruff in uv.lock
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        # 1.x install.sh only has info-level findings; the Phase 4 installer must be fully clean
+        args: [--severity=warning]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        additional_dependencies: [tomli]
+
+  # mypy and xenon run from the project environment (uv.lock), so they see the
+  # same dependency versions as the code.
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (strict, ported code)
+        entry: uv run --frozen mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: xenon
+        name: xenon (cyclomatic complexity grade A)
+        entry: >-
+          uv run --frozen xenon --max-absolute A --max-modules A --max-average A
+          src scripts ePiframe.py ePiframe_service.py misc modules tools
+        language: system
+        types: [python]
+        pass_filenames: false

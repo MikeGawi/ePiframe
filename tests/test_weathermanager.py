@@ -1,5 +1,5 @@
 import pytest
-from starlette import status
+from http import HTTPStatus
 from modules.weathermanager import WeatherManager
 from tests.helpers.helpers import not_raises
 
@@ -41,7 +41,7 @@ def test_weather_manager(requests_mocker):
     url = "https://weatherdata/weather?lat={}&lon={}&units={}&appid={}"
     desired_url = url.format(lat, lon, "metric", api_key)
     payload = {"main": {"position": {"icon": "weather_icon"}, "temperature": "30.5"}}
-    requests_mocker.get(url=desired_url, status_code=status.HTTP_200_OK, json=payload)
+    requests_mocker.get(url=desired_url, status_code=HTTPStatus.OK, json=payload)
 
     weather.send_request(url, 5)
     assert weather.get_data() == payload

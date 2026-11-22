@@ -117,7 +117,7 @@ def test_database_select_nok():
         select = db.select(
             Constants.DB_ALL,
             Constants.USERS_TABLE_NAME,
-            Constants.USERS_TABLE_USERNAME_HEADER + " IS " + f"'non_existing_username'",
+            Constants.USERS_TABLE_USERNAME_HEADER + " IS " + "'non_existing_username'",
         )
 
     assert [] == select

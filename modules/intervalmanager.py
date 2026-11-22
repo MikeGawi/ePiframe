@@ -2,7 +2,6 @@ import os
 
 
 class IntervalManager:
-
     __path = None
 
     def __init__(self, path: str):

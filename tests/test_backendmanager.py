@@ -1,6 +1,5 @@
 import datetime
 import os
-from typing import List
 from unittest.mock import patch
 
 import pytest
@@ -10,29 +9,37 @@ from modules import configmanager, timermanager, intervalmanager
 from modules.backendmanager import BackendManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
+from tests.helpers.backend_doubles import (
+    MockedIntervalManager,
+    MockedTimerManager,
+    event_mock,
+    get_backend_manager,
+)
 from tests.helpers.helpers import not_raises, remove_file
 
 
 def test_init():
-    with patch.object(configmanager, "ConfigManager", Config), patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config),
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         with not_raises(Exception):
             BackendManager(event_mock, ".")
 
 
 def test_last_date():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_last_date(Constants.CONFIG_FILE)
 
 
 def test_get_path():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_path() == "."
 
 
 def test_get_plugins():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert (
         str(type(manager.get_plugins()))
         == "<class 'modules.pluginsmanager.PluginsManager'>"
@@ -40,13 +47,13 @@ def test_get_plugins():
 
 
 def test_get_config():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert str(type(manager.get_config())) == "<class 'tests.helpers.config.Config'>"
 
 
 def test_refresh():
     with Capturing() as output:
-        manager = get_manager()
+        manager = get_backend_manager()
         manager.refresh()
 
     assert output == [
@@ -61,7 +68,7 @@ def test_refresh():
 def test_log():
     remove_file("log.test")
     message = "test_message"
-    manager = get_manager()
+    manager = get_backend_manager()
     manager.log(message, True)
 
     with open("log.test", "r") as file:
@@ -69,12 +76,12 @@ def test_log():
 
 
 def test_should_i_work_now():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.should_i_work_now() is True
 
 
 def test_next_time():
-    manager = get_manager()
+    manager = get_backend_manager()
     next_update = datetime.datetime.now(
         datetime.datetime.now().astimezone().tzinfo
     ) + datetime.timedelta(seconds=600)
@@ -85,7 +92,7 @@ def test_next_time():
 
 
 def test_update_time():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         manager.update_time()
 
@@ -96,7 +103,7 @@ def test_update_time():
 
 
 def test_fire_event():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         manager.fire_event()
 
@@ -104,7 +111,7 @@ def test_fire_event():
 
 
 def test_next_photo():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         manager.next_photo()
 
@@ -112,12 +119,12 @@ def test_next_photo():
 
 
 def test_get_empty_params():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_empty_params() == "NOPARAMS"
 
 
 def test_refresh_frame():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         manager.refresh_frame()
 
@@ -128,7 +135,7 @@ def test_refresh_frame():
 
 
 def test_remove_interval():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         manager.remove_interval()
 
@@ -138,7 +145,7 @@ def test_remove_interval():
 
 
 def test_get_interval():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         assert manager.get_interval() == 5
 
@@ -148,7 +155,7 @@ def test_get_interval():
 
 
 def test_save_interval():
-    manager = get_manager()
+    manager = get_backend_manager()
     with Capturing() as output:
         manager.save_interval(5)
 
@@ -158,81 +165,83 @@ def test_save_interval():
 
 
 def test_get_token():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_token() == "token"
 
 
 def test_is_metric():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.is_metric() is True
 
 
 def test_get_max_interval():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_max_interval() == 6
 
 
 def test_is_interval_mult_enabled():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.is_interval_mult_enabled() is True
 
 
 def test_triggers_enabled():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.triggers_enabled() is True
 
 
 def test_pid_file_exists():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.pid_file_exists() is False
 
 
 def test_get_download_file():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_download_file() == "tests/assets/waveshare"
 
 
 def test_get_chat_id():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_chat_id() == "chats"
 
 
 def test_get_slide_interval():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_slide_interval() == 600
 
 
 def test_is_telebot_enabled():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.is_telebot_enabled() is True
 
 
 def test_is_web_enabled():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.is_web_enabled() is True
 
 
 def test_stats_enabled():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.stats_enabled() is True
 
 
 def test_get_state_idle():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_state() == "Idle"
 
 
 def test_get_state_busy():
-    with patch.object(configmanager, "ConfigManager", Config) as config, patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         manager = BackendManager(event_mock, ".")
         config.set("pid_file", Constants.CONFIG_FILE_DEFAULT)
         assert manager.get_state() == "Busy"
 
 
 def test_get_service_state_not_running():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "popen", mocked_system), Capturing() as output:
         MockRead.set("")
         assert manager.get_service_state() == "Not running!"
@@ -243,7 +252,7 @@ def test_get_service_state_not_running():
 
 
 def test_get_service_state_running():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "popen", mocked_system), Capturing() as output:
         MockRead.set("Running")
         assert manager.get_service_state() == "Running"
@@ -254,7 +263,7 @@ def test_get_service_state_running():
 
 
 def test_get_uptime():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "popen", mocked_system), Capturing() as output:
         MockRead.set("")
         assert manager.get_uptime() == "-"
@@ -263,7 +272,7 @@ def test_get_uptime():
 
 
 def test_get_load():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "popen", mocked_system), Capturing() as output:
         MockRead.set("")
         assert manager.get_load() == "-"
@@ -272,7 +281,7 @@ def test_get_load():
 
 
 def test_reboot():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "system", mocked_system), Capturing() as output:
         MockRead.set("")
         manager.reboot()
@@ -281,7 +290,7 @@ def test_reboot():
 
 
 def test_restart():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "system", mocked_system), Capturing() as output:
         MockRead.set("")
         manager.restart()
@@ -290,7 +299,7 @@ def test_restart():
 
 
 def test_power_off():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "system", mocked_system), Capturing() as output:
         MockRead.set("")
         manager.power_off()
@@ -299,7 +308,7 @@ def test_power_off():
 
 
 def test_get_mem():
-    manager = get_manager()
+    manager = get_backend_manager()
     with patch.object(os, "popen", mocked_system), Capturing() as output:
         MockRead.set("")
         assert manager.get_mem() == "-"
@@ -359,9 +368,11 @@ def test_display_power_off():
 
 
 def test_display_power_config_spi():
-    with patch.object(configmanager, "ConfigManager", Config) as config, patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         manager = BackendManager(event_mock, ".")
         config.set("display_type", "SPI")
         with patch.object(os, "popen", mocked_system), Capturing() as output:
@@ -372,9 +383,11 @@ def test_display_power_config_spi():
 
 
 def test_display_power_config_on():
-    with patch.object(configmanager, "ConfigManager", Config) as config, patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         manager = BackendManager(event_mock, ".")
         config.set("display_type", "HDMI")
         with patch.object(os, "popen", mocked_system), Capturing() as output:
@@ -385,9 +398,11 @@ def test_display_power_config_on():
 
 
 def test_display_power_config_off():
-    with patch.object(configmanager, "ConfigManager", Config) as config, patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         manager = BackendManager(event_mock, ".")
         config.set("display_type", "HDMI")
         with patch.object(os, "popen", mocked_system), Capturing() as output:
@@ -397,15 +412,8 @@ def test_display_power_config_off():
     assert output == ["sudo vcgencmd display_power 0 2> /dev/null"]
 
 
-def get_manager():
-    with patch.object(configmanager, "ConfigManager", Config), patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
-        return BackendManager(event_mock, ".")
-
-
 @pytest.mark.parametrize(
-    "celcius, fahrenheit",
+    "celsius, fahrenheit",
     [
         (0, "32.0"),
         (20, "68.0"),
@@ -413,14 +421,16 @@ def get_manager():
         ("abc", "-"),
     ],
 )
-def test_calc_to_f(celcius, fahrenheit):
-    assert BackendManager.calc_to_f(celcius) == fahrenheit
+def test_calc_to_f(celsius, fahrenheit):
+    assert BackendManager.calc_to_f(celsius) == fahrenheit
 
 
 def test_get_temp_c():
-    with patch.object(configmanager, "ConfigManager", Config) as config, patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         manager = BackendManager(event_mock, ".")
         config.set("units", "metric")
         with patch.object(os, "popen", mocked_system), Capturing() as output:
@@ -431,9 +441,11 @@ def test_get_temp_c():
 
 
 def test_get_temp_f():
-    with patch.object(configmanager, "ConfigManager", Config) as config, patch.object(
-        timermanager, "TimerManager", MockedTimerManager
-    ), patch.object(intervalmanager, "IntervalManager", MockedIntervalManager):
+    with (
+        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(timermanager, "TimerManager", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    ):
         manager = BackendManager(event_mock, ".")
         config.set("units", "imperial")
         with patch.object(os, "popen", mocked_system), Capturing() as output:
@@ -444,7 +456,7 @@ def test_get_temp_f():
 
 
 def test_get_next_time_short():
-    manager = get_manager()
+    manager = get_backend_manager()
     manager.update_time()
     next_update = datetime.datetime.now(
         datetime.datetime.now().astimezone().tzinfo
@@ -460,7 +472,7 @@ def test_get_next_time_short():
 
 
 def test_get_next_time_longer():
-    manager = get_manager()
+    manager = get_backend_manager()
     MockedIntervalManager.set_interval(55)
     manager.update_time()
     next_update = datetime.datetime.now(
@@ -477,7 +489,7 @@ def test_get_next_time_longer():
 
 
 def test_get_next_time_longest():
-    manager = get_manager()
+    manager = get_backend_manager()
     MockedIntervalManager.set_interval(555)
     manager.update_time()
     next_update = datetime.datetime.now(
@@ -494,17 +506,17 @@ def test_get_next_time_longest():
 
 
 def test_get_original_file():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_original_file() == "tests/assets/waveshare.bmp"
 
 
 def test_get_current_file():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_current_file() == "tests/assets/waveshare.bmp"
 
 
 def test_get_filename_if_exists_ok():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert (
         manager.get_filename_if_exists("photo_convert_filename")
         == "tests/assets/waveshare.bmp"
@@ -512,29 +524,24 @@ def test_get_filename_if_exists_ok():
 
 
 def test_get_filename_if_exists_nok():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_filename_if_exists("pid_file") == ""
 
 
 def test_get_filename_modification_time_if_exists_ok():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert (
         manager.get_filename_modification_time_if_exists("photo_convert_filename") > 0
     )
 
 
 def test_get_filename_modification_time_if_exists_nok():
-    manager = get_manager()
+    manager = get_backend_manager()
     assert manager.get_filename_modification_time_if_exists("pid_file") == 0
     remove_file("log.test")
 
 
-def event_mock(params):
-    print(f"Event triggered {params=}")
-
-
 class MockRead:
-
     text = ""
 
     def read(self):
@@ -548,38 +555,3 @@ class MockRead:
 def mocked_system(*args, **kwargs):
     print("".join(args) + "".join(kwargs))
     return MockRead()
-
-
-class MockedIntervalManager:
-    __path = None
-    interval = 5
-
-    @classmethod
-    def set_interval(cls, interval):
-        cls.interval = interval
-
-    def __init__(self, path: str):
-        self.__path = path
-        print("IntervalManager_init")
-
-    def read(self) -> int:
-        print("IntervalManager_read")
-        return self.interval
-
-    def save(self, interval: int):
-        print(f"IntervalManager_save {interval=}")
-
-    def remove(self):
-        print("IntervalManager_remove")
-
-
-class MockedTimerManager:
-    def __init__(self, start_times: List[str], end_times: List[str]):
-        print("TimerManager_init")
-
-        self.__start_times = start_times
-        self.__end_times = end_times
-
-    def should_i_work_now(self) -> bool:
-        print("TimerManager_should_i_work_now")
-        return True

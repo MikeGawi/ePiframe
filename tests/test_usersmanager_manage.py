@@ -6,6 +6,7 @@ from misc.logs import Logs
 from modules.databasemanager import DatabaseManager
 from modules.usersmanager import UsersManager
 from tests.helpers.capturing import Capturing
+from tests.helpers.inputs import MockedInput
 from tests.helpers.helpers import remove_file
 
 db_filename = "test.sqlite"
@@ -15,16 +16,6 @@ password = "password"
 
 database_manager: DatabaseManager
 logger: Logs
-
-
-class MockedInput:
-    __inputs = []
-
-    def __init__(self, inputs: list):
-        self.__inputs = inputs
-
-    def mock_inputs(self, *args, **kwargs):
-        return self.__inputs.pop(0) if self.__inputs else "-"
 
 
 @patch("misc.constants.Constants.USERS_DB_FILE", db_filename)
@@ -109,8 +100,9 @@ def test_delete():
 
 def mock_manage(inputs: MockedInput):
     users_manager = UsersManager(database_manager)
-    with patch.object(builtins, "input", inputs.mock_inputs), patch.object(
-        getpass, "getpass", inputs.mock_inputs
+    with (
+        patch.object(builtins, "input", inputs.mock_inputs),
+        patch.object(getpass, "getpass", inputs.mock_inputs),
     ):
         with Capturing() as output:
             users_manager.manage(logger)
