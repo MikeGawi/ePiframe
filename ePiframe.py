@@ -13,6 +13,8 @@ from typing import List
 from pandas import DataFrame
 
 from epiframe.config import paths
+from epiframe.core.interval import IntervalMultiplier
+from epiframe.core.pidfile import PidFile, process_command
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
 from modules.base.pluginbase import PluginBase
@@ -23,7 +25,6 @@ from modules.databasemanager import DatabaseManager
 from modules.displaymanager import DisplayManager
 from modules.filteringmanager import FilteringManager
 from modules.indexmanager import IndexManager
-from modules.intervalmanager import IntervalManager
 from modules.localsourcemanager import LocalSourceManager
 from modules.photomanager import (
     LOCAL_SOURCE,
@@ -32,7 +33,6 @@ from modules.photomanager import (
     PHOTOS_SOURCE_LABEL,
     PhotoManager,
 )
-from modules.pidmanager import PIDManager
 from modules.pluginsmanager import PluginsManager
 from modules.randommanager import RandomManager
 from modules.usersmanager import USERS_ACTIONS_TAG, UsersManager
@@ -71,7 +71,7 @@ class EPiframe:
         self.verify_config()
 
         self.photo_manager = PhotoManager()
-        self.pid_manager = PIDManager(self.config.get("pid_file"))
+        self.pid_manager = PidFile(self.config.get("pid_file"))
         self.plugins_manager = PluginsManager(
             os.path.dirname(os.path.realpath(__file__)),
             self.pid_manager,
@@ -433,17 +433,11 @@ class EPiframe:
     def save_pid(self):
         try:
             last_pid = self.pid_manager.read()
-            if int(last_pid) > 0:
-                try:
-                    if os.path.basename(__file__) in self.pid_manager.get_pid_name(
-                        last_pid
-                    ):
-                        os.kill(int(last_pid), signal.SIGKILL)
-                except Exception:
-                    pass
+            if last_pid:
+                self.stop_previous_run(last_pid)
                 self.pid_manager.remove()
 
-            self.pid_manager.save()
+            self.pid_manager.write()
             atexit.register(self.pid_manager.remove)
         except Exception as exception:
             log.error(f"Error! {exception}")
@@ -578,11 +572,23 @@ class EPiframe:
             version = ".".join(map(str, MINIMAL_PYTHON_VERSION))
             raise Exception(f"Must be using Python {version} or newer!")
 
+    @staticmethod
+    def stop_previous_run(pid: int):
+        # a previous update that still runs (hangs) is killed; 1.x compared str with
+        # bytes here, so it never did
+        command = process_command(pid)
+        if pid != os.getpid() and command and os.path.basename(__file__) in command:
+            log.warning(f"Warning! Stopping previous ePiframe run (PID {pid})")
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except OSError:
+                pass
+
     def interval_multiplication(self, filename: str, photo):
         if bool(self.config.getint("interval_mult")):
             # if photo comment contains hot word then multiply interval by its value and photo will
             # be displayed longer
-            self.interval_manager = IntervalManager(
+            self.interval_manager = IntervalMultiplier(
                 self.config.get("interval_mult_file")
             )
             if not self.check_arguments("--no-skip"):
@@ -595,7 +601,7 @@ class EPiframe:
                 _, comment = ConvertManager().get_image_comment(
                     self.config.get("convert_bin_path"), filename
                 )
-                self.interval_manager.save_interval(
+                self.interval_manager.save_from_description(
                     comment,
                     self.config.get("interval_mult_hotword"),
                     self.config.getint("interval_max_mult"),
