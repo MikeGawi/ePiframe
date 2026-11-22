@@ -4,7 +4,8 @@ from typing import List
 from unittest.mock import patch
 
 from epiframe.config import manager as configmanager
-from modules import intervalmanager, timermanager
+from epiframe.core import interval as intervalmanager
+from epiframe.core import schedule as timermanager
 from modules.backendmanager import BackendManager
 from tests.helpers.config import Config
 
@@ -14,6 +15,8 @@ def event_mock(params):
 
 
 class MockedIntervalManager:
+    """Double of epiframe.core.interval.IntervalMultiplier."""
+
     __path = None
     interval = 5
 
@@ -37,13 +40,14 @@ class MockedIntervalManager:
 
 
 class MockedTimerManager:
-    def __init__(self, start_times: List[str], end_times: List[str]):
+    """Double of epiframe.core.schedule.WeeklySchedule."""
+
+    @classmethod
+    def from_strings(cls, start_times: List[str], end_times: List[str]):
         print("TimerManager_init")
+        return cls()
 
-        self.__start_times = start_times
-        self.__end_times = end_times
-
-    def should_i_work_now(self) -> bool:
+    def is_active(self) -> bool:
         print("TimerManager_should_i_work_now")
         return True
 
@@ -51,7 +55,7 @@ class MockedTimerManager:
 def get_backend_manager():
     with (
         patch.object(configmanager, "ConfigManager", Config),
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         return BackendManager(event_mock, ".")

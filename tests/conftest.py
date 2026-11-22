@@ -7,7 +7,8 @@ import pytest
 import requests_mock
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
 from epiframe.config import manager as configmanager
-from modules import timermanager, intervalmanager
+from epiframe.core import interval as intervalmanager
+from epiframe.core import schedule as timermanager
 from modules.backendmanager import BackendManager
 from modules.pluginsmanager import PluginsManager
 from modules.webuimanager import WebUIManager
@@ -32,8 +33,8 @@ def requests_mocker():
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app_no_login():
     with (
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
         mock.patch.object(
             PluginsManager,
             "_PluginsManager__PLUGINS_DIR",
@@ -63,8 +64,8 @@ def app_no_login():
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app_no_config():
     with (
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
         patch.object(configmanager, "ConfigManager", Config),
     ):
         backend = BackendManager(event_mock, ".")
@@ -84,8 +85,8 @@ def app_no_config():
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app():
     with (
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         backend = BackendManager(event_mock, ".")
         web_manager = WebUIManager(backend)

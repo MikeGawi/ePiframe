@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from epiframe.config.manager import ConfigManager
-    from modules.pidmanager import PIDManager
+    from epiframe.core.pidfile import PidFile
 
 
 class PluginsManager:
@@ -20,7 +20,7 @@ class PluginsManager:
     __PLUGINS = []
     __ORDER_FILE = __PLUGINS_DIR + "order.cfg"
 
-    def __init__(self, path: str, pid_manager: PIDManager, config: ConfigManager):
+    def __init__(self, path: str, pid_manager: PidFile, config: ConfigManager):
         self.__config = config
         self.__pid_manager = pid_manager
         self.__global_path = path

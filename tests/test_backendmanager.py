@@ -6,7 +6,8 @@ import pytest
 
 from epiframe.config.paths import CONFIG_FILE, CONFIG_FILE_DEFAULT
 from epiframe.config import manager as configmanager
-from modules import timermanager, intervalmanager
+from epiframe.core import interval as intervalmanager
+from epiframe.core import schedule as timermanager
 from modules.backendmanager import BackendManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
@@ -22,8 +23,8 @@ from tests.helpers.helpers import not_raises, remove_file
 def test_init():
     with (
         patch.object(configmanager, "ConfigManager", Config),
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         with not_raises(Exception):
             BackendManager(event_mock, ".")
@@ -223,8 +224,8 @@ def test_get_state_idle():
 def test_get_state_busy():
     with (
         patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
         # Config.settings is shared by all tests, restore it
         patch.dict(Config.settings),
     ):
@@ -363,8 +364,8 @@ def test_display_power_off():
 def test_display_power_config_spi():
     with (
         patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         manager = BackendManager(event_mock, ".")
         config.set("display_type", "SPI")
@@ -378,8 +379,8 @@ def test_display_power_config_spi():
 def test_display_power_config_on():
     with (
         patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         manager = BackendManager(event_mock, ".")
         config.set("display_type", "HDMI")
@@ -393,8 +394,8 @@ def test_display_power_config_on():
 def test_display_power_config_off():
     with (
         patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         manager = BackendManager(event_mock, ".")
         config.set("display_type", "HDMI")
@@ -421,8 +422,8 @@ def test_calc_to_f(celsius, fahrenheit):
 def test_get_temp_c():
     with (
         patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         manager = BackendManager(event_mock, ".")
         config.set("units", "metric")
@@ -436,8 +437,8 @@ def test_get_temp_c():
 def test_get_temp_f():
     with (
         patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
+        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
     ):
         manager = BackendManager(event_mock, ".")
         config.set("units", "imperial")

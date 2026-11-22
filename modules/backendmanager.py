@@ -2,13 +2,12 @@ import glob
 import os
 from datetime import datetime, timedelta
 
-import modules.intervalmanager as interval_manager
-import modules.pidmanager as pid_manager
 import modules.pluginsmanager as plugins_manager
-import modules.timermanager as timer_manager
 from epiframe.core.files import last_modified
 from epiframe.config import manager as config_manager
 from epiframe.config import paths
+from epiframe.core import interval, schedule
+from epiframe.core.pidfile import PidFile
 from modules.displaymanager import DisplayManager
 from modules.weathermanager import WeatherManager
 
@@ -46,18 +45,12 @@ class BackendManager:
         self.__path = path
         self.__last_date = None
         self.__load_config()
-        self.__interval = interval_manager.IntervalManager(
-            self.__config.get("interval_mult_file")
-        )
-        self.__timer = timer_manager.TimerManager(
-            self.__config.get("start_times").split(","),
-            self.__config.get("stop_times").split(","),
-        )
+        self.__load_interval_and_schedule()
         self.remove_interval()
         self.update_time()
         self.__plugins = plugins_manager.PluginsManager(
             self.__path,
-            pid_manager.PIDManager(self.__config.get("pid_file")),
+            PidFile(self.__config.get("pid_file")),
             self.__config,
         )
 
@@ -85,13 +78,16 @@ class BackendManager:
 
         if not date or not self.__last_date or date != self.__last_date:
             self.__load_config()
-            self.__interval = interval_manager.IntervalManager(
-                self.__config.get("interval_mult_file")
-            )
-            self.__timer = timer_manager.TimerManager(
-                self.__config.get("start_times").split(","),
-                self.__config.get("stop_times").split(","),
-            )
+            self.__load_interval_and_schedule()
+
+    def __load_interval_and_schedule(self):
+        self.__interval = interval.IntervalMultiplier(
+            self.__config.get("interval_mult_file")
+        )
+        self.__timer = schedule.WeeklySchedule.from_strings(
+            self.__config.get("start_times").split(","),
+            self.__config.get("stop_times").split(","),
+        )
 
     def get_config(self) -> config_manager.ConfigManager:
         return self.__config
@@ -118,10 +114,10 @@ class BackendManager:
                 datetime.now().astimezone().tzinfo
             ) + timedelta(seconds=(value * multiplication))
         else:
-            self.__next_time = self.__timer.when_i_work_next()
+            self.__next_time = self.__timer.next_start()
 
     def should_i_work_now(self) -> bool:
-        return self.__timer.should_i_work_now()
+        return self.__timer.is_active()
 
     def get_update_time_formatted(self, formatted: bool = False):
         return_value = (

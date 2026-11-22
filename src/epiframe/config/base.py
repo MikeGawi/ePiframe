@@ -22,7 +22,6 @@ import configparser
 import contextlib
 import os
 import shutil
-import tempfile
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
@@ -36,6 +35,7 @@ from epiframe.config.property import (
     ConfigWarning,
     PropertyType,
 )
+from epiframe.core.files import write_text_atomic
 
 HELP_PREFIX = "# "
 COMMENT_PREFIXES = ("#", ";")
@@ -227,19 +227,7 @@ class ConfigBase(ABC):
 
     def save(self, path: str | os.PathLike[str] | None = None) -> None:
         """Write the configuration atomically (to its own file by default)."""
-        target = Path(path) if path is not None else self._path
-        handle, temporary = tempfile.mkstemp(
-            dir=target.parent, prefix=f".{target.name}."
-        )
-        try:
-            with os.fdopen(handle, "w") as file:
-                file.write(self.render())
-            if target.exists():
-                shutil.copymode(target, temporary)
-            os.replace(temporary, target)
-        except BaseException:
-            os.remove(temporary)
-            raise
+        write_text_atomic(path if path is not None else self._path, self.render())
 
     def get_property(self, name: str) -> ConfigProperty:
         self._section(name)

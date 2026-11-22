@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from modules.filteringmanager import FilteringManager
     from modules.indexmanager import IndexManager
     from modules.photomanager import PhotoManager
-    from modules.pidmanager import PIDManager
+    from epiframe.core.pidfile import PidFile
     from modules.usersmanager import UsersManager
     from modules.webuimanager import WebUIManager
 
@@ -29,7 +29,7 @@ class PluginBase:
     def __init__(
         self,
         path: str,
-        pid_manager: PIDManager,
+        pid_manager: PidFile,
         logger: logging.Logger,
         global_config: ConfigBase,
     ):

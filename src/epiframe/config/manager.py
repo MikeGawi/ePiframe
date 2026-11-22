@@ -8,13 +8,13 @@ from typing import TypedDict
 
 from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
+from epiframe.core import schedule
 from epiframe.core.network import validate_ip
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
 from modules.filteringmanager import FilteringManager
 from modules.localsourcemanager import LocalSourceManager
 from modules.telebotmanager import TelebotManager
-from modules.timermanager import TimerManager
 from modules.weathermanager import WeatherManager
 from modules.weatherstampmanager import WeatherStampManager
 
@@ -59,7 +59,7 @@ def _general_settings() -> list[ConfigProperty]:
 def _display_settings() -> list[ConfigProperty]:
     spi = _on_display(DisplayManager.get_spi())
     hdmi = _on_display(DisplayManager.get_hdmi())
-    timer_check = CrossCheck(TimerManager.verify, ("start_times", "stop_times"))
+    timer_check = CrossCheck(schedule.verify, ("start_times", "stop_times"))
     return [
         ConfigProperty("display_type", possible=DisplayManager.get_displays()),
         ConfigProperty("epaper_type", possible=DisplayManager.get_epapers(), **spi),
