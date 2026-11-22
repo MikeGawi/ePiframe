@@ -155,7 +155,7 @@ If you want photos to be pre-processed and ready for display in the frame (to sa
 
 ## Google Drive Source
 
-ePiframe can show photos from a Google Drive folder (and its subfolders). The frame signs in as a Google Cloud *service account* with read-only access: there is no browser sign-in and no token that expires. Only the list of photos is kept on the frame; a photo is downloaded when it is about to be shown.
+ePiframe can show photos from Google Drive folders (and their subfolders). The frame signs in as a Google Cloud *service account* with read-only access: there is no browser sign-in and no token that expires. Only the list of photos is kept on the frame; a photo is downloaded when it is about to be shown.
 
 **_NOTE_** - Google Drive can be the only photo source or one of several (e.g. with the Local Source). When the frame is offline, photos found before are still listed, but only local ones can be shown.
 
@@ -164,8 +164,8 @@ Setup:
 1. In the [Google Cloud console](https://console.cloud.google.com/) create a project (or use an existing one) and enable the **Google Drive API** for it.
 2. In *IAM & Admin → Service Accounts* create a service account (no roles needed), open it, go to *Keys → Add key → Create new key → JSON* and download the key file.
 3. Copy the key file to the frame, e.g. as `drive_key.json` in the ePiframe folder. Keep it private: anyone with this file can read the folders shared with the service account.
-4. In Google Drive share the photo folder with the service account e-mail (`...@<project>.iam.gserviceaccount.com`, it is in the key file as `client_email`) with *Viewer* access.
-5. In [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) set `use_drive=1`, `drive_folder` to the folder link (or ID) and `drive_key_file` to the key file path, then run `./ePiframe.py --check-config`.
+4. In Google Drive share each photo folder with the service account e-mail (`...@<project>.iam.gserviceaccount.com`, it is in the key file as `client_email`) with *Viewer* access.
+5. In [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) set `use_drive=1`, `drive_folders` to the folder link (or ID; several folders separated with commas) and `drive_key_file` to the key file path, then run `./ePiframe.py --check-config`.
 
 Photos are recognized by their type (or extension, for RAW files) and sorted/filtered by the time they were taken (EXIF), or by their modification time when it is unknown. Changes in Drive are picked up incrementally (Drive Changes API), so a large library is not listed again on every refresh. The [interval multiplication](#configuration) hot word can be put in the file description in Drive (*File information → Details → Description*).
 

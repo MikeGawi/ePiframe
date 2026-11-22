@@ -32,7 +32,7 @@ Python 3 e-Paper (or any other HDMI/Composite display) Raspberry Pi Photo Frame 
 
 ### Newest features 🎉
 
-* **Google Drive source** - (optional) use a Google Drive folder shared with a service account as the photo source ([setup](https://github.com/MikeGawi/ePiframe/blob/master/INSTALL.md#google-drive-source))
+* **Google Drive source** - (optional) use Google Drive folders shared with a service account as the photo source ([setup](https://github.com/MikeGawi/ePiframe/blob/master/INSTALL.md#google-drive-source))
 * **Local source** - (optional) use local folder as the photo source [#16](https://github.com/MikeGawi/ePiframe/issues/16)
 * **HDMI screens support** - ePiframe with HDMI/Composite display [#33](https://github.com/MikeGawi/ePiframe/issues/33)
 * **ePiframe Plugins** - (optional) install (or create yourself) custom [plugins](#plugins) to enhance ePiframe functions [#54](https://github.com/MikeGawi/ePiframe/issues/54)

@@ -1,8 +1,10 @@
-"""Google Drive source: photos in a Drive folder shared with a service account.
+"""Google Drive source: photos in Drive folders shared with a service account.
 
 The frame signs in as a Google Cloud service account (a JSON key file, no
 browser consent and no expiring user token) with read-only access. The user
-shares the photo folder with the service account's e-mail address.
+shares the photo folders with the service account's e-mail address. Several
+folders can be configured; together with their subfolders they form the tree of
+the source.
 
 Only metadata is synchronized into the photo index; the file itself is
 downloaded when its photo is picked. Synchronization is incremental: after a
@@ -70,12 +72,20 @@ def folder_id(value: str) -> str:
     match = LINK_PATTERN.search(value)
     candidate = (match.group(1) or match.group(2)) if match else value
     if not ID_PATTERN.fullmatch(candidate):
-        raise ValueError("Not a Google Drive folder ID or link!")
+        raise ValueError(f"Not a Google Drive folder ID or link: {value!r}!")
     return candidate
 
 
+def folder_ids(value: str) -> list[str]:
+    """Folder ids of comma separated Drive folder ids or links (each one once)."""
+    ids = [folder_id(item) for item in value.split(",") if item.strip()]
+    if not ids:
+        raise ValueError("No Google Drive folder ID or link!")
+    return list(dict.fromkeys(ids))
+
+
 class DriveError(Exception):
-    """The Drive folder can't be used (missing, not shared, not a folder)."""
+    """A Drive folder can't be used (missing, not shared, not a folder)."""
 
 
 @dataclass(frozen=True)
@@ -239,18 +249,18 @@ class Download:
 
 
 class DriveSource:
-    """Photos with a known image type or one of ``extensions`` in a Drive folder."""
+    """Photos with a known image type or one of ``extensions`` in Drive folders."""
 
     def __init__(
         self,
         drive: Drive,
-        folder: str,
+        roots: Sequence[str],
         recursive: bool,
         extensions: Collection[str],
         full_scan_interval: timedelta = FULL_SCAN_INTERVAL,
     ) -> None:
         self.drive = drive
-        self.folder = folder
+        self.roots = tuple(dict.fromkeys(roots))  # configured folders, each once
         self.recursive = recursive
         self.extensions = frozenset(extension.lower() for extension in extensions)
         self.full_scan_interval = full_scan_interval
@@ -259,27 +269,28 @@ class DriveSource:
     def settings(self) -> str:
         """Source settings; a change forces a full listing."""
         extensions = ",".join(sorted(self.extensions))
-        return f"{self.folder}|{int(self.recursive)}|{extensions}"
+        return f"{','.join(self.roots)}|{int(self.recursive)}|{extensions}"
 
     def _is_photo(self, file: DriveFile) -> bool:
         return file.mime_type in TYPE_TO_EXTENSION or file.extension in self.extensions
 
     # ----------------------------------------------------------------- listing
 
-    def check_folder(self) -> None:
-        """Raise ``DriveError`` if the configured folder can't be used."""
-        data = self._folder_metadata()
-        if data.get("mimeType") != FOLDER_TYPE or data.get("trashed"):
-            raise DriveError(f"Google Drive item {self.folder} is not a folder!")
+    def check_folders(self) -> None:
+        """Raise ``DriveError`` if a configured folder can't be used."""
+        for root in self.roots:
+            data = self._folder_metadata(root)
+            if data.get("mimeType") != FOLDER_TYPE or data.get("trashed"):
+                raise DriveError(f"Google Drive item {root} is not a folder!")
 
-    def _folder_metadata(self) -> dict[str, Any]:
+    def _folder_metadata(self, root: str) -> dict[str, Any]:
         try:
-            return self.drive.file(self.folder, "mimeType,trashed")
+            return self.drive.file(root, "mimeType,trashed")
         except requests.HTTPError as error:
             if error.response is None or error.response.status_code != 404:
                 raise
             raise DriveError(
-                f"Google Drive folder {self.folder} not found or not shared with"
+                f"Google Drive folder {root} not found or not shared with"
                 " the service account!"
             ) from error
 
@@ -288,7 +299,7 @@ class DriveSource:
 
         The ids of the listed folders are added to ``folders``.
         """
-        level = [self.folder]
+        level = list(self.roots)
         while level:
             folders.update(level)
             subfolders: list[str] = []
@@ -341,7 +352,7 @@ class DriveSource:
     def _full_scan(
         self, index: PhotoIndex, state: dict[str, str], now: datetime
     ) -> None:
-        self.check_folder()
+        self.check_folders()
         # taken before the listing, so changes made during it are not missed
         token = self.drive.start_page_token()
         folders: set[str] = set()
@@ -390,7 +401,7 @@ class DriveSource:
     def _in_tree(self, folder: DriveFile | None, folders: set[str]) -> bool:
         if folder is None or folder.trashed:
             return False
-        return folder.id == self.folder or (
+        return folder.id in self.roots or (
             self.recursive and not folders.isdisjoint(folder.parents)
         )
 

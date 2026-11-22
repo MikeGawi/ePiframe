@@ -44,7 +44,13 @@ def _source_settings() -> list[ConfigProperty]:
         ),
         ConfigProperty("local_subfolders", BOOLEAN, dependency="use_local"),
         ConfigProperty("use_drive", BOOLEAN),
-        ConfigProperty("drive_folder", dependency="use_drive", check=drive.folder_id),
+        ConfigProperty(
+            "drive_folders",
+            PropertyType.STRING_LIST,
+            dependency="use_drive",
+            delimiter=",",
+            check=drive.folder_ids,
+        ),
         ConfigProperty("drive_key_file", PropertyType.FILE, dependency="use_drive"),
         ConfigProperty("drive_subfolders", BOOLEAN, dependency="use_drive"),
     ]

@@ -31,6 +31,7 @@ from epiframe.sources.drive import (
     DriveFile,
     DriveSource,
     folder_id,
+    folder_ids,
 )
 from tests.helpers.service_account import ACCOUNT, write_key
 
@@ -135,7 +136,7 @@ def fake() -> FakeDrive:
 
 @pytest.fixture
 def source(fake: FakeDrive) -> DriveSource:
-    return DriveSource(fake, ROOT, True, EXTENSIONS)
+    return DriveSource(fake, [ROOT], True, EXTENSIONS)
 
 
 @pytest.fixture
@@ -186,6 +187,33 @@ def test_folder_id(value: str) -> None:
 def test_folder_id_invalid(value: str) -> None:
     with pytest.raises(ValueError, match="Not a Google Drive folder ID or link"):
         folder_id(value)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("1AbC-dEf_123456789", ["1AbC-dEf_123456789"]),
+        (
+            "1AbC-dEf_123456789, https://drive.google.com/drive/folders/2XyZ_987654321,",
+            ["1AbC-dEf_123456789", "2XyZ_987654321"],
+        ),
+        ("1AbC-dEf_123456789,1AbC-dEf_123456789", ["1AbC-dEf_123456789"]),
+    ],
+)
+def test_folder_ids(value: str, expected: list[str]) -> None:
+    assert folder_ids(value) == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        (" , ", "No Google Drive folder ID or link"),
+        ("1AbC-dEf_123456789,bad", "Not a Google Drive folder ID or link: 'bad'"),
+    ],
+)
+def test_folder_ids_invalid(value: str, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        folder_ids(value)
 
 
 # ---------------------------------------------------------------- drive file
@@ -376,9 +404,10 @@ def test_client_from_missing_key_file(tmp_path: Path) -> None:
 
 
 def test_settings(fake: FakeDrive) -> None:
-    source = DriveSource(fake, ROOT, False, ["JPG", "png"])
+    source = DriveSource(fake, [ROOT, "second", ROOT], False, ["JPG", "png"])
 
-    assert source.settings == f"{ROOT}|0|jpg,png"
+    assert source.roots == (ROOT, "second")
+    assert source.settings == f"{ROOT},second|0|jpg,png"
 
 
 def test_photos_recursive(source: DriveSource) -> None:
@@ -398,10 +427,57 @@ def test_photos_recursive(source: DriveSource) -> None:
 def test_photos_not_recursive(fake: FakeDrive) -> None:
     folders: set[str] = set()
 
-    photos = DriveSource(fake, ROOT, False, EXTENSIONS).photos(folders)
+    photos = DriveSource(fake, [ROOT], False, EXTENSIONS).photos(folders)
 
     assert [photo.id for photo in photos] == ["a", "b"]
     assert folders == {ROOT}
+
+
+@pytest.fixture
+def two_roots(fake: FakeDrive) -> DriveSource:
+    fake.files["second"] = DriveFile("second", "Second", FOLDER_TYPE)
+    fake.add(
+        photo("s1", "second"),
+        folder("sub", "second"),
+        photo("s2", "sub"),
+        folder("nested", "deep"),  # a configured folder inside the first tree
+        photo("n1", "nested"),
+    )
+    return DriveSource(fake, [ROOT, "second", "nested"], True, EXTENSIONS)
+
+
+def test_photos_of_several_folders(fake: FakeDrive, two_roots: DriveSource) -> None:
+    folders: set[str] = set()
+
+    photos = list(two_roots.photos(folders))
+
+    assert [photo.id for photo in photos] == ["a", "b", "n1", "s1", "s2", "x", "z"]
+    assert folders == {ROOT, "second", "nested", "2024", "deep", "sub"}
+    assert fake.queries[0] == [ROOT, "second", "nested"]
+
+
+def test_sync_several_folders(
+    fake: FakeDrive, two_roots: DriveSource, index: PhotoIndex
+) -> None:
+    two_roots.sync(index, NOW)
+    fake.add(photo("s3", "sub"))
+    fake.add(DriveFile("second", "Renamed", FOLDER_TYPE))
+    fake.remove("s1")
+
+    result = two_roots.sync(index, NOW + timedelta(hours=1))
+
+    assert result == drive.SyncResult(changes=3, photos=7, full=False)
+    assert "s3" in ids(index)
+    assert "s1" not in ids(index)
+
+
+def test_check_folders_reports_the_failing_folder(
+    fake: FakeDrive, two_roots: DriveSource
+) -> None:
+    del fake.files["second"]
+
+    with pytest.raises(DriveError, match="folder second not found"):
+        two_roots.check_folders()
 
 
 def test_photos_lists_folders_in_batches(
@@ -417,22 +493,22 @@ def test_photos_lists_folders_in_batches(
     assert fake.queries == [[ROOT], ["2024", "f1"], ["f2", "f3"], ["deep", "loop"]]
 
 
-def test_check_folder(source: DriveSource) -> None:
-    source.check_folder()
+def test_check_folders(source: DriveSource) -> None:
+    source.check_folders()
 
 
-def test_check_folder_not_shared(fake: FakeDrive, source: DriveSource) -> None:
+def test_check_folders_not_shared(fake: FakeDrive, source: DriveSource) -> None:
     del fake.files[ROOT]
 
     with pytest.raises(DriveError, match="not found or not shared"):
-        source.check_folder()
+        source.check_folders()
 
 
 @pytest.mark.parametrize(
     "error",
     [http_error(HTTPStatus.FORBIDDEN), requests.HTTPError("no response")],
 )
-def test_check_folder_other_errors(
+def test_check_folders_other_errors(
     source: DriveSource, monkeypatch: pytest.MonkeyPatch, error: Exception
 ) -> None:
     def fail(file_id: str, fields: str) -> dict[str, Any]:
@@ -441,7 +517,7 @@ def test_check_folder_other_errors(
     monkeypatch.setattr(source.drive, "file", fail)
 
     with pytest.raises(requests.HTTPError) as raised:
-        source.check_folder()
+        source.check_folders()
     assert raised.value is error
 
 
@@ -452,13 +528,13 @@ def test_check_folder_other_errors(
         DriveFile(ROOT, "Photos", FOLDER_TYPE, trashed=True),
     ],
 )
-def test_check_folder_not_a_folder(
+def test_check_folders_not_a_folder(
     fake: FakeDrive, source: DriveSource, root: DriveFile
 ) -> None:
     fake.files[ROOT] = root
 
     with pytest.raises(DriveError, match="is not a folder"):
-        source.check_folder()
+        source.check_folders()
 
 
 # --------------------------------------------------------------------- sync
@@ -586,7 +662,7 @@ def test_sync_removed_folder_state(
 def test_sync_subfolder_change_when_not_recursive(
     fake: FakeDrive, index: PhotoIndex
 ) -> None:
-    source = DriveSource(fake, ROOT, False, EXTENSIONS)
+    source = DriveSource(fake, [ROOT], False, EXTENSIONS)
     source.sync(index, NOW)
     fake.add(folder("new"))
     fake.add(photo("c"))
@@ -621,7 +697,7 @@ def test_sync_full_listing_after_settings_change(
 ) -> None:
     source.sync(index, NOW)
 
-    result = DriveSource(fake, ROOT, False, EXTENSIONS).sync(index, NOW)
+    result = DriveSource(fake, [ROOT], False, EXTENSIONS).sync(index, NOW)
 
     assert result == drive.SyncResult(changes=0, photos=2, full=True)
     assert index_folders(index) == {ROOT}

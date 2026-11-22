@@ -16,7 +16,7 @@ from epiframe.core.pidfile import PidFile, process_command
 from epiframe.photos.index import PhotoIndex
 from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection
-from epiframe.sources.drive import DRIVE_SOURCE, DriveClient, DriveSource, folder_id
+from epiframe.sources.drive import DRIVE_SOURCE, DriveClient, DriveSource, folder_ids
 from epiframe.sources.local import LOCAL_SOURCE, LocalSource
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
@@ -158,7 +158,7 @@ class EPiframe:
         if not self.drive_source:
             self.drive_source = DriveSource(
                 DriveClient.from_key_file(self.config.get("drive_key_file")),
-                folder_id(self.config.get("drive_folder")),
+                folder_ids(self.config.get("drive_folders")),
                 bool(self.config.getint("drive_subfolders")),
                 EXTENSIONS,
             )

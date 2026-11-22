@@ -79,7 +79,7 @@ def test_check_config_reports_errors(frame: Frame) -> None:
 
 def test_check_config_with_drive(frame: Frame) -> None:
     write_key(frame.directory / "drive_key.json")
-    frame.configure(use_drive="1", drive_folder=DRIVE_FOLDER)
+    frame.configure(use_drive="1", drive_folders=DRIVE_FOLDER)
 
     result = frame.run("--check-config")
 
@@ -87,12 +87,12 @@ def test_check_config_with_drive(frame: Frame) -> None:
 
 
 def test_check_config_reports_drive_errors(frame: Frame) -> None:
-    frame.configure(use_drive="1", drive_folder="not a folder")
+    frame.configure(use_drive="1", drive_folders="not a folder")
 
     result = frame.run("--check-config")
 
     assert result.returncode != 0
-    assert "drive_folder configuration entry error" in result.stdout
+    assert "drive_folders configuration entry error" in result.stdout
 
 
 def test_no_photos(frame: Frame) -> None:
@@ -133,7 +133,7 @@ def test_new_photo_is_found_incrementally(frame: Frame) -> None:
 @needs_imagemagick
 def test_drive_offline_still_shows_local_photos(frame: Frame) -> None:
     write_key(frame.directory / "drive_key.json")
-    frame.configure(use_drive="1", drive_folder=DRIVE_FOLDER)
+    frame.configure(use_drive="1", drive_folders=DRIVE_FOLDER)
     frame.add_photo("a.jpg", "red", 1_600_000_000)
 
     result = frame.run("--test", env=OFFLINE)
