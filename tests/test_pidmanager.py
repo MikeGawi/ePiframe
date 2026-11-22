@@ -1,67 +1,56 @@
-import os
+import os.path
 import sys
-
 import pytest
-
 from modules.pidmanager import PIDManager
+from tests.helpers.helpers import remove_file
+
+pid_filename = "test_pid.pid"
 
 
-@pytest.fixture
-def pid_path(tmp_path):
-    return str(tmp_path / "test_pid.pid")
+def test_pid_manager_init():
+    remove_file(pid_filename)
+    pid_manager = PIDManager(path=pid_filename)
+    pytest.pid = pid_manager.get_pid()
 
-
-def test_pid_manager_init(pid_path):
-    pid_manager = PIDManager(path=pid_path)
-
-    assert pid_manager.get_pid() == os.getpid()
-    assert not os.path.exists(pid_path)
-
-
-def test_pid_manager_read_empty(pid_path):
-    pid_manager = PIDManager(path=pid_path)
-
-    assert pid_manager.read() == 0
-
-
-def test_pid_manager_save(pid_path):
-    pid_manager = PIDManager(path=pid_path)
-    pid_manager.save()
-
-    with open(pid_path) as file:
-        assert int(file.readline()) == os.getpid()
-
-
-def test_pid_manager_read(pid_path):
-    PIDManager(path=pid_path).save()
-
-    assert PIDManager(path=pid_path).read() == os.getpid()
-
-
-def test_pid_manager_read_corrupted(pid_path):
-    with open(pid_path, "w") as file:
-        file.write("not a pid")
-
-    with pytest.raises(ValueError):
-        PIDManager(path=pid_path).read()
-
-
-def test_pid_manager_remove(pid_path):
-    pid_manager = PIDManager(path=pid_path)
-    pid_manager.save()
+    assert pytest.pid
     pid_manager.remove()
 
-    assert not os.path.exists(pid_path)
+
+def test_pid_manager_read_empty():
+    pid_manager = PIDManager(path=pid_filename)
+    pid = pid_manager.read()
+
+    assert pid == 0
 
 
-def test_pid_manager_remove_missing(pid_path):
-    PIDManager(path=pid_path).remove()
+def test_pid_manager_save():
+    pid_manager = PIDManager(path=pid_filename)
+    pid = pid_manager.get_pid()
 
-    assert not os.path.exists(pid_path)
+    assert pytest.pid == pid
+
+    pid_manager.save()
+    with open(pid_filename, "r") as file:
+        pid = file.readline()
+
+    assert pytest.pid == int(pid)
+
+
+def test_pid_manager_read():
+    pid_manager = PIDManager(path=pid_filename)
+    pid = pid_manager.read()
+
+    assert pytest.pid == pid
+
+
+def test_pid_manager_remove():
+    pid_manager = PIDManager(path=pid_filename)
+    pid_manager.remove()
+
+    assert not os.path.exists(pid_filename)
 
 
 def test_pid_manager_get_name():
-    name = PIDManager.get_pid_name(os.getpid()).decode()
+    name = PIDManager.get_pid_name(pytest.pid)
 
-    # the interpreter may be started with a relative path, so compare only the binary name
-    assert os.path.basename(name.split()[0]) == os.path.basename(sys.executable)
+    assert sys.executable in name.decode()

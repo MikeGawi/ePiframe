@@ -7,7 +7,7 @@
 				position: relative;
 				overflow: hidden;
 			}
-
+		
 			.btn-file input[type=file] {
 				position: absolute;
 				top: 0;
@@ -18,7 +18,7 @@
 				text-align: right;
 				filter: alpha(opacity=0);
 				opacity: 0;
-				outline: none;
+				outline: none;   
 				cursor: inherit;
 				display: block;
 			}
@@ -40,12 +40,12 @@
 			</ul>
 	  	</div>
 	</nav>
-
+	
 	<div class="p-2">
 		<form method="POST" action="" id="setform">
 			{{ form.hidden_tag() }}
 			{% for field in form if field.widget.input_type != 'hidden' %}
-				<div class="row g-2 p-1 align-items-center">
+				<div class="row g-2 p-1 align-items-center"> 
 					<div class="col-2 {{ field.render_kw['pad'] }} small d-none d-md-block"><strong> {{ field.label }} </strong></div>
 					<div class="col-2 {{ field.render_kw['pad'] }} small d-block d-md-none" style="min-width:100px"><strong> {{ field.label }} </strong></div>
 					<div class="col-auto px-0">
@@ -66,11 +66,11 @@
 				</div>
 			{% endif %}
 			<div class="row g-2 p-1">
-				<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>
+				<div class="col-auto"><button class="btn btn-primary" name='SAVE' id='SAVE' value='SAVE'>Save</button></div>			
 				<div class="col-auto"><button class="btn btn-secondary" name='CANCEL' id='CANCEL' value='CANCEL'>Cancel</button></div>
 				<div class="col-auto flex-fill"></div>
 				<div class="col-auto"><button class="btn btn-outline-secondary" id='DEFAULTS' name='DEFAULTS' value='DEFAULTS'>Reset All To Defaults</button></div>
-			</div>
+			</div>		
 		</form>
 		<div class="row g-2 p-1">
 			<div class="col-auto flex-fill"></div>
@@ -109,51 +109,51 @@
 	</script>
 	<script>
 		 $('#DEFAULTS').on('click', function () {
-			if (confirm('Are you sure you want to reset all to default values?')) {
+			if (confirm('Are you sure you want to reset all to default values?')) {        
 				return true;
 			} else {
-				return false;
+				return false;		
 			}
 		});
-
+		
 		 $('#SAVE').on('click', function () {
-			if (confirm('Are you sure you want to save all changes?')) {
+			if (confirm('Are you sure you want to save all changes?')) {        
 				return true;
 			} else {
-				return false;
+				return false;		
 			}
 		});
-
+		
 		 $('#CANCEL').on('click', function () {
-			if (confirm('Are you sure you want to cancel all changes?')) {
+			if (confirm('Are you sure you want to cancel all changes?')) {        
 				return true;
 			} else {
-				return false;
+				return false;		
 			}
 		});
-
+		
 		 $('#IMPORT').on('click', function () {
-			if (confirm('Are you sure you want to import settings file? Any unexisting properties in the uploaded file will be set to default values.')) {
+			if (confirm('Are you sure you want to import settings file? Any unexisting properties in the uploaded file will be set to default values.')) {        
 				document.getElementById('file').click();
 			} else {
 				return false;
 			}
 		});
-
+		
 		$('document').ready(function(){
 			$('[data-bs-toggle=tooltip]').tooltip();
 		});
-
+		
 		$('.checkbox').change(function() {
 		  var valu = '1';
 		  if (!$(this).is(':checked')) {
 			  valu = '0';
 		  }
-
+			
 		  $('.'+this.getAttribute('name')+'[depval="'+valu+'"]').removeAttr('disabled');
 		  $('.'+this.getAttribute('name')+'[depval!="'+valu+'"]').attr('disabled', '');
 		});
-
+		
 		$('.form-select').change(function() {
 		  var selectedOption = $(this).children("option:selected").text();
 		  $('.'+this.getAttribute('name')+'[depval="'+selectedOption+'"]').removeAttr('disabled');

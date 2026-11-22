@@ -15,6 +15,7 @@ from modules.weathermanager import WeatherManager
 
 
 class BackendManager:
+
     __REBOOT_OS_CMD = "sudo reboot"
     __POWER_OFF_OS_CMD = "sudo poweroff"
     __RESTART_OS_CMD = "sudo systemctl restart ePiframe.service"

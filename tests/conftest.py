@@ -12,12 +12,12 @@ from modules.pluginsmanager import PluginsManager
 from modules.webuimanager import WebUIManager
 from tests.helpers.config import Config
 from tests.helpers.helpers import remove_file
-from tests.helpers.backend_doubles import (
+from tests.test_backendmanager import (
+    event_mock,
     MockedIntervalManager,
     MockedTimerManager,
-    event_mock,
 )
-from tests.helpers.plugins import ORDER_FILE
+from tests.test_pluginsmanager import order_file
 
 
 @pytest.fixture(scope="module")
@@ -30,21 +30,18 @@ def requests_mocker():
 @patch("misc.constants.Constants.CONFIG_FILE", Constants.CONFIG_FILE_DEFAULT)
 @patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def app_no_login():
-    with (
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
-        mock.patch.object(
-            PluginsManager,
-            "_PluginsManager__PLUGINS_DIR",
-            return_value="tests/plugins/",
-            new_callable=PropertyMock,
-        ),
-        mock.patch.object(
-            PluginsManager,
-            "_PluginsManager__ORDER_FILE",
-            return_value=ORDER_FILE,
-            new_callable=PropertyMock,
-        ),
+    with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
+        intervalmanager, "IntervalManager", MockedIntervalManager
+    ), mock.patch.object(
+        PluginsManager,
+        "_PluginsManager__PLUGINS_DIR",
+        return_value="tests/plugins/",
+        new_callable=PropertyMock,
+    ), mock.patch.object(
+        PluginsManager,
+        "_PluginsManager__ORDER_FILE",
+        return_value=order_file,
+        new_callable=PropertyMock,
     ):
         backend = BackendManager(event_mock, "")
         web_manager = WebUIManager(backend)
@@ -61,11 +58,9 @@ def app_no_login():
 @pytest.fixture()
 @patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def app_no_config():
-    with (
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
-        patch.object(configmanager, "ConfigManager", Config),
-    ):
+    with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
+        intervalmanager, "IntervalManager", MockedIntervalManager
+    ), patch.object(configmanager, "ConfigManager", Config):
         backend = BackendManager(event_mock, ".")
         web_manager = WebUIManager(backend)
     app = web_manager.app
@@ -82,9 +77,8 @@ def app_no_config():
 @patch("misc.constants.Constants.CONFIG_FILE", Constants.CONFIG_FILE_DEFAULT)
 @patch("misc.constants.Constants.USERS_DB_FILE", "test_users.db")
 def app():
-    with (
-        patch.object(timermanager, "TimerManager", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalManager", MockedIntervalManager),
+    with patch.object(timermanager, "TimerManager", MockedTimerManager), patch.object(
+        intervalmanager, "IntervalManager", MockedIntervalManager
     ):
         backend = BackendManager(event_mock, ".")
         web_manager = WebUIManager(backend)
@@ -118,7 +112,7 @@ def cleanup(request):
             shutil.rmtree("PATH")
         remove_file("log.test")
         remove_file("test_users.db")
-        remove_file(ORDER_FILE)
+        remove_file(order_file)
 
     request.addfinalizer(clean)
 
