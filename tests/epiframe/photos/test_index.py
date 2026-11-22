@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from epiframe.photos.index import SCHEMA_VERSION, PhotoIndex
+from epiframe.photos.index import SCHEMA_VERSION, PhotoIndex, check_sqlite_version
 from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection, Sorting
 
@@ -206,3 +206,84 @@ def test_new_cycle_only_resets_the_selection(index: PhotoIndex) -> None:
         index.random_photo(Selection(), exclude=photo("b.jpg", 1)) for _ in range(30)
     }
     assert picks == {PHOTOS[1], PHOTOS[2]}
+
+
+def test_add_photos_appends_and_updates(index: PhotoIndex) -> None:
+    index.add_photos([photo("e.jpg", 4), photo("a.jpg", 9)])
+
+    assert index.count() == 5
+    assert index.next_photo(Selection(), after=PHOTOS[-1]) == photo("e.jpg", 4)
+    # newest first: after the oldest (b.jpg) it starts over with the updated a.jpg
+    newest = index.next_photo(Selection(sorting=Sorting.DESC), after=PHOTOS[3])
+    assert newest == photo("a.jpg", 9)
+
+
+def test_remove_photos(index: PhotoIndex) -> None:
+    index.remove_photos("Local", ["a.jpg", "missing.jpg"])
+    index.remove_photos("Plugin", ["b.jpg"])
+
+    assert index.count() == 3
+    assert index.child_ids("Local", "a") == set()
+
+
+def test_child_ids(tmp_path: Path) -> None:
+    with PhotoIndex(tmp_path / "photos.db") as index:
+        index.add_photos(
+            [
+                photo("photos/a.jpg", 0),
+                photo("photos/b.jpg", 0),
+                photo("photos/sub/c.jpg", 0),
+                photo("photos0/d.jpg", 0),
+                photo("photos/e.jpg", 0, "Plugin"),
+            ]
+        )
+
+        assert index.child_ids("Local", "photos/") == {"photos/a.jpg", "photos/b.jpg"}
+        assert index.child_ids("Local", "photos/sub/") == {"photos/sub/c.jpg"}
+        assert index.child_ids("Local", "other/") == set()
+
+
+def test_source_state(index: PhotoIndex) -> None:
+    assert index.source_state("Local") == {}
+
+    index.set_source_state("Local", {"a": "1", "b": "2"})
+    index.set_source_state("Local", {"a": "3"})
+    index.set_source_state("Plugin", {"a": "x"})
+    index.remove_source_state("Local", ["b", "missing"])
+
+    assert index.source_state("Local") == {"a": "3"}
+    assert index.source_state("Plugin") == {"a": "x"}
+
+    index.keep_sources(["Local"])
+    assert index.source_state("Plugin") == {}
+
+
+def test_batch_is_one_transaction(index: PhotoIndex) -> None:
+    def failing_batch() -> None:
+        with index.batch():
+            index.add_photos([photo("e.jpg", 4)])
+            index.replace_source("Plugin", [photo("p.jpg", 0, "Plugin")])
+            index.set_source_state("Local", {"a": "1"})
+            raise RuntimeError
+
+    with pytest.raises(RuntimeError):
+        failing_batch()
+
+    assert index.count() == 4
+    assert index.source_state("Local") == {}
+
+    with index.batch():
+        index.add_photos([photo("e.jpg", 4)])
+        index.set_source_state("Local", {"a": "1"})
+
+    assert index.count() == 5
+    assert index.source_state("Local") == {"a": "1"}
+
+
+def test_sqlite_version_check() -> None:
+    check_sqlite_version()
+    check_sqlite_version((3, 35, 0))
+    with pytest.raises(
+        RuntimeError, match=r"SQLite 3\.35\.0 or newer .* found 3\.27\.2"
+    ):
+        check_sqlite_version((3, 27, 2))
