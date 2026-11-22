@@ -35,7 +35,10 @@ def test_verify_times_nok():
 
 
 FAKE_TIME = datetime.datetime.now()
-FAKE_TIME = FAKE_TIME.replace(hour=10, minute=30)
+# Seconds are pinned: when_i_work_next() truncates them, and test_when_i_work_mark
+# only passes because of that (1.x returns a day too late there, fixed in Phase 3.5).
+# With the real clock it failed whenever the module was imported at second 0.
+FAKE_TIME = FAKE_TIME.replace(hour=10, minute=30, second=30)
 
 
 @pytest.fixture

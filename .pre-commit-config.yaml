@@ -38,6 +38,9 @@ repos:
     hooks:
       - id: codespell
         additional_dependencies: [tomli]
+        # verbatim 1.x config used as a test fixture (keeps its typos);
+        # pre-commit passes file names, so the skip list in pyproject.toml doesn't apply
+        exclude: ^tests/epiframe/config/assets/
 
   # mypy and xenon run from the project environment (uv.lock), so they see the
   # same dependency versions as the code.

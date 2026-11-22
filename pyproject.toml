@@ -141,5 +141,5 @@ output = "coverage.xml"
 
 # ------------------------------------------------------------------------ codespell
 [tool.codespell]
-skip = "./static/js,./lib,./venv,./.venv,*.svg,*.gif,*.png,*.jpg,uv.lock"
+skip = "./static/js,config_v1.cfg,./lib,./venv,./.venv,*.svg,*.gif,*.png,*.jpg,uv.lock"
 ignore-words-list = "exten,valu"
