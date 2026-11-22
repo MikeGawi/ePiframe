@@ -16,6 +16,15 @@ def test_discovery():
     assert [plugin.name for plugin in manager.get_enabled()] == ["Plugin1", "Plugin2"]
 
 
+def test_plugin_loggers():
+    manager = get_plugins_manager()
+    assert [plugin.logger.name for plugin in manager.get_plugins()] == [
+        "epiframe.plugins.plugin1",
+        "epiframe.plugins.plugin2",
+        "epiframe.plugins.plugin3",
+    ]
+
+
 def test_plugin_preprocess():
     manager = get_plugins_manager()
     assert [plugin.name for plugin in manager.plugin_preprocess()] == [

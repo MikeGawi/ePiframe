@@ -65,16 +65,6 @@ def test_refresh():
     ]
 
 
-def test_log():
-    remove_file("log.test")
-    message = "test_message"
-    manager = get_backend_manager()
-    manager.log(message, True)
-
-    with open("log.test", "r") as file:
-        assert message in file.readline()
-
-
 def test_should_i_work_now():
     manager = get_backend_manager()
     assert manager.should_i_work_now() is True

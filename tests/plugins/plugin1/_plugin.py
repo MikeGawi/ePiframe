@@ -24,10 +24,10 @@ class Plugin(PluginBase):
         self,
         path: str,
         pid_manager,
-        logging,
+        logger,
         global_config: ConfigBase,
     ):
-        super().__init__(path, pid_manager, logging, global_config)
+        super().__init__(path, pid_manager, logger, global_config)
 
     def add_photo_source(
         self,
