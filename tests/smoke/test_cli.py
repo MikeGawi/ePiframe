@@ -4,12 +4,17 @@ from pathlib import Path
 
 from PIL import Image
 
+from tests.helpers.service_account import write_key
 from tests.smoke.conftest import (
     DEFAULT_CONFIG,
     Frame,
     machine_independent_paths,
     needs_imagemagick,
 )
+
+DRIVE_FOLDER = "https://drive.google.com/drive/folders/1AbC-dEf_123456789"
+# every HTTPS request fails at once (connection refused), as without network
+OFFLINE = {"HTTPS_PROXY": "http://127.0.0.1:9", "https_proxy": "http://127.0.0.1:9"}
 
 CONFIG_V1 = (
     Path(__file__).parents[1] / "epiframe" / "config" / "assets" / "config_v1.cfg"
@@ -72,6 +77,24 @@ def test_check_config_reports_errors(frame: Frame) -> None:
     assert "web_port configuration entry should be <= 65535" in result.stdout
 
 
+def test_check_config_with_drive(frame: Frame) -> None:
+    write_key(frame.directory / "drive_key.json")
+    frame.configure(use_drive="1", drive_folder=DRIVE_FOLDER)
+
+    result = frame.run("--check-config")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_check_config_reports_drive_errors(frame: Frame) -> None:
+    frame.configure(use_drive="1", drive_folder="not a folder")
+
+    result = frame.run("--check-config")
+
+    assert result.returncode != 0
+    assert "drive_folder configuration entry error" in result.stdout
+
+
 def test_no_photos(frame: Frame) -> None:
     result = frame.run("--test")
 
@@ -105,6 +128,20 @@ def test_new_photo_is_found_incrementally(frame: Frame) -> None:
 
     assert "incremental scan" in result.stdout
     assert "Found 2 photos" in result.stdout
+
+
+@needs_imagemagick
+def test_drive_offline_still_shows_local_photos(frame: Frame) -> None:
+    write_key(frame.directory / "drive_key.json")
+    frame.configure(use_drive="1", drive_folder=DRIVE_FOLDER)
+    frame.add_photo("a.jpg", "red", 1_600_000_000)
+
+    result = frame.run("--test", env=OFFLINE)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Getting data from Google Drive source (as frame@" in result.stdout
+    assert "Error getting data from Google Drive source" in result.stdout
+    assert "Found 1 photos" in result.stdout
 
 
 @needs_imagemagick

@@ -183,3 +183,24 @@ def test_import_of_a_copy(config_file: Path, tmp_path: Path) -> None:
     ConfigManager(uploaded, DEFAULT).save(config_file)
 
     assert config_file.read_text() == DEFAULT.read_text()
+
+
+def test_drive_entries(config_file: Path) -> None:
+    config = ConfigManager(config_file, DEFAULT)
+
+    assert config.getint("use_drive") == 0
+    assert config.get_section_properties("Sources")[3:] == [
+        "use_drive",
+        "drive_folder",
+        "drive_key_file",
+        "drive_subfolders",
+    ]
+    assert config.get_property("drive_key_file").type == PropertyType.FILE
+    config.validate("drive_folder")  # inactive: Google Drive is disabled
+
+    config.set("use_drive", "1")
+    config.set("drive_folder", "https://drive.google.com/drive/folders/1AbC-dEf_12345")
+    config.validate("drive_folder")
+    config.set("drive_folder", "not a folder")
+    with pytest.raises(ConfigError, match="Not a Google Drive folder ID or link"):
+        config.validate("drive_folder")

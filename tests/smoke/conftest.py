@@ -68,12 +68,14 @@ class Frame:
             paths.DATA_DIR_ENV: str(self.directory),
         }
 
-    def run(self, *arguments: str) -> subprocess.CompletedProcess[str]:
-        """Run ``ePiframe.py`` with ``arguments`` in the frame directory."""
+    def run(
+        self, *arguments: str, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        """Run ``ePiframe.py`` with ``arguments`` and extra ``env`` variables."""
         return subprocess.run(
             [sys.executable, str(REPOSITORY / "ePiframe.py"), *arguments],
             cwd=self.directory,
-            env=self.environment(),
+            env=self.environment() | (env or {}),
             capture_output=True,
             text=True,
             timeout=TIMEOUT,
