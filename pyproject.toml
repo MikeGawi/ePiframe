@@ -91,6 +91,8 @@ max-complexity = 5
 # SQL is composed only from module constants; all values are bound parameters
 "src/epiframe/photos/index.py" = ["S608"]
 "tests/**" = ["S101", "PLR0913", "PLR0915"]
+# smoke tests start ePiframe processes with fixed arguments
+"tests/smoke/**" = ["S603"]
 # 1.x code: only basic checks until each module is ported to src/epiframe (Phase 3).
 "{ePiframe,ePiframe_service}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
 "{misc,modules,tools,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
@@ -100,7 +102,7 @@ max-complexity = 5
 # -------------------------------------------------------------------------- mypy
 [tool.mypy]
 python_version = "3.11"
-files = ["src/epiframe", "scripts", "tests/epiframe", "tests/scripts"]
+files = ["src/epiframe", "scripts", "tests/epiframe", "tests/scripts", "tests/smoke"]
 strict = true
 warn_unreachable = true
 mypy_path = "src"
@@ -119,7 +121,10 @@ follow_imports = "skip"
 # ------------------------------------------------------------------------ pytest
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["-ra", "--strict-markers", "--strict-config"]
+# smoke tests (tests/smoke) run the real entry points; CI runs them separately:
+# uv run pytest -m smoke
+addopts = ["-ra", "--strict-markers", "--strict-config", "-m", "not smoke"]
+markers = ["smoke: end-to-end smoke tests (ePiframe processes, ImageMagick, WebUI)"]
 
 [tool.coverage.run]
 branch = true
