@@ -25,38 +25,11 @@ class Plugin(PluginBase):
     ):
         super().__init__(path, pid_manager, logger, global_config)
 
-    def add_photo_source(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager,
-    ):
+    def add_photo_source(self):
         print("add_photo_source")
 
-    def add_photo_source_get_file(
-        self,
-        photo,
-        path: str,
-        filename: str,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager,
-    ):
+    def add_photo_source_get_file(self, photo, path: str, filename: str):
         print("add_photo_source_get_file")
-
-    def change_photos_list(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_list,
-        photo_manager,
-        index_manager,
-        filtering_manager,
-    ):
-        print("change_photos_list")
 
     def preprocess_photo(
         self,
@@ -64,9 +37,6 @@ class Plugin(PluginBase):
         is_horizontal: bool,
         convert_manager,
         photo,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
     ):
         print("preprocess_photo")
 
@@ -78,9 +48,6 @@ class Plugin(PluginBase):
         is_horizontal: bool,
         convert_manager,
         photo,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
     ):
         print("postprocess_photo")
 

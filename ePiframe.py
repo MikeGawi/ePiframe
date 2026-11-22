@@ -10,11 +10,12 @@ import time
 from http import HTTPStatus
 from typing import List
 
-from pandas import DataFrame
-
 from epiframe.config import paths
 from epiframe.core.interval import IntervalMultiplier
 from epiframe.core.pidfile import PidFile, process_command
+from epiframe.photos.index import PhotoIndex
+from epiframe.photos.model import Photo
+from epiframe.photos.selection import Selection
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
 from modules.base.pluginbase import PluginBase
@@ -23,18 +24,8 @@ from epiframe.display.system import spi_enabled
 from modules.convertmanager import FIRST_FRAME_GIF, ConvertManager
 from modules.databasemanager import DatabaseManager
 from modules.displaymanager import DisplayManager
-from modules.filteringmanager import FilteringManager
-from modules.indexmanager import IndexManager
-from modules.localsourcemanager import LocalSourceManager
-from modules.photomanager import (
-    LOCAL_SOURCE,
-    PHOTOS_CREATIONTIME_HEADER,
-    PHOTOS_ID_HEADER,
-    PHOTOS_SOURCE_LABEL,
-    PhotoManager,
-)
+from modules.localsourcemanager import LOCAL_SOURCE, LocalSourceManager
 from modules.pluginsmanager import PluginsManager
-from modules.randommanager import RandomManager
 from modules.usersmanager import USERS_ACTIONS_TAG, UsersManager
 from modules.weathermanager import (
     WEATHER_BASE_URL,
@@ -51,7 +42,6 @@ from modules.weatherstampmanager import WeatherStampManager
 
 # minimal needed Python version (keep in sync with requires-python in pyproject.toml)
 MINIMAL_PYTHON_VERSION = (3, 11)
-NOMATCH_INDICATOR_STRING = "no match"
 
 log = get_logger()
 
@@ -70,7 +60,6 @@ class EPiframe:
         log.info("Verifying configuration...")
         self.verify_config()
 
-        self.photo_manager = PhotoManager()
         self.pid_manager = PidFile(self.config.get("pid_file"))
         self.plugins_manager = PluginsManager(
             os.path.dirname(os.path.realpath(__file__)),
@@ -103,58 +92,44 @@ class EPiframe:
         log.info("Checking sources...")
         self.check_all_sources()
         log.info("OK!")
-        photos = self.get_from_sources()
+        with PhotoIndex(self.config.get("photo_db_file")) as photo_index:
+            self.photo_index = photo_index
+            self.update_index()
 
-        total_number = self.get_total_count(photos)
-        log.info(f"Found {total_number} photos")
-        self.exit_if_no_photos(total_number)
+            total_number = photo_index.count()
+            log.info(f"Found {total_number} photos")
+            self.exit_if_no_photos(total_number)
 
-        log.info("Reading last photo index file...")
-        self.read_index()
-        log.info("Success!")
+            log.info("Filtering photos...")
+            self.selection = self.get_selection()
+            filter_number = photo_index.count(self.selection)
+            log.info(f"Filtered {filter_number} photos")
+            self.exit_if_no_photos_after_filtering(filter_number)
+            self.show_next_photo()
 
-        log.info("Filtering photos...")
-        photos = self.filter_photos_by_from_date(photos)
-        photos = self.filter_photos_by_to_date(photos)
-        photos = self.filter_photos_by_number(photos)
-
-        log.info("and sorting ...")
-        photos = self.sort_photos(photos)
-        photos = self.photo_manager.reset_index(photos)
-        photos = self.process_plugins_manipulate_list(photos)
-
-        filter_number = self.photo_manager.get_num_of_photos(photos)
-        log.info(f"Filtered {filter_number} photos")
-        self.exit_if_no_photos_after_filtering(filter_number)
-
-        count = 3
-        while count > 0:
-            self.get_random_photo(filter_number, photos)
-            photo = self.photo_manager.get_photo_by_index(
-                photos, self.index_manager.get_index()
-            )
+    def show_next_photo(self):
+        photo = None
+        for count in reversed(range(3)):
+            photo = self.pick_photo(photo)
             log.info(f"Photo to show:\n{photo}")
-
-            self.index_manager.set_id(self.get_photo_id(photo))
             self.remove_old_files()
 
             log.info("Getting next photo...")
             filename, returned_value = self.get_next_photo(photo)
 
-            count -= 1
             if os.path.exists(filename) and returned_value == HTTPStatus.OK:
-                self.process_file(
-                    filename,
-                    photo,
-                )
+                self.process_file(filename, photo)
                 break
 
             log.error(f"Fail! File was not retrieved! Error: {str(returned_value)}")
             if count > 0:
                 log.info("Retrying with the new photo...")
 
-    def get_photo_id(self, photo):
-        return self.photo_manager.get_photo_attribute(photo, PHOTOS_ID_HEADER)
+    def pick_photo(self, failed: Photo | None) -> Photo:
+        # after a failed photo the next one is picked as if it was shown
+        if bool(self.config.getint("randomize")):
+            return self.photo_index.random_photo(self.selection, exclude=failed)
+        return self.photo_index.next_photo(self.selection, after=failed)
 
     def get_next_photo(self, photo) -> tuple:
         returned_value = HTTPStatus.OK
@@ -163,7 +138,7 @@ class EPiframe:
         return filename, returned_value
 
     def get_filename(
-        self, photo, plugin_with_source: PluginBase, returned_value
+        self, photo: Photo, plugin_with_source: PluginBase, returned_value
     ) -> str:
         if plugin_with_source and self.plugins_manager.plugin_source_get_file(
             plugin_with_source
@@ -172,13 +147,9 @@ class EPiframe:
                 photo,
                 self.config.get("photo_convert_path"),
                 self.config.get("photo_download_name"),
-                PHOTOS_ID_HEADER,
-                PHOTOS_CREATIONTIME_HEADER,
-                PHOTOS_SOURCE_LABEL,
-                self.photo_manager,
             )
         else:
-            source_file = photo[PHOTOS_ID_HEADER]
+            source_file = photo.id
             error, image_type = ConvertManager().get_image_format(
                 self.config.get("convert_bin_path"),
                 source_file,
@@ -195,52 +166,15 @@ class EPiframe:
             self.copy_file(source_file, filename)
         return filename
 
-    def get_plugin_with_source(self, photo) -> PluginBase:
+    def get_plugin_with_source(self, photo: Photo) -> PluginBase:
         return next(
             (
                 plugin
                 for plugin in self.plugins_manager.get_plugin_source()
-                if plugin.SOURCE == photo[PHOTOS_SOURCE_LABEL]
+                if plugin.SOURCE == photo.source
             ),
             None,
         )
-
-    def get_random_photo(self, filter_number: int, photos):
-        if not bool(self.config.getint("randomize")):
-            # find previous photo
-            photo_id = next(
-                iter(
-                    photos[
-                        self.photo_manager.get_photos_attribute(
-                            photos,
-                            PHOTOS_ID_HEADER,
-                        )
-                        == self.index_manager.get_id()
-                    ].index
-                ),
-                NOMATCH_INDICATOR_STRING,
-            )
-
-            if photo_id != NOMATCH_INDICATOR_STRING:
-                self.index_manager.set_index(photo_id + 1)
-            else:
-                self.index_manager.set_index(self.index_manager.get_index() + 1)
-
-            # don't go above the number of photos
-            self.index_manager.check_index(filter_number)
-        else:
-            # get random photo
-            self.random_manager = RandomManager(
-                self.config.get("photo_list_file"),
-                photos,
-                PHOTOS_ID_HEADER,
-            )
-            self.index_manager.set_index(
-                self.random_manager.get_random(
-                    self.index_manager.get_id(),
-                    self.check_arguments("--no-skip"),
-                )
-            )
 
     def remove_old_files(self):
         for old_file in glob.glob(
@@ -257,79 +191,16 @@ class EPiframe:
             log.info("No photos after filtering!")
             sys.exit(1)
 
-    def process_plugins_manipulate_list(self, photos):
-        for plugin in self.plugins_manager.plugin_photos_list():
-            try:
-                log.info(f"Changing photo list by plugin '{plugin.name}'...")
-                photos = plugin.change_photos_list(
-                    PHOTOS_ID_HEADER,
-                    PHOTOS_CREATIONTIME_HEADER,
-                    PHOTOS_SOURCE_LABEL,
-                    photos,
-                    self.photo_manager,
-                    self.index_manager,
-                    FilteringManager(),
-                )
-                log.info("Success!")
-            except Exception as exception:
-                log.error(f"Error: {exception}")
-                raise
-        return photos
-
-    def sort_photos(self, photos):
-        return FilteringManager.sort(
-            photos,
-            PHOTOS_CREATIONTIME_HEADER,
-            photos[PHOTOS_CREATIONTIME_HEADER],
-            self.config.get("sorting"),
-        )
-
-    def filter_photos_by_number(self, photos):
-        if self.config.get("no_photos"):
-            try:
-                photos = FilteringManager.filter_by_number(
-                    photos, self.config.getint("no_photos")
-                )
-            except Exception as exception:
-                log.error(f"Error parsing configured time no_photos: {exception}")
-                raise
-        return photos
-
-    def filter_photos_by_to_date(self, photos):
-        if self.config.get("photos_to"):
-            try:
-                photos = FilteringManager.filter_by_to_date(
-                    photos,
-                    self.config.get("photos_to"),
-                    PHOTOS_CREATIONTIME_HEADER,
-                )
-            except Exception as exception:
-                log.error(f"Error parsing configured time photos_to: {exception}")
-                raise
-        return photos
-
-    def filter_photos_by_from_date(self, photos):
-        if self.config.get("photos_from"):
-            try:
-                photos = FilteringManager.filter_by_from_date(
-                    photos,
-                    self.config.get("photos_from"),
-                    PHOTOS_CREATIONTIME_HEADER,
-                )
-            except Exception as exception:
-                log.error(f"Error parsing configured time photos_from: {exception}")
-                raise
-        return photos
-
-    def read_index(self):
+    def get_selection(self) -> Selection:
         try:
-            self.index_manager = IndexManager(self.config.get("photo_index_file"))
-        except IOError as exception:
-            log.error(
-                "Error opening file {}: {}".format(
-                    self.config.get("photo_index_file"), exception
-                )
+            return Selection.from_config(
+                self.config.get("photos_from"),
+                self.config.get("photos_to"),
+                self.config.get("no_photos"),
+                self.config.get("sorting"),
             )
+        except Exception as exception:
+            log.error(f"Error parsing configured filtering: {exception}")
             raise
 
     def exit_if_no_photos(self, total_number: int):
@@ -337,10 +208,16 @@ class EPiframe:
             log.info("No photos in sources!")
             sys.exit(1)
 
-    def get_from_sources(self) -> DataFrame:
-        photos = self.get_local_source(DataFrame())
-        photos = self.get_plugin_sources(photos)
-        return photos
+    def update_index(self):
+        sources = []
+        if bool(self.config.getint("use_local")):
+            self.update_local_source()
+            sources.append(LOCAL_SOURCE)
+        for plugin in self.plugins_manager.plugin_source():
+            self.update_plugin_source(plugin)
+            sources.append(plugin.SOURCE)
+        # photos of disabled sources are not shown anymore
+        self.photo_index.keep_sources(sources)
 
     def process_test_convert(self):
         if self.check_arguments("--test-convert"):
@@ -354,12 +231,6 @@ class EPiframe:
         if self.check_arguments("--test-display"):
             self.test_display()
 
-    def get_total_count(self, photos):
-        total_number = (
-            self.photo_manager.get_num_of_photos(photos) if photos is not None else 0
-        )
-        return total_number
-
     def check_all_sources(self):
         if not bool(self.config.getint("use_local")) and not (
             self.plugins_manager.plugin_source()
@@ -367,49 +238,35 @@ class EPiframe:
             log.info("No photo sources picked! Check the configuration!")
             raise Exception("No photo sources picked! Check the configuration!")
 
-    def get_local_source(self, photos: DataFrame) -> DataFrame:
-        if bool(self.config.getint("use_local")):
-            log.info("Getting data from local source...")
-            self.local_source_manager = LocalSourceManager(
-                self.config.get("local_path"),
-                bool(self.config.getint("local_subfolders")),
-                EXTENSIONS,
-            )
-            local_photos = self.local_source_manager.get_local_photos(
-                PHOTOS_ID_HEADER,
-                PHOTOS_CREATIONTIME_HEADER,
-                PHOTOS_SOURCE_LABEL,
-                LOCAL_SOURCE,
-            )
-            photos = self.photo_manager.append_photos(photos, local_photos)
-            log.info("Success!")
-        return photos
+    def update_local_source(self):
+        log.info("Getting data from local source...")
+        self.local_source_manager = LocalSourceManager(
+            self.config.get("local_path"),
+            bool(self.config.getint("local_subfolders")),
+            EXTENSIONS,
+        )
+        self.photo_index.replace_source(
+            LOCAL_SOURCE, self.local_source_manager.get_local_photos()
+        )
+        log.info("Success!")
 
-    def get_plugin_sources(self, photos: DataFrame) -> DataFrame:
-        for plugin in self.plugins_manager.plugin_source():
-            try:
-                log.info(f"Getting data from plugin '{plugin.name}' source...")
-                plugin_photos = plugin.add_photo_source(
-                    PHOTOS_ID_HEADER,
-                    PHOTOS_CREATIONTIME_HEADER,
-                    PHOTOS_SOURCE_LABEL,
-                    self.photo_manager,
-                )
-                photos = self.photo_manager.append_photos(photos, plugin_photos)
-                log.info("Success!")
-            except Exception as exception:
-                log.error(f"Error: {exception}")
-                raise
-        return photos
+    def update_plugin_source(self, plugin: PluginBase):
+        try:
+            log.info(f"Getting data from plugin '{plugin.name}' source...")
+            self.photo_index.replace_source(plugin.SOURCE, plugin.add_photo_source())
+            log.info("Success!")
+        except Exception as exception:
+            log.error(f"Error: {exception}")
+            raise
 
     def process_file(
         self,
         filename: str,
-        photo: str,
+        photo: Photo,
     ):
         log.info("Success!")
         self.interval_multiplication(filename, photo)
-        self.save_index()
+        self.save_index(photo)
         if bool(self.config.getint("convert")):
             self.convert_file(filename, photo)
         else:
@@ -417,15 +274,15 @@ class EPiframe:
                 "Conversion disabled in config by 'config' flag! Make sure your photos are pre-converted!"
             )
 
-    def save_index(self):
-        # save index of current photo for next run
+    def save_index(self, photo: Photo):
+        # remember the photo for the next run
         try:
             if not self.check_arguments("--no-skip"):
-                self.index_manager.save()
-        except IOError as exception:
+                self.photo_index.mark_shown(photo, self.selection)
+        except Exception as exception:
             log.error(
-                "Error saving file {}: {}".format(
-                    self.config.get("photo_index_file"), exception
+                "Error saving photo index {}: {}".format(
+                    self.config.get("photo_db_file"), exception
                 )
             )
             raise
@@ -720,7 +577,7 @@ class EPiframe:
         if not os.path.exists(source):
             log.error(f"Fail! File was not retrieved! : {str(returned_value)}")
         else:
-            if not self.convert(source, target_filename, DataFrame(), thumbs):
+            if not self.convert(source, target_filename, None, thumbs):
                 log.error("Fail!")
 
     def test_display(self):
@@ -830,9 +687,6 @@ class EPiframe:
                     bool(self.config.getint("horizontal")),
                     ConvertManager(),
                     photo,
-                    PHOTOS_ID_HEADER,
-                    PHOTOS_CREATIONTIME_HEADER,
-                    PHOTOS_SOURCE_LABEL,
                 )
                 log.info("Success!")
             except Exception as exception:
@@ -854,9 +708,6 @@ class EPiframe:
                     bool(self.config.getint("horizontal")),
                     ConvertManager(),
                     photo,
-                    PHOTOS_ID_HEADER,
-                    PHOTOS_CREATIONTIME_HEADER,
-                    PHOTOS_SOURCE_LABEL,
                 )
                 log.info("Success!")
             except Exception as exception:
@@ -907,16 +758,15 @@ class EPiframe:
                 log.error(f"Fail! {str(exception)}")
 
     config = None
-    photo_manager = None
+    photo_index = None
+    selection = None
     plugins_manager = None
     pid_manager = None
-    index_manager = None
     display_manager = None
     interval_manager = None
     database_manager = None
     users_manager = None
     local_source_manager = None
-    random_manager = None
     weather_manager = None
     weather_stamp_manager = None
 

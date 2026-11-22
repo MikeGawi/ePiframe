@@ -111,13 +111,6 @@ class PluginsManager:
     def plugin_source_get_file(plugin: PluginBase) -> bool:
         return plugin.is_function_used("add_photo_source_get_file")
 
-    def plugin_photos_list(self) -> List[PluginBase]:
-        return [
-            plugin
-            for plugin in self.get_enabled()
-            if plugin.is_function_used("change_photos_list")
-        ]
-
     def plugin_preprocess(self) -> List[PluginBase]:
         return [
             plugin

@@ -135,7 +135,12 @@ def test_1x_config_is_upgraded(config_file: Path) -> None:
 
     config = ConfigManager(config_file, DEFAULT)
 
-    assert config.get_obsolete() == GOOGLE_PHOTOS_ENTRIES
+    # the 1.x index and list files were replaced by photo_db_file (Phase 3.6)
+    assert config.get_obsolete() == [
+        *GOOGLE_PHOTOS_ENTRIES,
+        "photo_index_file",
+        "photo_list_file",
+    ]
     # user values are kept, legacy value formats converted
     assert config.get("local_path") == "my_photos"
     assert config.getint("web_port") == 8080

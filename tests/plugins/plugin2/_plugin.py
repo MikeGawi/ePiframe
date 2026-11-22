@@ -23,11 +23,5 @@ class Plugin(PluginBase):
     ):
         super().__init__(path, pid_manager, logger, global_config)
 
-    def add_photo_source(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager,
-    ):
+    def add_photo_source(self):
         print("add_photo_source")
