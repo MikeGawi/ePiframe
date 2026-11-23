@@ -23,8 +23,9 @@ CLASSES: Mapping[str, str] = {
     "inky_ssd1683": "Inky",
     "inky_ac073tc1a": "Inky",
 }
-# 7-color Impression panel: own palette, takes a saturation, no ``colour`` argument
-UC8159 = "inky_uc8159"
+# 7-color Impression panels: own palette, take a saturation, accept no ``colour``
+# argument (the library allows only "multi")
+MULTICOLOR = frozenset({"inky_uc8159", "inky_ac073tc1a"})
 
 COLOUR: Mapping[ColorMode, str] = {
     ColorMode.BW: "black",
@@ -37,30 +38,34 @@ SECOND_COLOR: Mapping[ColorMode, colors.Color] = {
 }
 
 
-def _two_color_palette(module: ModuleType) -> list[colors.Color]:
-    # palette index = the library's color value (WHITE/BLACK are 0 and 1)
+def _two_color_palette(inky: Any) -> list[colors.Color]:
+    # palette index = the library's color value (WHITE/BLACK are 0 and 1); the
+    # values are attributes of the display class (``inky.phat`` / ``inky.what``
+    # have no module-level constants)
     palette = [colors.BLACK, colors.BLACK]
-    palette[module.WHITE] = colors.WHITE
-    palette[module.BLACK] = colors.BLACK
+    palette[inky.WHITE] = colors.WHITE
+    palette[inky.BLACK] = colors.BLACK
     return palette
 
 
-def _seven_color_palette(inky: object, module: ModuleType) -> list[colors.Color]:
+def _library_palette(inky: object, module: ModuleType, name: str) -> list[colors.Color]:
+    # the palettes are class attributes (ac073tc1a) or module constants (uc8159)
     for owner in (inky, module):
-        palette = getattr(owner, "SATURATED_PALETTE", None)
+        palette = getattr(owner, name, None)
         if palette is not None:
             return list(palette)
-    raise DisplayError("The display doesn't support 7 colors!")
+    raise DisplayError(f"The display library has no {name}!")
 
 
-def palette_for(
-    inky: object, module: ModuleType, color: ColorMode
-) -> list[colors.Color]:
-    """Colors of the display in the library's order (index = color value)."""
+def palette_for(inky: Any, module: ModuleType, color: ColorMode) -> list[colors.Color]:
+    """Colors of a black/white(/color) display in the library's order."""
     if color == ColorMode.C7:
-        return _seven_color_palette(inky, module)
+        try:
+            return _library_palette(inky, module, "SATURATED_PALETTE")
+        except DisplayError:
+            raise DisplayError("The display doesn't support 7 colors!") from None
     second = SECOND_COLOR.get(color)
-    return _two_color_palette(module) + ([second] if second else [])
+    return _two_color_palette(inky) + ([second] if second else [])
 
 
 class PimoroniDisplay:
@@ -99,9 +104,10 @@ class PimoroniDisplay:
             raise DisplayError(f"No Pimoroni display package {name} in lib.inky!")
         module = load_driver(PACKAGE, name, directory)
         display_class = getattr(module, CLASSES[name])
-        if name == UC8159:
+        multicolor = name in MULTICOLOR
+        if multicolor:
             inky = display_class()
-            palette = list(module.DESATURATED_PALETTE)
+            palette = _library_palette(inky, module, "DESATURATED_PALETTE")
         else:
             colour = COLOUR.get(color)
             inky = display_class(colour=colour) if colour else display_class()
@@ -111,7 +117,7 @@ class PimoroniDisplay:
             palette,
             border_black=background.lower().strip() == Background.BLACK,
             clear=clear,
-            saturation=saturation if name == UC8159 else None,
+            saturation=saturation if multicolor else None,
         )
 
     def show(self, path: Path | str) -> None:

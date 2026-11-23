@@ -8,14 +8,28 @@ from PIL import Image
 
 from epiframe.display import colors
 from epiframe.display.base import Capability, DisplayError
+from epiframe.display.library import load_driver
 from epiframe.display.options import Background, ColorMode
 from epiframe.display.pimoroni import PimoroniDisplay, palette_for
 from tests.epiframe.display.helpers import RECORDED_1X, digest, recorded_images
 
 IMAGES = recorded_images()
+# Recorded with the 1.x fakes, which had module-level WHITE/BLACK everywhere. Not
+# comparable (1.x failed with the real library): phat (1.x read the module
+# constants, the real inky.phat has none) and inky_ac073tc1a (1.x passed
+# colour="black"/"red"/"yellow" and a 2-color palette to a 7-color panel).
+NOT_COMPARABLE = {"phat", "inky_ac073tc1a"}
+CASES_1X = [
+    case
+    for case in RECORDED_1X["pimoroni"]
+    if "error" not in case and case["display"] not in NOT_COMPARABLE
+]
 # 7 colors on a non-Impression panel crashed in 1.x (no SATURATED_PALETTE)
-CASES_1X = [case for case in RECORDED_1X["pimoroni"] if "error" not in case]
-FAILED_1X = [case for case in RECORDED_1X["pimoroni"] if "error" in case]
+FAILED_1X = [
+    case
+    for case in RECORDED_1X["pimoroni"]
+    if "error" in case and case["display"] not in NOT_COMPARABLE
+]
 
 
 def calls() -> list[Any]:
@@ -72,6 +86,42 @@ def test_seven_colors_from_module() -> None:
     module.SATURATED_PALETTE = [[1, 2, 3]]  # type: ignore[attr-defined]
 
     assert palette_for(object(), module, ColorMode.C7) == [[1, 2, 3]]
+
+
+@pytest.mark.parametrize(
+    ("color", "palette"),
+    [
+        (ColorMode.BW, [[255, 255, 255], [0, 0, 0]]),
+        (ColorMode.BWY, [[255, 255, 255], [0, 0, 0], [255, 255, 0]]),
+    ],
+)
+def test_phat_palette_from_class_constants(
+    library: Path, color: ColorMode, palette: list[list[int]]
+) -> None:
+    # InkyPHAT: WHITE = 0, BLACK = 1 (the module has no constants)
+    display = PimoroniDisplay.load("phat", color, directory=library)
+
+    assert [list(c) for c in display._palette] == palette
+
+
+@pytest.mark.parametrize("color", list(ColorMode))
+def test_impression_7_3(library: Path, photo: Path, color: ColorMode) -> None:
+    display = PimoroniDisplay.load(
+        "inky_ac073tc1a", color, saturation=0.6, directory=library
+    )
+    display.show(photo)
+
+    # no colour argument (only "multi" is accepted), the library's palette
+    assert calls() == [("init", None), ("set_image", "P", 0.6), ("show",)]
+    assert display._palette == [[0, 0, 0], [255, 255, 255], [0, 255, 0]]
+
+
+def test_multicolor_palette_missing(library: Path) -> None:
+    fake: Any = load_driver("inky", "inky_uc8159", library)
+    del fake.DESATURATED_PALETTE
+
+    with pytest.raises(DisplayError, match="has no DESATURATED_PALETTE"):
+        PimoroniDisplay.load("inky_uc8159", ColorMode.C7, directory=library)
 
 
 def test_show(library: Path, photo: Path) -> None:
