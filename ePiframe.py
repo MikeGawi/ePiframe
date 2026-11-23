@@ -16,6 +16,7 @@ from epiframe.core.pidfile import PidFile, process_command
 from epiframe.photos.index import PhotoIndex
 from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection
+from epiframe.sources.local import LOCAL_SOURCE, LocalSource
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
 from modules.base.pluginbase import PluginBase
@@ -24,7 +25,6 @@ from epiframe.display.system import spi_enabled
 from modules.convertmanager import FIRST_FRAME_GIF, ConvertManager
 from modules.databasemanager import DatabaseManager
 from modules.displaymanager import DisplayManager
-from modules.localsourcemanager import LOCAL_SOURCE, LocalSourceManager
 from modules.pluginsmanager import PluginsManager
 from modules.usersmanager import USERS_ACTIONS_TAG, UsersManager
 from modules.weathermanager import (
@@ -240,15 +240,16 @@ class EPiframe:
 
     def update_local_source(self):
         log.info("Getting data from local source...")
-        self.local_source_manager = LocalSourceManager(
+        result = LocalSource(
             self.config.get("local_path"),
             bool(self.config.getint("local_subfolders")),
             EXTENSIONS,
+        ).sync(self.photo_index)
+        scan = "full scan" if result.full else "incremental scan"
+        log.info(
+            f"Success! {result.photos} photos, {result.scanned} of {result.folders} "
+            f"folders read ({scan})"
         )
-        self.photo_index.replace_source(
-            LOCAL_SOURCE, self.local_source_manager.get_local_photos()
-        )
-        log.info("Success!")
 
     def update_plugin_source(self, plugin: PluginBase):
         try:
@@ -766,7 +767,6 @@ class EPiframe:
     interval_manager = None
     database_manager = None
     users_manager = None
-    local_source_manager = None
     weather_manager = None
     weather_stamp_manager = None
 

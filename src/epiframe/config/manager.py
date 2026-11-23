@@ -11,9 +11,9 @@ from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
 from epiframe.core.network import validate_ip
 from epiframe.photos import selection
+from epiframe.sources.local import create_directory
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
-from modules.localsourcemanager import LocalSourceManager
 from modules.telebotmanager import TelebotManager
 from modules.weathermanager import WeatherManager
 from modules.weatherstampmanager import WeatherStampManager
@@ -39,7 +39,7 @@ def _source_settings() -> list[ConfigProperty]:
             "local_path",
             PropertyType.FILE,
             dependency="use_local",
-            convert=LocalSourceManager.create_directory,
+            convert=create_directory,
         ),
         ConfigProperty("local_subfolders", BOOLEAN, dependency="use_local"),
     ]

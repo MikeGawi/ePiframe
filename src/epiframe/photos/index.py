@@ -10,11 +10,15 @@ The natural order of the photos is the order in which they were first found
 The ``state`` table remembers the last shown photo, so the next run continues
 after it (sequential mode) or doesn't repeat it (random mode). In random mode
 every photo is shown once before the cycle starts again (the ``shown`` flag).
+
+Sources keep their own synchronization state (e.g. folder times of the local
+source) in ``source_state``.
 """
 
 import os
 import sqlite3
-from collections.abc import Collection, Iterable, Iterator
+from collections.abc import Collection, Iterable, Iterator, Mapping
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from datetime import datetime
 from types import TracebackType
 from typing import Self
@@ -23,6 +27,8 @@ from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection, Sorting
 
 SCHEMA_VERSION = 1
+# RETURNING (3.35) and UPDATE ... FROM (3.33); Raspberry Pi OS Bookworm has 3.40
+MINIMAL_SQLITE_VERSION = (3, 35, 0)
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 SCHEMA = """
@@ -38,6 +44,12 @@ CREATE TABLE IF NOT EXISTS state (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS source_state (
+    source TEXT NOT NULL,
+    key TEXT NOT NULL,
+    value TEXT NOT NULL,
+    PRIMARY KEY (source, key)
+);
 """
 
 # photos of the source being synchronized, in found order
@@ -45,9 +57,14 @@ INCOMING = """
 CREATE TEMP TABLE IF NOT EXISTS incoming (
     id TEXT NOT NULL UNIQUE,
     created TEXT NOT NULL
-);
-DELETE FROM incoming;
+)
 """
+
+UPSERT = (
+    "INSERT INTO photos (source, id, created) VALUES (?, ?, ?)"
+    " ON CONFLICT (source, id) DO UPDATE SET created = excluded.created"
+    " WHERE created != excluded.created"
+)
 
 # candidates: the selected photos with their order key (rowid); a limit is
 # applied in the natural order, before sorting (1.x behaviour). Only the needed
@@ -83,6 +100,23 @@ def _photo(row: tuple[str, str, str]) -> Photo:
     return Photo(photo_id, source, datetime.strptime(created, TIME_FORMAT))
 
 
+def check_sqlite_version(version: tuple[int, int, int] | None = None) -> None:
+    """Raise ``RuntimeError`` if the SQLite library is too old for the index."""
+    version = version or sqlite3.sqlite_version_info
+    if version < MINIMAL_SQLITE_VERSION:
+        found = ".".join(map(str, version))
+        needed = ".".join(map(str, MINIMAL_SQLITE_VERSION))
+        raise RuntimeError(
+            f"SQLite {needed} or newer is needed for the photo index, found {found}"
+            " (Raspberry Pi OS Bookworm or newer is required)!"
+        )
+
+
+def _prefix_end(prefix: str) -> str:
+    """Smallest string greater than every string starting with ``prefix``."""
+    return prefix[:-1] + chr(ord(prefix[-1]) + 1)
+
+
 def _rows(source: str, photos: Iterable[Photo]) -> Iterator[tuple[str, str | None]]:
     for photo in photos:
         if photo.source != source:
@@ -94,7 +128,9 @@ class PhotoIndex:
     """Photo index stored in the SQLite database at ``path``."""
 
     def __init__(self, path: str | os.PathLike[str]) -> None:
+        check_sqlite_version()
         self._connection = sqlite3.connect(path)
+        self._in_batch = False
         self._connection.executescript(SCHEMA)
         self._connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
@@ -112,6 +148,23 @@ class PhotoIndex:
     ) -> None:
         self.close()
 
+    @contextmanager
+    def batch(self) -> Iterator[None]:
+        """Run all writes inside the block in one transaction (one disk sync).
+
+        On an exception nothing of the block is written.
+        """
+        with self._connection:
+            self._in_batch = True
+            try:
+                yield
+            finally:
+                self._in_batch = False
+
+    def _write(self) -> AbstractContextManager[object]:
+        """Transaction of one write (or nothing inside a ``batch``)."""
+        return nullcontext() if self._in_batch else self._connection
+
     # ------------------------------------------------------------------ sources
 
     def replace_source(self, source: str, photos: Iterable[Photo]) -> int:
@@ -121,8 +174,9 @@ class PhotoIndex:
         the source that are not in ``photos`` anymore are removed. Only changes
         are written (an unchanged library doesn't wear the SD card).
         """
-        self._connection.executescript(INCOMING)
-        with self._connection:
+        with self._write():
+            self._connection.execute(INCOMING)
+            self._connection.execute("DELETE FROM incoming")
             self._connection.executemany(
                 "INSERT OR REPLACE INTO incoming (id, created) VALUES (?, ?)",
                 _rows(source, photos),
@@ -138,17 +192,69 @@ class PhotoIndex:
                 " ON CONFLICT (source, id) DO NOTHING",
             ):
                 self._connection.execute(statement, {"source": source})
-        self._connection.execute("DELETE FROM incoming")
+            self._connection.execute("DELETE FROM incoming")
         return self.count_source(source)
+
+    def add_photos(self, photos: Iterable[Photo]) -> None:
+        """Add new photos (appended) and update the time of known ones."""
+        with self._write():
+            self._connection.executemany(
+                UPSERT,
+                ((photo.source, photo.id, _format(photo.created)) for photo in photos),
+            )
+
+    def remove_photos(self, source: str, ids: Iterable[str]) -> None:
+        with self._write():
+            self._connection.executemany(
+                "DELETE FROM photos WHERE source = ? AND id = ?",
+                ((source, photo_id) for photo_id in ids),
+            )
+
+    def child_ids(self, source: str, prefix: str) -> set[str]:
+        """Ids that start with ``prefix`` and have no ``/`` after it.
+
+        With ``prefix`` = ``"<folder>/"`` these are the files directly in a folder.
+        The range condition uses the primary key index.
+        """
+        rows = self._connection.execute(
+            "SELECT id FROM photos WHERE source = :source"
+            " AND id >= :prefix AND id < :end"
+            " AND instr(substr(id, length(:prefix) + 1), '/') = 0",
+            {"source": source, "prefix": prefix, "end": _prefix_end(prefix)},
+        )
+        return {photo_id for (photo_id,) in rows}
+
+    def source_state(self, source: str) -> dict[str, str]:
+        """Synchronization state stored by ``source``."""
+        rows = self._connection.execute(
+            "SELECT key, value FROM source_state WHERE source = ?", (source,)
+        )
+        return dict(rows.fetchall())
+
+    def set_source_state(self, source: str, values: Mapping[str, str]) -> None:
+        with self._write():
+            self._connection.executemany(
+                "INSERT INTO source_state (source, key, value) VALUES (?, ?, ?)"
+                " ON CONFLICT (source, key) DO UPDATE SET value = excluded.value",
+                ((source, key, value) for key, value in values.items()),
+            )
+
+    def remove_source_state(self, source: str, keys: Iterable[str]) -> None:
+        with self._write():
+            self._connection.executemany(
+                "DELETE FROM source_state WHERE source = ? AND key = ?",
+                ((source, key) for key in keys),
+            )
 
     def keep_sources(self, sources: Collection[str]) -> None:
         """Remove the photos of all sources except ``sources`` (disabled ones)."""
         marks = ", ".join("?" * len(sources))
-        with self._connection:
-            self._connection.execute(
-                f"DELETE FROM photos WHERE source NOT IN ({marks})",
-                tuple(sources),
-            )
+        with self._write():
+            for table in ("photos", "source_state"):
+                self._connection.execute(
+                    f"DELETE FROM {table} WHERE source NOT IN ({marks})",
+                    tuple(sources),
+                )
 
     def count_source(self, source: str) -> int:
         (count,) = self._connection.execute(
@@ -276,7 +382,7 @@ class PhotoIndex:
         """
         parameters = self._parameters(selection)
         candidates = self._candidates(selection)
-        with self._connection:
+        with self._write():
             (unshown,) = self._connection.execute(
                 f"{candidates} SELECT COUNT(*) FROM candidates WHERE shown = 0",
                 parameters,
