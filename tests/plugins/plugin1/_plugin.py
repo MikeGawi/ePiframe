@@ -35,7 +35,7 @@ class Plugin(PluginBase):
         self,
         original_photo: str,
         is_horizontal: bool,
-        convert_manager,
+        image_magick,
         photo,
     ):
         print("preprocess_photo")
@@ -46,7 +46,7 @@ class Plugin(PluginBase):
         width: int,
         height: int,
         is_horizontal: bool,
-        convert_manager,
+        image_magick,
         photo,
     ):
         print("postprocess_photo")

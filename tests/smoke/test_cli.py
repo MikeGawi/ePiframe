@@ -163,6 +163,37 @@ def test_drive_offline_still_shows_local_photos(frame: Frame) -> None:
 
 
 @needs_imagemagick
+def test_broken_photo_is_reported(frame: Frame) -> None:
+    broken = frame.photos / "broken.jpg"
+    broken.parent.mkdir(parents=True)
+    broken.write_text("not a photo")
+    frame.configure(auto_orientation="1")
+
+    result = frame.run("--test")
+
+    # 1.x didn't read the ImageMagick errors and reported success
+    assert result.stdout.count("Fail! convert:") == 2, result.stdout + result.stderr
+    assert "Traceback" not in result.stderr
+    assert not (frame.directory / "photo.bmp").exists()
+
+
+@needs_imagemagick
+def test_auto_orientation(frame: Frame) -> None:
+    exif = Image.Exif()
+    exif[0x0112] = 6  # Orientation: shown 90 degrees clockwise
+    frame.photos.mkdir()
+    Image.new("RGB", (64, 48), "red").save(frame.photos / "turned.jpg", exif=exif)
+    frame.configure(auto_orientation="1")
+
+    result = frame.run("--test")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Auto-orientate the photo...\n" in result.stdout
+    with Image.open(frame.directory / "origphoto.jpg") as original:
+        assert original.size == (48, 64)
+
+
+@needs_imagemagick
 def test_random_cycle_shows_every_photo(frame: Frame) -> None:
     for number, color in enumerate(("red", "green", "blue")):
         frame.add_photo(f"{number}.jpg", color, 1_600_000_000 + number)

@@ -24,7 +24,12 @@ from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
 from modules.base.pluginbase import PluginBase
 from epiframe.config.manager import ConfigManager
 from epiframe.display.system import spi_enabled
-from modules.convertmanager import FIRST_FRAME_GIF, ConvertManager
+from epiframe.processing.imagemagick import (
+    ConvertSettings,
+    ImageMagick,
+    ImageMagickError,
+    Thumbnails,
+)
 from modules.databasemanager import DatabaseManager
 from modules.displaymanager import DisplayManager
 from modules.pluginsmanager import PluginsManager
@@ -179,11 +184,7 @@ class EPiframe:
             )
         else:
             source_file = photo.id
-            error, image_type = ConvertManager().get_image_format(
-                self.config.get("convert_bin_path"),
-                source_file,
-                FIRST_FRAME_GIF,
-            )
+            error, image_type = self.get_image_format(source_file)
 
             filename = (
                 self.config.get("photo_download_name")
@@ -514,9 +515,7 @@ class EPiframe:
             if not self.check_arguments("--no-skip"):
                 comment = self.photo_description
                 if not comment:
-                    _, comment = ConvertManager().get_image_comment(
-                        self.config.get("convert_bin_path"), filename
-                    )
+                    comment = self.magick().comment(filename)
                 self.interval_manager.save_from_description(
                     comment,
                     self.config.get("interval_mult_hotword"),
@@ -575,9 +574,7 @@ class EPiframe:
             file = max(files, key=os.path.getctime)
             filename = file
         self.check_file_exist(filename)
-        error, image_type = ConvertManager().get_image_format(
-            self.config.get("convert_bin_path"), filename, FIRST_FRAME_GIF
-        )
+        error, image_type = self.get_image_format(filename)
         source = (
             self.config.get("photo_download_name")
             + "."
@@ -597,9 +594,7 @@ class EPiframe:
 
         source, target = files
         self.check_file_exist(source)
-        error, _ = ConvertManager().get_image_format(
-            self.config.get("convert_bin_path"), source, FIRST_FRAME_GIF
-        )
+        error, _ = self.get_image_format(source)
 
         if error:
             raise Exception(f"Unknown file {source} format ! - {error}")
@@ -610,6 +605,16 @@ class EPiframe:
         self.process_convert(
             None, source, "".join(target.rsplit(".")[:-1]) + ".bmp", thumbs=False
         )
+
+    def magick(self) -> ImageMagick:
+        return ImageMagick(self.config.get("convert_bin_path"))
+
+    def get_image_format(self, file: str) -> tuple:
+        # (error, format name) as in 1.x
+        try:
+            return "", self.magick().image_format(file)
+        except ImageMagickError as error:
+            return str(error), ""
 
     def get_source(
         self, error: str, image_type, returned_value, source: str
@@ -687,44 +692,41 @@ class EPiframe:
         if thumbs:
             self.copy_file(filename, filename_pre)
         self.plugins_preprocess(photo, filename_pre)
-        error, width, height = ConvertManager().get_image_size(
-            self.config.get("convert_bin_path"), filename_pre, FIRST_FRAME_GIF
-        )
 
-        log.info("Processing the photo...")
-        if (
-            error
-            or ConvertManager().convert_image(
-                width,
-                height,
-                filename_pre + FIRST_FRAME_GIF,
-                target_filename,
-                self.config,
-                DisplayManager.is_hdmi(self.config.get("display_type")),
-                thumbs,
-            )
-            is not None
-        ):
-            log.error(f"Fail! {str(error)}")
-        else:
-            log.info("Success!")
-
+        if self.convert_photo(filename_pre, target_filename, thumbs):
             self.plugins_postprocess(photo, target_filename)
             self.process_show_weather(target_filename)
             return_value = True
         return return_value
 
+    def convert_photo(self, source: str, target: str, thumbs: bool) -> bool:
+        log.info("Processing the photo...")
+        try:
+            self.magick().convert(
+                source,
+                target,
+                ConvertSettings.from_config(
+                    self.config,
+                    DisplayManager.is_hdmi(self.config.get("display_type")),
+                ),
+                Thumbnails.from_config(self.config) if thumbs else None,
+            )
+        except ImageMagickError as error:
+            log.error(f"Fail! {error}")
+            return False
+        log.info("Success!")
+        return True
+
     def auto_orient(self, filename):
         if bool(self.config.getint("auto_orientation")):
             log.info("Auto-orientate the photo...")
-            error = ConvertManager().orient_image(
-                self.config.get("convert_bin_path"), filename, FIRST_FRAME_GIF
-            )
-
-            if error:
-                log.error(f"Fail! {str(error)}")
-                raise
-            log.info("Success!")
+            try:
+                turned = self.magick().auto_orient(filename)
+            except ImageMagickError as error:
+                # the conversion reports the broken photo too (1.x crashed here)
+                log.error(f"Fail! {error}")
+                return
+            log.info("Success!" if turned else "Success! Already upright")
 
     @staticmethod
     def copy_file(src, target):
@@ -744,7 +746,7 @@ class EPiframe:
                 plugin.preprocess_photo(
                     filename_pre,
                     bool(self.config.getint("horizontal")),
-                    ConvertManager(),
+                    self.magick(),
                     photo,
                 )
                 log.info("Success!")
@@ -765,7 +767,7 @@ class EPiframe:
                     self.config.getint("image_width"),
                     self.config.getint("image_height"),
                     bool(self.config.getint("horizontal")),
-                    ConvertManager(),
+                    self.magick(),
                     photo,
                 )
                 log.info("Success!")

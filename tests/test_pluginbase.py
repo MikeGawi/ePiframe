@@ -130,7 +130,7 @@ class PluginMock(PluginBase, object):
         self,
         original_photo: str,
         is_horizontal: bool,
-        convert_manager,
+        image_magick,
         photo,
     ):
         print("preprocess_photo")
@@ -141,7 +141,7 @@ class PluginMock(PluginBase, object):
         width: int,
         height: int,
         is_horizontal: bool,
-        convert_manager,
+        image_magick,
         photo,
     ):
         print("postprocess_photo")

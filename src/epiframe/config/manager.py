@@ -10,10 +10,11 @@ from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
 from epiframe.core.network import validate_ip
+from epiframe.display.options import Background
 from epiframe.photos import selection
+from epiframe.processing import imagemagick
 from epiframe.sources import drive
 from epiframe.sources.local import create_directory
-from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
 from modules.telebotmanager import TelebotManager
 from modules.weathermanager import WeatherManager
@@ -107,7 +108,7 @@ def _image_settings() -> list[ConfigProperty]:
         ConfigProperty(
             "convert_option",
             INTEGER,
-            possible=ConvertManager.get_convert_options(),
+            possible=imagemagick.CONVERT_OPTIONS,
             **spi,
         ),
         ConfigProperty("image_width", INTEGER, min_value=1),
@@ -115,9 +116,7 @@ def _image_settings() -> list[ConfigProperty]:
         ConfigProperty("grayscale", BOOLEAN, **hdmi),
         ConfigProperty("colors_num", INTEGER, min_value=1, not_empty=False, **hdmi),
         ConfigProperty("invert_colors", BOOLEAN),
-        ConfigProperty(
-            "background_color", possible=ConvertManager.get_background_colors()
-        ),
+        ConfigProperty("background_color", possible=Background.values()),
         ConfigProperty("auto_orientation", BOOLEAN),
         ConfigProperty("horizontal", BOOLEAN),
         ConfigProperty("turned", BOOLEAN, dependency="horizontal"),
@@ -126,7 +125,7 @@ def _image_settings() -> list[ConfigProperty]:
             INTEGER,
             dependency="horizontal",
             dependency_value="0",
-            possible=ConvertManager.get_rotation(),
+            possible=imagemagick.ROTATIONS,
         ),
         ConfigProperty("auto_gamma", BOOLEAN),
         ConfigProperty("auto_level", BOOLEAN),

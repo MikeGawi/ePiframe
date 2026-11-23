@@ -6,7 +6,6 @@ from epiframe.config.property import ConfigProperty, PropertyType
 from epiframe.display.options import Background, ColorMode
 from misc.pimoronidisplay import PimoroniDisplay
 from epiframe.config.base import ConfigBase
-from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.helpers import remove_file, set_file
@@ -213,7 +212,7 @@ def get_config():
                 ),
                 ConfigProperty(
                     "background_color",
-                    possible=ConvertManager.get_background_colors(),
+                    possible=Background.values(),
                 ),
             ]
 
