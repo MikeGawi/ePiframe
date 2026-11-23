@@ -10,9 +10,9 @@ from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
 from epiframe.core.network import validate_ip
+from epiframe.photos import selection
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
-from modules.filteringmanager import FilteringManager
 from modules.localsourcemanager import LocalSourceManager
 from modules.telebotmanager import TelebotManager
 from modules.weathermanager import WeatherManager
@@ -134,23 +134,21 @@ def _image_settings() -> list[ConfigProperty]:
 
 
 def _filtering_settings() -> list[ConfigProperty]:
-    times_check = CrossCheck(
-        FilteringManager.verify_times, ("photos_from", "photos_to")
-    )
+    times_check = CrossCheck(selection.verify_range, ("photos_from", "photos_to"))
     return [
         ConfigProperty("randomize", BOOLEAN),
         *(
             ConfigProperty(
                 name,
                 not_empty=False,
-                convert=FilteringManager.convert,
-                check=FilteringManager.verify,
+                convert=selection.convert_legacy_date,
+                check=selection.verify_date,
                 cross_check=times_check,
             )
             for name in ("photos_from", "photos_to")
         ),
         ConfigProperty("no_photos", INTEGER, min_value=1, not_empty=False),
-        ConfigProperty("sorting", possible=FilteringManager.get_sorting()),
+        ConfigProperty("sorting", possible=selection.Sorting.values()),
     ]
 
 
@@ -208,7 +206,7 @@ class ConfigManager(ConfigBase):
 
     LEGACY = (
         # 1.x "Album settings" sort_desc=0/1 became "Filtering" sorting=asc/desc
-        LegacyEntry("sort_desc", "sorting", FilteringManager.get_descending),
+        LegacyEntry("sort_desc", "sorting", selection.sorting_from_sort_desc),
     )
 
     def load_settings(self) -> list[ConfigProperty]:

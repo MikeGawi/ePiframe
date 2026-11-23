@@ -27,7 +27,7 @@ def test_function_used():
 
 def test_function_not_used():
     plugin = PluginOverrideMock("path", None, None, None)
-    assert plugin.is_function_used("change_photos_list") is False
+    assert plugin.is_function_used("preprocess_photo") is False
 
 
 def test_function_wrong():
@@ -43,37 +43,22 @@ def test_function_wrong():
 
 def test_add_photo_source():
     with Capturing() as output:
-        PluginMock("path", None, None, None).add_photo_source(None, None, None, None)
+        PluginMock("path", None, None, None).add_photo_source()
     assert output == ["path/config.cfg path/default/config.default", "add_photo_source"]
 
 
 def test_add_photo_source_get_file():
     with Capturing() as output:
-        PluginMock("path", None, None, None).add_photo_source_get_file(
-            None, None, None, None, None, None, None
-        )
+        PluginMock("path", None, None, None).add_photo_source_get_file(None, "", "")
     assert output == [
         "path/config.cfg path/default/config.default",
         "add_photo_source_get_file",
     ]
 
 
-def test_change_photos_list():
-    with Capturing() as output:
-        PluginMock("path", None, None, None).change_photos_list(
-            None, None, None, None, None, None, None
-        )
-    assert output == [
-        "path/config.cfg path/default/config.default",
-        "change_photos_list",
-    ]
-
-
 def test_preprocess_photo():
     with Capturing() as output:
-        PluginMock("path", None, None, None).preprocess_photo(
-            None, False, None, None, None, None, None
-        )
+        PluginMock("path", None, None, None).preprocess_photo(None, False, None, None)
     assert output == [
         "path/config.cfg path/default/config.default",
         "preprocess_photo",
@@ -83,7 +68,7 @@ def test_preprocess_photo():
 def test_postprocess_photo():
     with Capturing() as output:
         PluginMock("path", None, None, None).postprocess_photo(
-            None, 0, 0, False, None, None, None, None, None
+            None, 0, 0, False, None, None
         )
     assert output == [
         "path/config.cfg path/default/config.default",
@@ -135,38 +120,11 @@ class PluginMock(PluginBase, object):
         def getint(self, name: str):
             return True
 
-    def add_photo_source(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager,
-    ):
+    def add_photo_source(self):
         print("add_photo_source")
 
-    def add_photo_source_get_file(
-        self,
-        photo,
-        path: str,
-        filename: str,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager,
-    ):
+    def add_photo_source_get_file(self, photo, path: str, filename: str):
         print("add_photo_source_get_file")
-
-    def change_photos_list(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_list,
-        photo_manager,
-        index_manager,
-        filtering_manager,
-    ):
-        print("change_photos_list")
 
     def preprocess_photo(
         self,
@@ -174,9 +132,6 @@ class PluginMock(PluginBase, object):
         is_horizontal: bool,
         convert_manager,
         photo,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
     ):
         print("preprocess_photo")
 
@@ -188,9 +143,6 @@ class PluginMock(PluginBase, object):
         is_horizontal: bool,
         convert_manager,
         photo,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
     ):
         print("postprocess_photo")
 
@@ -226,24 +178,17 @@ def test_run_plugin():
     plugin = PluginOverrideMock("path", None, None, None)
     with not_raises(Exception):
         plugin.add_action(None, None, None)
-        plugin.add_photo_source(None, None, None, None)
-        plugin.add_photo_source_get_file(None, None, None, None, None, None, None)
+        plugin.add_photo_source()
+        plugin.add_photo_source_get_file(None, "", "")
         plugin.add_service_thread(None, None)
         plugin.add_website(None, None, None)
-        plugin.change_photos_list(None, None, None, None, None, None, None)
-        plugin.preprocess_photo(None, None, None, None, None, None, None)
-        plugin.postprocess_photo(None, None, None, None, None, None, None, None, None)
+        plugin.preprocess_photo(None, None, None, None)
+        plugin.postprocess_photo(None, None, None, None, None, None)
         plugin.extend_api(None, None, None)
 
 
 class PluginOverrideMock(PluginBase):
-    def add_photo_source(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager,
-    ):
+    def add_photo_source(self):
         print("add_photo_source")
 
     class PluginConfigManager:

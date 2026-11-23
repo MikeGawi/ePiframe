@@ -53,13 +53,6 @@ def test_plugin_action():
     ]
 
 
-def test_plugin_photos_list():
-    manager = get_plugins_manager()
-    assert [plugin.name for plugin in manager.plugin_photos_list()] == [
-        "Plugin1",
-    ]
-
-
 def test_plugin_service_thread():
     manager = get_plugins_manager()
     assert [plugin.name for plugin in manager.plugin_service_thread()] == [
@@ -99,22 +92,13 @@ def test_run_plugins():
     manager = get_plugins_manager()
     with not_raises(Exception):
         manager.get_plugins()[0].add_action(None, None, None)
-        manager.get_plugins()[0].add_photo_source(None, None, None, None)
-        manager.get_plugins()[0].add_photo_source_get_file(
-            None, None, None, None, None, None, None
-        )
+        manager.get_plugins()[0].add_photo_source()
+        manager.get_plugins()[0].add_photo_source_get_file(None, "", "")
         manager.get_plugins()[0].add_service_thread(None, None)
-        manager.get_plugins()[0].change_photos_list(
-            None, None, None, None, None, None, None
-        )
-        manager.get_plugins()[0].preprocess_photo(
-            None, None, None, None, None, None, None
-        )
-        manager.get_plugins()[0].postprocess_photo(
-            None, None, None, None, None, None, None, None, None
-        )
-        manager.get_plugins()[1].add_photo_source(None, None, None, None)
-        manager.get_plugins()[2].add_photo_source(None, None, None, None)
+        manager.get_plugins()[0].preprocess_photo(None, None, None, None)
+        manager.get_plugins()[0].postprocess_photo(None, None, None, None, None, None)
+        manager.get_plugins()[1].add_photo_source()
+        manager.get_plugins()[2].add_photo_source()
 
 
 def test_read_order():

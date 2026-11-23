@@ -133,6 +133,8 @@ dmypy.json
 /token.pickle
 /origphoto.*
 /index
+/photos.db
+/photos.db-journal
 /credentials.json
 /time
 /pid
@@ -148,3 +150,4 @@ dmypy.json
 /HANDOFF.md
 /junit.xml
 /badges/
+/logs/

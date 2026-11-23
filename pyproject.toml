@@ -21,13 +21,10 @@ dependencies = [
     "flask-wtf>=1.2",
     "pillow>=11",
     "pytelegrambotapi>=4.30",
-    "python-dateutil>=2.9",
     "requests>=2.32",
     "werkzeug>=3.1",
     "wtforms>=3.3",
-    # Temporary: pandas is removed in Phase 3 (SQLite photo index).
-    "pandas>=2.2,<3",
-    # Direct dependency only so that ARM gets it from piwheels (pulled in by pandas and inky).
+    # Direct dependency only so that ARM gets it from piwheels (needed by the Pimoroni inky library).
     "numpy>=1.26",
     # SPI access for e-Paper displays, only needed (and buildable) on the Raspberry Pi.
     "spidev>=3.6; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
@@ -72,7 +69,6 @@ explicit = true
 
 [tool.uv.sources]
 numpy = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
-pandas = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 pillow = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 spidev = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 
@@ -92,6 +88,8 @@ ignore = [
 max-complexity = 5
 
 [tool.ruff.lint.per-file-ignores]
+# SQL is composed only from module constants; all values are bound parameters
+"src/epiframe/photos/index.py" = ["S608"]
 "tests/**" = ["S101", "PLR0913", "PLR0915"]
 # 1.x code: only basic checks until each module is ported to src/epiframe (Phase 3).
 "{ePiframe,ePiframe_service}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]

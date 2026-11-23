@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     from modules.backendmanager import BackendManager
     from epiframe.config.base import ConfigBase
     from modules.convertmanager import ConvertManager
-    from modules.filteringmanager import FilteringManager
-    from modules.indexmanager import IndexManager
-    from modules.photomanager import PhotoManager
+    from collections.abc import Iterable
+
+    from epiframe.photos.model import Photo
     from epiframe.core.pidfile import PidFile
     from modules.usersmanager import UsersManager
     from modules.webuimanager import WebUIManager
@@ -51,37 +51,12 @@ class PluginBase:
     def is_enabled(self):
         return bool(self.config.getint("is_enabled"))
 
-    def add_photo_source(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager: PhotoManager,
-    ):
+    def add_photo_source(self) -> Iterable[Photo]:
+        # all photos of the source: Photo(id, self.SOURCE, created)
         pass
 
-    def add_photo_source_get_file(
-        self,
-        photo,
-        path: str,
-        filename: str,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_manager: PhotoManager,
-    ):
-        pass
-
-    def change_photos_list(
-        self,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
-        photo_list,
-        photo_manager: PhotoManager,
-        index_manager: IndexManager,
-        filtering_manager: FilteringManager,
-    ):
+    def add_photo_source_get_file(self, photo: Photo, path: str, filename: str):
+        # returns the path of the retrieved file
         pass
 
     def preprocess_photo(
@@ -89,10 +64,7 @@ class PluginBase:
         original_photo: str,
         is_horizontal: bool,
         convert_manager: ConvertManager,
-        photo,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
+        photo: Photo | None,
     ):
         pass
 
@@ -103,10 +75,7 @@ class PluginBase:
         height: int,
         is_horizontal: bool,
         convert_manager: ConvertManager,
-        photo,
-        id_label: str,
-        creation_label: str,
-        source_label: str,
+        photo: Photo | None,
     ):
         pass
 
