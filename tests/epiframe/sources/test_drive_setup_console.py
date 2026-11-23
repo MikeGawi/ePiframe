@@ -1,6 +1,5 @@
 import json
 import stat
-from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -11,37 +10,11 @@ from epiframe.sources import drive_setup_console
 from epiframe.sources.drive import FOLDER_TYPE, Drive, DriveFile
 from epiframe.sources.drive_setup import STEPS
 from epiframe.sources.drive_setup_console import ConsoleSetup
+from tests.helpers.console import Answer, Console
 from tests.helpers.fake_drive import ROOT, FakeDrive, folder, photo
 from tests.helpers.service_account import ACCOUNT, write_key
 
 LINK = f"https://drive.google.com/drive/folders/{ROOT}?usp=sharing"
-
-Answer = str | BaseException | Callable[[], str]
-
-
-class Console:
-    """Scripted answers (an exception is raised, a callable is called) and output."""
-
-    def __init__(self, *answers: Answer) -> None:
-        self.answers = list(answers)
-        self.prompts: list[str] = []
-        self.lines: list[str] = []
-
-    def ask(self, prompt: str) -> str:
-        self.prompts.append(prompt)
-        if not self.answers:
-            raise EOFError
-        answer = self.answers.pop(0)
-        if isinstance(answer, BaseException):
-            raise answer
-        return answer() if callable(answer) else answer
-
-    def say(self, text: str) -> None:
-        self.lines.append(text)
-
-    @property
-    def output(self) -> str:
-        return "\n".join(self.lines)
 
 
 @pytest.fixture

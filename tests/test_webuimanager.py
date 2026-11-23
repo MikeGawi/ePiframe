@@ -1,6 +1,5 @@
 import base64
 import os
-from typing import List
 from unittest.mock import patch
 
 import pytest
@@ -9,9 +8,9 @@ from http import HTTPStatus
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
 from epiframe.display import hdmi
 from epiframe.version import VERSION
-from misc.user import User
+from epiframe.users.model import User
 from epiframe.config.manager import ConfigManager
-from modules.usersmanager import UsersManager
+from epiframe.users.store import UserError, Users
 from modules.webuimanager import WebUIManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
@@ -170,12 +169,12 @@ def test_load_user_nok():
 
 
 def test_load_user_ok():
-    user = User("id", "name", "pass", "api")
+    user = User(1, "name", "hash", "api")
 
-    def mocked_get_user(self, username: str) -> List[User]:
-        return [user]
+    def mocked_get_user(self, username: str) -> User:
+        return user
 
-    with patch.object(UsersManager, "get_by_username", mocked_get_user):
+    with patch.object(Users, "by_username", mocked_get_user):
         manager = get_webui_manager()
         assert manager.load_user("name") == user
 
@@ -449,8 +448,8 @@ def test_display_power_on(client_no_login, action):
 
 def test_login_ok(client):
     with (
-        patch.object(UsersManager, "check", mock_check),
-        patch.object(UsersManager, "get_by_username", mock_load_user),
+        patch.object(Users, "authenticate", mock_check),
+        patch.object(Users, "by_username", mock_load_user),
     ):
         response = client.post(
             "/login",
@@ -465,7 +464,7 @@ def test_login_ok(client):
 
 
 def test_login_nok(client):
-    with patch.object(UsersManager, "check", mock_check_nok):
+    with patch.object(Users, "authenticate", mock_check_nok):
         response = client.post(
             "/login",
             data=dict(
@@ -482,7 +481,7 @@ def test_login_nok(client):
 
 
 def test_login_nok_empty(client):
-    with patch.object(UsersManager, "check", mock_check_nok):
+    with patch.object(Users, "authenticate", mock_check_nok):
         response = client.post(
             "/login",
             data=dict(password="test", login_form="", remember=True),
@@ -497,7 +496,7 @@ def test_login_nok_empty(client):
 def test_load_from_request(client):
     with (
         patch.object(hdmi.HdmiPower, "state", return_value=True),
-        patch.object(UsersManager, "get_by_api", mock_get_by_api),
+        patch.object(Users, "by_api_key", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=?api_key=api_key",
@@ -510,7 +509,7 @@ def test_load_from_request(client):
 def test_load_from_request_nok(client):
     with (
         patch.object(hdmi.HdmiPower, "state", return_value=True),
-        patch.object(UsersManager, "get_by_api", mock_get_by_api),
+        patch.object(Users, "by_api_key", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=?api_key=not_an_api_key",
@@ -526,7 +525,7 @@ def test_load_from_request_nok(client):
 def test_load_from_header(client):
     with (
         patch.object(hdmi.HdmiPower, "state", return_value=True),
-        patch.object(UsersManager, "get_by_api", mock_get_by_api),
+        patch.object(Users, "by_api_key", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=",
@@ -542,7 +541,7 @@ def test_load_from_header(client):
 def test_load_from_header_nok(client):
     with (
         patch.object(hdmi.HdmiPower, "state", return_value=True),
-        patch.object(UsersManager, "get_by_api", mock_get_by_api),
+        patch.object(Users, "by_api_key", mock_get_by_api),
     ):
         response = client.get(
             "/api/display_power=",
@@ -666,22 +665,20 @@ class WebMockRead:
         return "data"
 
 
-def mock_check(self, username: str, password: str):
-    return True
+def mock_check(self, username: str, password: str) -> User:
+    return User(1, "username", "hash", "api")
 
 
 def mock_check_nok(self, username: str, password: str):
-    raise Exception("error")
+    raise UserError("Wrong password!")
 
 
-def mock_load_user(self, username: str) -> List[User]:
-    return [User("user", "username", "password", "api")]
+def mock_load_user(self, username: str) -> User:
+    return User(1, "username", "hash", "api")
 
 
-def mock_get_by_api(self, api: str) -> List[User]:
-    if api != "api_key":
-        raise Exception("error")
-    return [User("user", "username", "password", "api")]
+def mock_get_by_api(self, api: str) -> User | None:
+    return User(1, "username", "hash", "api") if api == "api_key" else None
 
 
 def web_mocked_system(*args, **kwargs):
@@ -692,3 +689,42 @@ def web_mocked_system(*args, **kwargs):
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def get_webui_manager():
     return WebUIManager(get_backend_manager())
+
+
+@pytest.mark.parametrize("injection", ["' OR '1'='1", "x' OR 1=1 --"])
+def test_api_key_sql_injection_is_refused(client, injection):
+    # 1.x built the SQL from the key: "?api_key=' OR '1'='1" logged in as the
+    # first user; the app fixture uses the real users database "test_users.db"
+    users = Users("test_users.db")
+    user = users.add("injection-test", "secret")
+    try:
+        refused = client.get("/api/display_power=", query_string={"api_key": injection})
+        with patch.object(hdmi.HdmiPower, "state", return_value=True):
+            accepted = client.get(
+                "/api/display_power=", query_string={"api_key": user.api_key}
+            )
+    finally:
+        users.delete("injection-test")
+
+    assert refused.status_code == HTTPStatus.FOUND
+    assert refused.location.startswith("/login")
+    assert accepted.status_code == HTTPStatus.OK
+
+
+def test_login_with_real_users_database(client):
+    users = Users("test_users.db")
+    users.add("login-test", "secret")
+    try:
+        wrong = client.post(
+            "/login", data={"username": "login-test", "password": "nope"}
+        )
+        right = client.post(
+            "/login", data={"username": "login-test", "password": "secret"}
+        )
+        page = client.get("/")
+    finally:
+        users.delete("login-test")
+
+    assert wrong.status_code == right.status_code == HTTPStatus.FOUND
+    assert page.status_code == HTTPStatus.OK
+    assert VERSION in page.data.decode()

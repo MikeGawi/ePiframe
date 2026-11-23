@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from epiframe.photos.model import Photo
     from epiframe.core.pidfile import PidFile
-    from modules.usersmanager import UsersManager
+    from epiframe.users.store import Users
     from modules.webuimanager import WebUIManager
 
 
@@ -82,7 +82,7 @@ class PluginBase:
     def extend_api(
         self,
         web_manager: WebUIManager,
-        users_manager: UsersManager,
+        users_manager: Users,
         backend: BackendManager,
     ):
         pass
@@ -90,7 +90,7 @@ class PluginBase:
     def add_website(
         self,
         web_manager: WebUIManager,
-        users_manager: UsersManager,
+        users_manager: Users,
         backend: BackendManager,
     ):
         pass
@@ -98,7 +98,7 @@ class PluginBase:
     def add_action(
         self,
         web_manager: WebUIManager,
-        users_manager: UsersManager,
+        users_manager: Users,
         backend: BackendManager,
     ):
         pass

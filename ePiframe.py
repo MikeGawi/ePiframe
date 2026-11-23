@@ -26,6 +26,8 @@ from epiframe.config.manager import ConfigManager
 from epiframe.display.factory import create_display
 from epiframe.display.options import DisplayType
 from epiframe.display.system import spi_enabled
+from epiframe.users.console import USERS_ACTIONS_TAG, UsersConsole
+from epiframe.users.store import Users
 from epiframe.weather.openweather import fetch_weather
 from epiframe.weather.stamp import StampSettings, draw_stamp
 from epiframe.processing.imagemagick import (
@@ -34,9 +36,7 @@ from epiframe.processing.imagemagick import (
     ImageMagickError,
     Thumbnails,
 )
-from modules.databasemanager import DatabaseManager
 from modules.pluginsmanager import PluginsManager
-from modules.usersmanager import USERS_ACTIONS_TAG, UsersManager
 
 
 # minimal needed Python version (keep in sync with requires-python in pyproject.toml)
@@ -360,24 +360,14 @@ class EPiframe:
 
     def start_user_management(self):
         if self.check_arguments("--users"):
-            log.info(USERS_ACTIONS_TAG + "Starting database management module...")
-            try:
-                self.database_manager = DatabaseManager()
-                log.info(USERS_ACTIONS_TAG + "Success!")
-            except Exception as exception:
-                log.info(USERS_ACTIONS_TAG + f"Fail! {exception}")
-                raise
-
             log.info(USERS_ACTIONS_TAG + "Starting users management module...")
             try:
-                self.users_manager = UsersManager(self.database_manager)
+                users = Users(paths.USERS_DB_FILE)
                 log.info(USERS_ACTIONS_TAG + "Success!")
             except Exception as exception:
-                log.info(USERS_ACTIONS_TAG + f"Fail! {exception}")
+                log.error(USERS_ACTIONS_TAG + f"Fail! {exception}")
                 raise
-
-            self.users_manager.manage()
-            sys.exit(1)
+            sys.exit(UsersConsole(users).run())
 
     def start_drive_setup(self):
         # before the verification: an unfinished Drive setup must not block it
@@ -791,8 +781,6 @@ class EPiframe:
     plugins_manager = None
     pid_manager = None
     interval_manager = None
-    database_manager = None
-    users_manager = None
 
 
 if __name__ == "__main__":
