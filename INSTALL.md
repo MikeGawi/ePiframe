@@ -264,6 +264,9 @@ It is possible to control ePiframe from a simple API and even secure it with aut
 
 ePiframe supports custom plugins that can be created by anyone and can enhance *ALL* ePiframe functions (or even more). Check [ePiframe_plugin](https://github.com/MikeGawi/ePiframe_plugin) for more information, documentation, examples, tutorial and available plugins list.
 
+* ePiframe 2.0 uses the Plugin API v2: plugins written for ePiframe 1.x must be updated (a plugin that can't be loaded is skipped with an error in the log, the frame keeps working).
+* Plugins are folders in the *plugins* folder of ePiframe (or in the folder set by the `EPIFRAME_PLUGINS_DIR` environment variable). The folder name must be a valid Python name: letters, digits and `_` only.
+
 #### Plugins execution order
 
 Some plugins, especially the ones that do visual changes to the photo, can overlap each other, e.g. a frame can be drawn on the information displayed on the photo. To avoid that it is possible to manually change the plugins execution order in the *plugins* folder *order.cfg* file, that will be populated after the first ePiframe run with new plugins. You can manually change the lines to adapt the order for the configuration or do that in *Plugins-Execution Order* menu in ePiframe WebUI.
