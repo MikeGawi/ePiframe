@@ -91,7 +91,7 @@ class Service(Daemon):
             self.__web_thread.start()
 
     def __run_plugins(self):
-        for plug in self.__backend.get_plugins().plugin_service_thread():
+        for plug in self.__backend.get_plugins().with_hook("add_service_thread"):
             thread = Thread(
                 target=plug.add_service_thread,
                 args=(

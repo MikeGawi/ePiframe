@@ -9,6 +9,7 @@ from epiframe.config import manager as configmanager
 from epiframe.core import interval as intervalmanager
 from epiframe.core import schedule as timermanager
 from epiframe.display import hdmi
+from epiframe.plugins.manager import PluginManager
 from modules.backendmanager import BackendManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
@@ -43,10 +44,7 @@ def test_get_path():
 
 def test_get_plugins():
     manager = get_backend_manager()
-    assert (
-        str(type(manager.get_plugins()))
-        == "<class 'modules.pluginsmanager.PluginsManager'>"
-    )
+    assert isinstance(manager.get_plugins(), PluginManager)
 
 
 def test_get_config():

@@ -2,12 +2,11 @@ import glob
 import os
 from datetime import datetime, timedelta
 
-import modules.pluginsmanager as plugins_manager
+from epiframe.plugins.manager import PluginManager
 from epiframe.core.files import last_modified
 from epiframe.config import manager as config_manager
 from epiframe.config import paths
 from epiframe.core import interval, schedule
-from epiframe.core.pidfile import PidFile
 from epiframe.display import hdmi
 from epiframe.display.options import DisplayType
 from epiframe.weather.openweather import Units
@@ -50,11 +49,7 @@ class BackendManager:
         self.__load_interval_and_schedule()
         self.remove_interval()
         self.update_time()
-        self.__plugins = plugins_manager.PluginsManager(
-            self.__path,
-            PidFile(self.__config.get("pid_file")),
-            self.__config,
-        )
+        self.__plugins = PluginManager(paths.PLUGINS_DIR, self.__config)
 
     def get_last_date(self, file: str) -> float | None:
         return last_modified(os.path.join(self.__path, file))
@@ -62,7 +57,7 @@ class BackendManager:
     def get_path(self) -> str:
         return self.__path
 
-    def get_plugins(self) -> plugins_manager:
+    def get_plugins(self) -> PluginManager:
         return self.__plugins
 
     def __load_config(self):

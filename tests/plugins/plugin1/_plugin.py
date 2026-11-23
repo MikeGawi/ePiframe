@@ -1,6 +1,10 @@
-from epiframe.config.property import ConfigProperty, PropertyType
-from epiframe.config.base import ConfigBase
-from modules.base.pluginbase import PluginBase
+"""Test plugin using every hook (Plugin API v2)."""
+
+from pathlib import Path
+
+from epiframe.photos.model import Photo
+from epiframe.plugins.base import PhotoFile
+from epiframe.plugins.base import Plugin as PluginBase
 from modules.webuimanager import WebUIManager
 
 
@@ -10,45 +14,19 @@ class Plugin(PluginBase):
     description = "Test Plugin1"
     site = "Plugin site URL and documentation"
     info = "Additional info, license, etc."
-    SOURCE = "'{}' plugin source".format(name)
 
-    class PluginConfigManager(ConfigBase):
-        def load_settings(self):
-            return [ConfigProperty("is_enabled", type=PropertyType.BOOLEAN)]
+    def source_photos(self):
+        print("source_photos")
+        return []
 
-    def __init__(
-        self,
-        path: str,
-        pid_manager,
-        logger,
-        global_config: ConfigBase,
-    ):
-        super().__init__(path, pid_manager, logger, global_config)
+    def fetch_photo(self, photo: Photo, directory: Path, name: str) -> Path:
+        print("fetch_photo")
+        return directory / f"{name}.jpg"
 
-    def add_photo_source(self):
-        print("add_photo_source")
-
-    def add_photo_source_get_file(self, photo, path: str, filename: str):
-        print("add_photo_source_get_file")
-
-    def preprocess_photo(
-        self,
-        original_photo: str,
-        is_horizontal: bool,
-        image_magick,
-        photo,
-    ):
+    def preprocess_photo(self, photo: PhotoFile) -> None:
         print("preprocess_photo")
 
-    def postprocess_photo(
-        self,
-        final_photo: str,
-        width: int,
-        height: int,
-        is_horizontal: bool,
-        image_magick,
-        photo,
-    ):
+    def postprocess_photo(self, photo: PhotoFile) -> None:
         print("postprocess_photo")
 
     @staticmethod

@@ -7,6 +7,7 @@ import shutil
 import signal
 import sys
 import time
+from pathlib import Path
 from http import HTTPStatus
 from typing import List
 
@@ -21,9 +22,10 @@ from epiframe.sources.drive_setup_console import ConsoleSetup
 from epiframe.sources.local import LOCAL_SOURCE, LocalSource
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
-from modules.base.pluginbase import PluginBase
 from epiframe.config.manager import ConfigManager
 from epiframe.display.factory import create_display
+from epiframe.plugins.base import PhotoFile, Plugin
+from epiframe.plugins.manager import PluginManager
 from epiframe.display.options import DisplayType
 from epiframe.display.system import spi_enabled
 from epiframe.users.console import USERS_ACTIONS_TAG, UsersConsole
@@ -36,7 +38,6 @@ from epiframe.processing.imagemagick import (
     ImageMagickError,
     Thumbnails,
 )
-from modules.pluginsmanager import PluginsManager
 
 
 # minimal needed Python version (keep in sync with requires-python in pyproject.toml)
@@ -61,11 +62,7 @@ class EPiframe:
         self.verify_config()
 
         self.pid_manager = PidFile(self.config.get("pid_file"))
-        self.plugins_manager = PluginsManager(
-            os.path.dirname(os.path.realpath(__file__)),
-            self.pid_manager,
-            self.config,
-        )
+        self.plugins_manager = PluginManager(paths.PLUGINS_DIR, self.config)
         self.verify_plugin_configs()
         log.info("OK!")
         self.check_config()
@@ -136,7 +133,7 @@ class EPiframe:
         if photo.source == DRIVE_SOURCE:
             return self.download_drive_photo(photo)
         returned_value = HTTPStatus.OK
-        plugin_with_source = self.get_plugin_with_source(photo)
+        plugin_with_source = self.plugins_manager.source_of(photo)
         filename = self.get_filename(photo, plugin_with_source, returned_value)
         return filename, returned_value
 
@@ -164,15 +161,15 @@ class EPiframe:
         return self.drive_source
 
     def get_filename(
-        self, photo: Photo, plugin_with_source: PluginBase, returned_value
+        self, photo: Photo, plugin_with_source: Plugin | None, returned_value
     ) -> str:
-        if plugin_with_source and self.plugins_manager.plugin_source_get_file(
-            plugin_with_source
-        ):
-            filename = plugin_with_source.add_photo_source_get_file(
-                photo,
-                self.config.get("photo_convert_path"),
-                self.config.get("photo_download_name"),
+        if plugin_with_source and plugin_with_source.implements("fetch_photo"):
+            filename = str(
+                plugin_with_source.fetch_photo(
+                    photo,
+                    Path(self.config.get("photo_convert_path")),
+                    self.config.get("photo_download_name"),
+                )
             )
         else:
             source_file = photo.id
@@ -187,16 +184,6 @@ class EPiframe:
             filename = os.path.join(self.config.get("photo_convert_path"), filename)
             self.copy_file(source_file, filename)
         return filename
-
-    def get_plugin_with_source(self, photo: Photo) -> PluginBase:
-        return next(
-            (
-                plugin
-                for plugin in self.plugins_manager.get_plugin_source()
-                if plugin.SOURCE == photo.source
-            ),
-            None,
-        )
 
     def remove_old_files(self):
         for old_file in glob.glob(
@@ -238,9 +225,9 @@ class EPiframe:
         if bool(self.config.getint("use_drive")):
             self.update_drive_source()
             sources.append(DRIVE_SOURCE)
-        for plugin in self.plugins_manager.plugin_source():
+        for plugin in self.plugins_manager.sources():
             self.update_plugin_source(plugin)
-            sources.append(plugin.SOURCE)
+            sources.append(plugin.source)
         # photos of disabled sources are not shown anymore
         self.photo_index.keep_sources(sources)
 
@@ -260,7 +247,7 @@ class EPiframe:
         if (
             not bool(self.config.getint("use_local"))
             and not bool(self.config.getint("use_drive"))
-            and not self.plugins_manager.plugin_source()
+            and not self.plugins_manager.sources()
         ):
             log.info("No photo sources picked! Check the configuration!")
             raise Exception("No photo sources picked! Check the configuration!")
@@ -292,10 +279,10 @@ class EPiframe:
         scan = "full listing" if result.full else f"{result.changes} changes"
         log.info(f"Success! {result.photos} photos ({scan})")
 
-    def update_plugin_source(self, plugin: PluginBase):
+    def update_plugin_source(self, plugin: Plugin):
         try:
             log.info(f"Getting data from plugin '{plugin.name}' source...")
-            self.photo_index.replace_source(plugin.SOURCE, plugin.add_photo_source())
+            self.photo_index.replace_source(plugin.source, plugin.source_photos())
             log.info("Success!")
         except Exception as exception:
             log.error(f"Error: {exception}")
@@ -418,10 +405,10 @@ class EPiframe:
         return name in [argument.lower() for argument in sys.argv]
 
     def verify_plugin_configs(self):
-        if len(self.plugins_manager.get_enabled()) > 0:
+        if self.plugins_manager.enabled():
             log.info("Verifying plugins configuration...")
 
-            for plugin in self.plugins_manager.get_enabled():
+            for plugin in self.plugins_manager.enabled():
                 try:
                     plugin.config.verify()
                 except Warning as warning:
@@ -707,41 +694,32 @@ class EPiframe:
         except Exception:
             pass
 
-    def plugins_preprocess(
-        self,
-        photo,
-        filename_pre: str,
-    ):
-        for plugin in self.plugins_manager.plugin_preprocess():
+    def photo_file(self, path: str, photo: Photo | None) -> PhotoFile:
+        return PhotoFile(
+            path=Path(path),
+            photo=photo,
+            width=self.config.getint("image_width"),
+            height=self.config.getint("image_height"),
+            horizontal=bool(self.config.getint("horizontal")),
+            rotation=self.config.getint("rotation"),
+            image_magick=self.magick(),
+        )
+
+    def plugins_preprocess(self, photo: Photo | None, filename_pre: str):
+        for plugin in self.plugins_manager.with_hook("preprocess_photo"):
             try:
                 log.info(f"Preprocessing photo by plugin '{plugin.name}'...")
-                plugin.preprocess_photo(
-                    filename_pre,
-                    bool(self.config.getint("horizontal")),
-                    self.magick(),
-                    photo,
-                )
+                plugin.preprocess_photo(self.photo_file(filename_pre, photo))
                 log.info("Success!")
             except Exception as exception:
                 log.error(f"Error: {exception}")
                 raise
 
-    def plugins_postprocess(
-        self,
-        photo,
-        targetFilename: str,
-    ):
-        for plugin in self.plugins_manager.plugin_postprocess():
+    def plugins_postprocess(self, photo: Photo | None, target_filename: str):
+        for plugin in self.plugins_manager.with_hook("postprocess_photo"):
             try:
                 log.info(f"Postprocessing photo by plugin '{plugin.name}'...")
-                plugin.postprocess_photo(
-                    targetFilename,
-                    self.config.getint("image_width"),
-                    self.config.getint("image_height"),
-                    bool(self.config.getint("horizontal")),
-                    self.magick(),
-                    photo,
-                )
+                plugin.postprocess_photo(self.photo_file(target_filename, photo))
                 log.info("Success!")
             except Exception as exception:
                 log.error(f"Error: {exception}")
