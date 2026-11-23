@@ -26,6 +26,8 @@ from epiframe.config.manager import ConfigManager
 from epiframe.display.factory import create_display
 from epiframe.display.options import DisplayType
 from epiframe.display.system import spi_enabled
+from epiframe.weather.openweather import fetch_weather
+from epiframe.weather.stamp import StampSettings, draw_stamp
 from epiframe.processing.imagemagick import (
     ConvertSettings,
     ImageMagick,
@@ -35,17 +37,6 @@ from epiframe.processing.imagemagick import (
 from modules.databasemanager import DatabaseManager
 from modules.pluginsmanager import PluginsManager
 from modules.usersmanager import USERS_ACTIONS_TAG, UsersManager
-from modules.weathermanager import (
-    WEATHER_BASE_URL,
-    WEATHER_ICON_MAINTAG,
-    WEATHER_ICON_POSITION,
-    WEATHER_ICON_TAG,
-    WEATHER_TEMP_MAINTAG,
-    WEATHER_TEMP_TAG,
-    WEATHER_TIMEOUT,
-    WeatherManager,
-)
-from modules.weatherstampmanager import WeatherStampManager
 
 
 # minimal needed Python version (keep in sync with requires-python in pyproject.toml)
@@ -768,46 +759,29 @@ class EPiframe:
 
     def process_show_weather(self, target_filename: str):
         if bool(self.config.getint("show_weather")):
-            log.info("Getting weather data...")
-            self.weather_manager = WeatherManager(
+            self.show_weather(target_filename)
+
+    def show_weather(self, target_filename: str):
+        # the stamp is optional: any failure is logged, the photo is shown anyway
+        log.info("Getting weather data...")
+        try:
+            weather = fetch_weather(
                 self.config.get("apikey"),
-                self.config.get("units"),
                 self.config.get("lat"),
                 self.config.get("lon"),
+                self.config.get("units"),
             )
-
-            try:
-                self.weather_manager.send_request(WEATHER_BASE_URL, WEATHER_TIMEOUT)
-                if not self.weather_manager.get_data():
-                    raise Exception("Couldn't retrieve weather data!")
-                log.info("Success!")
-                log.info("Putting weather stamp...")
-                self.weather_stamp_manager = WeatherStampManager(
-                    target_filename,
-                    self.config.getint("image_width"),
-                    self.config.getint("image_height"),
-                    bool(self.config.getint("horizontal")),
-                    self.config.getint("font"),
-                    self.config.get("font_color"),
-                    self.config.getint("position"),
-                    self.config.getint("rotation"),
-                )
-                self.weather_stamp_manager.compose(
-                    float(
-                        self.weather_manager.get_temperature(
-                            WEATHER_TEMP_MAINTAG, WEATHER_TEMP_TAG
-                        )
-                    ),
-                    self.config.get("units"),
-                    self.weather_manager.get_weather_icon(
-                        WEATHER_ICON_MAINTAG,
-                        WEATHER_ICON_POSITION,
-                        WEATHER_ICON_TAG,
-                    ),
-                )
-                log.info("Success!")
-            except Exception as exception:
-                log.error(f"Fail! {str(exception)}")
+            log.info("Success!")
+            log.info("Putting weather stamp...")
+            draw_stamp(
+                target_filename,
+                weather,
+                self.config.get("units"),
+                StampSettings.from_config(self.config),
+            )
+            log.info("Success!")
+        except Exception as exception:
+            log.error(f"Fail! {exception}")
 
     config = None
     photo_index = None
@@ -819,8 +793,6 @@ class EPiframe:
     interval_manager = None
     database_manager = None
     users_manager = None
-    weather_manager = None
-    weather_stamp_manager = None
 
 
 if __name__ == "__main__":

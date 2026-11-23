@@ -10,7 +10,7 @@ from epiframe.core import interval, schedule
 from epiframe.core.pidfile import PidFile
 from epiframe.display import hdmi
 from epiframe.display.options import DisplayType
-from modules.weathermanager import WeatherManager
+from epiframe.weather.openweather import Units
 
 
 class BackendManager:
@@ -164,7 +164,7 @@ class BackendManager:
         return self.__interval.read()
 
     def is_metric(self) -> bool:
-        return WeatherManager.is_metric(self.__config.get("units"))
+        return Units.is_metric(self.__config.get("units"))
 
     def save_interval(self, number: int):
         self.__interval.save(number)

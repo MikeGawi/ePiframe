@@ -222,3 +222,17 @@ def test_convert_command(frame: Frame) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     with Image.open(target / "photo.bmp") as image:
         assert image.size == (800, 480)
+
+
+@needs_imagemagick
+def test_weather_offline_still_shows_the_photo(frame: Frame) -> None:
+    frame.configure(show_weather="1", apikey="secret-api-key", lat="53.27", lon="7.77")
+    frame.add_photo("a.jpg", "red", 1_600_000_000)
+
+    result = frame.run("--test", env=OFFLINE)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Getting weather data..." in result.stdout
+    assert "Fail! No connection to the weather service" in result.stdout
+    assert "secret-api-key" not in result.stdout + result.stderr
+    assert (frame.directory / "photo.bmp").exists()
