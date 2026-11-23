@@ -19,6 +19,8 @@ dependencies = [
     "flask>=3.1",
     "flask-login>=0.6.3",
     "flask-wtf>=1.2",
+    # Google Drive source: service account authentication (AuthorizedSession on requests).
+    "google-auth[requests]>=2.40",
     "pillow>=11",
     "pytelegrambotapi>=4.30",
     "requests>=2.32",
@@ -26,6 +28,9 @@ dependencies = [
     "wtforms>=3.3",
     # Direct dependency only so that ARM gets it from piwheels (needed by the Pimoroni inky library).
     "numpy>=1.26",
+    # Direct dependencies only so that ARM gets them from piwheels (needed by google-auth).
+    "cryptography>=46",
+    "cffi>=2",
     # SPI access for e-Paper displays, only needed (and buildable) on the Raspberry Pi.
     "spidev>=3.6; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
 ]
@@ -68,6 +73,8 @@ url = "https://www.piwheels.org/simple"
 explicit = true
 
 [tool.uv.sources]
+cffi = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+cryptography = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 numpy = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 pillow = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 spidev = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }

@@ -151,3 +151,6 @@ dmypy.json
 /junit.xml
 /badges/
 /logs/
+
+# Google Drive service account key
+/drive_key.json

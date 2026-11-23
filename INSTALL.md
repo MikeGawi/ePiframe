@@ -10,6 +10,7 @@
 			* [Cloud sync](#cloud-sync)
 			* [Other sources](#other-sources)
 			* [Pre-process photos](#pre-process-photos)
+	  	* [Google Drive Source](#google-drive-source)
       	* [Weather Stamp](#weather-stamp)
       	* [Telegram Bot](#telegram-bot)
       	* [Web User Interface](#web-user-interface)
@@ -151,6 +152,30 @@ It is possible to download photos to a local storage (and use them by ePiframe) 
 ### Pre-process photos
 
 If you want photos to be pre-processed and ready for display in the frame (to save resources during conversion or to convert them earlier, on another device), this is possible using the `--convert` option command in [ePiframe commands](#command-line) and disabling conversion in [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) by switching the `convert` flag off.
+
+## Google Drive Source
+
+ePiframe can show photos from Google Drive folders (and their subfolders). The frame signs in as a Google Cloud *service account* with read-only access: there is no browser sign-in and no token that expires. Only the list of photos is kept on the frame; a photo is downloaded when it is about to be shown.
+
+**_NOTE_** - Google Drive can be the only photo source or one of several (e.g. with the Local Source). When the frame is offline, photos found before are still listed, but only local ones can be shown.
+
+The easiest way is the setup tool, which shows the steps below with direct links, stores the key file (readable only by its owner), checks that every folder can be read (explaining what is wrong if not) and saves the configuration:
+
+```
+./ePiframe.py --setup-drive
+```
+
+Manual setup:
+
+1. In the [Google Cloud console](https://console.cloud.google.com/) create a project (or use an existing one) and enable the **Google Drive API** for it.
+2. In *IAM & Admin → Service Accounts* create a service account (no roles needed), open it, go to *Keys → Add key → Create new key → JSON* and download the key file.
+3. Copy the key file to the frame, e.g. as `drive_key.json` in the ePiframe folder. Keep it private: anyone with this file can read the folders shared with the service account.
+4. In Google Drive share each photo folder with the service account e-mail (`...@<project>.iam.gserviceaccount.com`, it is in the key file as `client_email`) with *Viewer* access.
+5. In [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) set `use_drive=1`, `drive_folders` to the folder link (or ID; several folders separated with commas) and `drive_key_file` to the key file path, then run `./ePiframe.py --check-config`.
+
+Photos are recognized by their type (or extension, for RAW files) and sorted/filtered by the time they were taken (EXIF), or by their modification time when it is unknown. Changes in Drive are picked up incrementally (Drive Changes API), so a large library is not listed again on every refresh. The [interval multiplication](#configuration) hot word can be put in the file description in Drive (*File information → Details → Description*).
+
+**_NOTE_** - Google Photos doesn't sync to Google Drive anymore, so upload the photos straight to the shared Drive folder.
 
 ## Weather Stamp
 
@@ -349,6 +374,7 @@ Syntax: ```ePiframe.py [option]```
 * ```--convert [source file] [target file or location]``` - converts the photo ```source file``` to target file or under specified location with current ePiframe configuration. Just convert, no thumbnails, no pre file. Used just to convert file to ePiframe quality.
 * ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
 * ```--users``` - manage users for the WebUI: add, change passwords, delete, etc.
+* ```--setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
 * ```--help``` - show help
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.

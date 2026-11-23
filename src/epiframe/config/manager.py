@@ -11,6 +11,7 @@ from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
 from epiframe.core.network import validate_ip
 from epiframe.photos import selection
+from epiframe.sources import drive
 from epiframe.sources.local import create_directory
 from modules.convertmanager import ConvertManager
 from modules.displaymanager import DisplayManager
@@ -42,6 +43,16 @@ def _source_settings() -> list[ConfigProperty]:
             convert=create_directory,
         ),
         ConfigProperty("local_subfolders", BOOLEAN, dependency="use_local"),
+        ConfigProperty("use_drive", BOOLEAN),
+        ConfigProperty(
+            "drive_folders",
+            PropertyType.STRING_LIST,
+            dependency="use_drive",
+            delimiter=",",
+            check=drive.folder_ids,
+        ),
+        ConfigProperty("drive_key_file", PropertyType.FILE, dependency="use_drive"),
+        ConfigProperty("drive_subfolders", BOOLEAN, dependency="use_drive"),
     ]
 
 

@@ -16,6 +16,8 @@ from epiframe.core.pidfile import PidFile, process_command
 from epiframe.photos.index import PhotoIndex
 from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection
+from epiframe.sources.drive import DRIVE_SOURCE, DriveClient, DriveSource, folder_ids
+from epiframe.sources.drive_setup_console import ConsoleSetup
 from epiframe.sources.local import LOCAL_SOURCE, LocalSource
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
@@ -57,6 +59,7 @@ class EPiframe:
         self.config = self.load_config()
 
         setup_logging(self.config.get("log_files"))
+        self.start_drive_setup()
         log.info("Verifying configuration...")
         self.verify_config()
 
@@ -132,10 +135,36 @@ class EPiframe:
         return self.photo_index.next_photo(self.selection, after=failed)
 
     def get_next_photo(self, photo) -> tuple:
+        self.photo_description = None
+        if photo.source == DRIVE_SOURCE:
+            return self.download_drive_photo(photo)
         returned_value = HTTPStatus.OK
         plugin_with_source = self.get_plugin_with_source(photo)
         filename = self.get_filename(photo, plugin_with_source, returned_value)
         return filename, returned_value
+
+    def download_drive_photo(self, photo: Photo) -> tuple:
+        try:
+            download = self.get_drive_source().download(
+                photo,
+                self.config.get("photo_convert_path"),
+                self.config.get("photo_download_name"),
+            )
+        except Exception as exception:
+            return "", str(exception)
+        # the Drive description holds the interval hot word
+        self.photo_description = download.description
+        return str(download.path), HTTPStatus.OK
+
+    def get_drive_source(self) -> DriveSource:
+        if not self.drive_source:
+            self.drive_source = DriveSource(
+                DriveClient.from_key_file(self.config.get("drive_key_file")),
+                folder_ids(self.config.get("drive_folders")),
+                bool(self.config.getint("drive_subfolders")),
+                EXTENSIONS,
+            )
+        return self.drive_source
 
     def get_filename(
         self, photo: Photo, plugin_with_source: PluginBase, returned_value
@@ -213,6 +242,9 @@ class EPiframe:
         if bool(self.config.getint("use_local")):
             self.update_local_source()
             sources.append(LOCAL_SOURCE)
+        if bool(self.config.getint("use_drive")):
+            self.update_drive_source()
+            sources.append(DRIVE_SOURCE)
         for plugin in self.plugins_manager.plugin_source():
             self.update_plugin_source(plugin)
             sources.append(plugin.SOURCE)
@@ -232,8 +264,10 @@ class EPiframe:
             self.test_display()
 
     def check_all_sources(self):
-        if not bool(self.config.getint("use_local")) and not (
-            self.plugins_manager.plugin_source()
+        if (
+            not bool(self.config.getint("use_local"))
+            and not bool(self.config.getint("use_drive"))
+            and not self.plugins_manager.plugin_source()
         ):
             log.info("No photo sources picked! Check the configuration!")
             raise Exception("No photo sources picked! Check the configuration!")
@@ -250,6 +284,20 @@ class EPiframe:
             f"Success! {result.photos} photos, {result.scanned} of {result.folders} "
             f"folders read ({scan})"
         )
+
+    def update_drive_source(self):
+        try:
+            source = self.get_drive_source()
+            log.info(
+                f"Getting data from Google Drive source (as {source.drive.account})..."
+            )
+            result = source.sync(self.photo_index)
+        except Exception as exception:
+            # e.g. no network: the photos found before are still shown
+            log.error(f"Error getting data from Google Drive source: {exception}")
+            return
+        scan = "full listing" if result.full else f"{result.changes} changes"
+        log.info(f"Success! {result.photos} photos ({scan})")
 
     def update_plugin_source(self, plugin: PluginBase):
         try:
@@ -338,6 +386,11 @@ class EPiframe:
             self.users_manager.manage()
             sys.exit(1)
 
+    def start_drive_setup(self):
+        # before the verification: an unfinished Drive setup must not block it
+        if self.check_arguments("--setup-drive"):
+            sys.exit(ConsoleSetup(self.config).run())
+
     def check_config(self):
         if self.check_arguments("--check-config"):
             sys.exit(0)
@@ -363,6 +416,9 @@ class EPiframe:
             )
             print("--no-skip		like --test but is not skipping to another photo")
             print("--users			manage users")
+            print(
+                "--setup-drive		set up the Google Drive source (service account)"
+            )
             print("--help			this help")
 
             sys.exit(0)
@@ -456,9 +512,11 @@ class EPiframe:
     def process_interval(self, filename, photo):
         try:
             if not self.check_arguments("--no-skip"):
-                _, comment = ConvertManager().get_image_comment(
-                    self.config.get("convert_bin_path"), filename
-                )
+                comment = self.photo_description
+                if not comment:
+                    _, comment = ConvertManager().get_image_comment(
+                        self.config.get("convert_bin_path"), filename
+                    )
                 self.interval_manager.save_from_description(
                     comment,
                     self.config.get("interval_mult_hotword"),
@@ -760,6 +818,8 @@ class EPiframe:
 
     config = None
     photo_index = None
+    drive_source = None
+    photo_description = None
     selection = None
     plugins_manager = None
     pid_manager = None
