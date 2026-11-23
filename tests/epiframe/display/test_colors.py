@@ -10,13 +10,20 @@ IMAGES = recorded_images()
 SECOND = {"BW+Red": colors.RED, "BW+Yellow": colors.YELLOW}
 
 
-def test_palette_image_pads_with_black() -> None:
+def test_palette_image_has_only_the_colors() -> None:
     palette = colors.palette_image([colors.WHITE, colors.RED]).getpalette()
 
-    assert palette is not None
-    assert palette[:6] == [255, 255, 255, 255, 0, 0]
-    assert len(palette) == 3 * colors.PALETTE_SIZE
-    assert set(palette[6:]) == {0}
+    assert palette == [255, 255, 255, 255, 0, 0]
+
+
+def test_quantize_never_picks_a_color_outside_the_palette() -> None:
+    # no pure black in the palette: dark pixels go to the darkest color
+    image = Image.new("RGB", (2, 1))
+    image.putdata([(0, 0, 0), (250, 250, 250)])
+
+    quantized = colors.quantize(image, [(255, 255, 255), (57, 48, 57)])
+
+    assert [quantized.getpixel((x, 0)) for x in range(2)] == [1, 0]
 
 
 def test_quantize_uses_palette_indexes() -> None:

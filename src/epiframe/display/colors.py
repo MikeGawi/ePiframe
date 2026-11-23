@@ -13,14 +13,15 @@ BLACK: Color = (0, 0, 0)
 RED: Color = (255, 0, 0)
 YELLOW: Color = (255, 255, 0)
 
-PALETTE_SIZE = 256
-
 
 def palette_image(colors: Sequence[Color]) -> Image.Image:
-    """Return a ``P`` image whose palette starts with ``colors`` (rest black)."""
-    palette = list(chain.from_iterable(colors)) + [0, 0, 0] * (
-        PALETTE_SIZE - len(colors)
-    )
+    """Return a ``P`` image whose palette is exactly ``colors``.
+
+    1.x padded the palette to 256 colors with black: harmless while the palette
+    has pure black, but with a blended palette the padding black was chosen for
+    dark pixels (an index the display doesn't have).
+    """
+    palette = list(chain.from_iterable(colors))
     image = Image.new("P", (1, 1))
     image.putpalette(palette)
     return image
