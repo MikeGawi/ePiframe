@@ -58,6 +58,21 @@ jobs:
             junit.xml
             coverage.xml
 
+  smoke:
+    name: smoke tests (ePiframe processes, ImageMagick, WebUI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          # Raspberry Pi OS Bookworm
+          python-version: "3.11"
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends imagemagick
+      - run: uv sync --locked
+      - run: uv run --frozen pytest -m smoke
+
   badges:
     name: Publish badges
     if: ${{ !cancelled() && github.event_name == 'push' }}
