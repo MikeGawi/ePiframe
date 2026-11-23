@@ -23,6 +23,8 @@ from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.core.media_types import EXTENSIONS, MIME_PREFIX, TYPE_TO_EXTENSION
 from modules.base.pluginbase import PluginBase
 from epiframe.config.manager import ConfigManager
+from epiframe.display.factory import create_display
+from epiframe.display.options import DisplayType
 from epiframe.display.system import spi_enabled
 from epiframe.processing.imagemagick import (
     ConvertSettings,
@@ -31,7 +33,6 @@ from epiframe.processing.imagemagick import (
     Thumbnails,
 )
 from modules.databasemanager import DatabaseManager
-from modules.displaymanager import DisplayManager
 from modules.pluginsmanager import PluginsManager
 from modules.usersmanager import USERS_ACTIONS_TAG, UsersManager
 from modules.weathermanager import (
@@ -353,7 +354,7 @@ class EPiframe:
     def check_system(self):
         if not self.check_multiple_arguments(
             ["--test", "--test-convert", "--convert", "--no-skip"]
-        ) and not DisplayManager.is_hdmi(self.config.get("display_type")):
+        ) and not DisplayType.is_hdmi(self.config.get("display_type")):
             self.process_check_system()
 
     def process_check_system(self):
@@ -547,9 +548,8 @@ class EPiframe:
 
     def send_to_display(self, target_filename: str):
         log.info("Sending to display...")
-        display_manager = DisplayManager(self.config)
         try:
-            display_manager.show_image(target_filename)
+            create_display(self.config).show(target_filename)
         except Exception as exception:
             log.error(f"Error sending photo to display: {exception}")
             raise
@@ -654,9 +654,7 @@ class EPiframe:
             target_filename = file
         if not os.path.exists(target_filename):
             raise Exception(f"No file: {target_filename}!")
-        log.info("Sending to display...")
-        self.display_manager = DisplayManager(self.config)
-        self.show_image(target_filename)
+        self.send_to_display(target_filename)
 
     @staticmethod
     def get_next_file():
@@ -668,13 +666,6 @@ class EPiframe:
     @staticmethod
     def get_files():
         return (element for element in sys.argv[1:] if "--" not in element)
-
-    def show_image(self, target_filename: str):
-        try:
-            self.display_manager.show_image(target_filename)
-        except Exception as exception:
-            log.error(f"Error sending photo to display: {exception}")
-            raise
 
     def convert(self, filename: str, target_filename: str, photo, thumbs: bool = True):
         return_value = False
@@ -707,7 +698,7 @@ class EPiframe:
                 target,
                 ConvertSettings.from_config(
                     self.config,
-                    DisplayManager.is_hdmi(self.config.get("display_type")),
+                    DisplayType.is_hdmi(self.config.get("display_type")),
                 ),
                 Thumbnails.from_config(self.config) if thumbs else None,
             )
@@ -825,7 +816,6 @@ class EPiframe:
     selection = None
     plugins_manager = None
     pid_manager = None
-    display_manager = None
     interval_manager = None
     database_manager = None
     users_manager = None

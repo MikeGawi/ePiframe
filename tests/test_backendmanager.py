@@ -8,6 +8,7 @@ from epiframe.config.paths import CONFIG_FILE, CONFIG_FILE_DEFAULT
 from epiframe.config import manager as configmanager
 from epiframe.core import interval as intervalmanager
 from epiframe.core import schedule as timermanager
+from epiframe.display import hdmi
 from modules.backendmanager import BackendManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
@@ -321,89 +322,41 @@ def test_start_system_command():
     assert output == ["command"]
 
 
-def test_get_display_power_on():
-    with patch.object(os, "popen", mocked_system), Capturing() as output:
-        MockRead.set("display_power=1")
-        assert BackendManager.get_display_power() == "1"
-
-    assert output == ["sudo vcgencmd display_power  2> /dev/null"]
-
-
-def test_get_display_power_off():
-    with patch.object(os, "popen", mocked_system), Capturing() as output:
-        MockRead.set("display_power=0")
-        assert BackendManager.get_display_power() == "0"
-
-    assert output == ["sudo vcgencmd display_power  2> /dev/null"]
+@pytest.mark.parametrize("state, expected", [(True, "1"), (False, "0"), (None, "0")])
+def test_get_display_power(state, expected):
+    manager = get_backend_manager()
+    with patch.object(hdmi.HdmiPower, "state", return_value=state):
+        assert manager.get_display_power() == expected
 
 
-def test_get_display_power_none():
-    with patch.object(os, "popen", mocked_system), Capturing() as output:
-        MockRead.set("")
-        assert BackendManager.get_display_power() == "0"
+@pytest.mark.parametrize("on_off", [True, False])
+def test_display_power(on_off):
+    manager = get_backend_manager()
+    with patch.object(hdmi.HdmiPower, "set") as power:
+        manager.display_power(on_off=on_off)
 
-    assert output == ["sudo vcgencmd display_power  2> /dev/null"]
-
-
-def test_display_power_on():
-    with patch.object(os, "popen", mocked_system), Capturing() as output:
-        MockRead.set("")
-        BackendManager.display_power(on_off=True)
-
-    assert output == ["sudo vcgencmd display_power 1 2> /dev/null"]
+    power.assert_called_once_with(on_off)
 
 
-def test_display_power_off():
-    with patch.object(os, "popen", mocked_system), Capturing() as output:
-        MockRead.set("")
-        BackendManager.display_power(on_off=False)
-
-    assert output == ["sudo vcgencmd display_power 0 2> /dev/null"]
-
-
-def test_display_power_config_spi():
+@pytest.mark.parametrize(
+    "display_type, control, calls",
+    [("SPI", "1", []), ("HDMI", "0", []), ("HDMI", "1", [True]), ("hdmi", "1", [True])],
+)
+def test_display_power_config(display_type, control, calls):
     with (
-        patch.object(configmanager, "ConfigManager", Config) as config,
+        patch.object(configmanager, "ConfigManager", Config),
         patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
         patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
+        patch.dict(
+            Config.settings,
+            {"display_type": display_type, "control_display_power": control},
+        ),
     ):
         manager = BackendManager(event_mock, ".")
-        config.set("display_type", "SPI")
-        with patch.object(os, "popen", mocked_system), Capturing() as output:
-            MockRead.set("")
+        with patch.object(hdmi.HdmiPower, "set") as power:
             manager.display_power_config(on_off=True)
 
-    assert output == []
-
-
-def test_display_power_config_on():
-    with (
-        patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
-    ):
-        manager = BackendManager(event_mock, ".")
-        config.set("display_type", "HDMI")
-        with patch.object(os, "popen", mocked_system), Capturing() as output:
-            MockRead.set("")
-            manager.display_power_config(on_off=True)
-
-    assert output == ["sudo vcgencmd display_power 1 2> /dev/null"]
-
-
-def test_display_power_config_off():
-    with (
-        patch.object(configmanager, "ConfigManager", Config) as config,
-        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
-    ):
-        manager = BackendManager(event_mock, ".")
-        config.set("display_type", "HDMI")
-        with patch.object(os, "popen", mocked_system), Capturing() as output:
-            MockRead.set("")
-            manager.display_power_config(on_off=False)
-
-    assert output == ["sudo vcgencmd display_power 0 2> /dev/null"]
+    assert [call.args[0] for call in power.call_args_list] == calls
 
 
 @pytest.mark.parametrize(

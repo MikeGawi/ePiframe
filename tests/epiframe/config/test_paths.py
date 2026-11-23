@@ -26,7 +26,7 @@ def test_default_config_file_is_package_data() -> None:
 def test_legacy_layout_without_variables(
     monkeypatch: pytest.MonkeyPatch, value: str | None
 ) -> None:
-    for variable in (paths.CONFIG_DIR_ENV, paths.DATA_DIR_ENV):
+    for variable in (paths.CONFIG_DIR_ENV, paths.DATA_DIR_ENV, paths.LIBRARY_DIR_ENV):
         if value is None:
             monkeypatch.delenv(variable, raising=False)
         else:
@@ -35,13 +35,17 @@ def test_legacy_layout_without_variables(
 
     assert paths.CONFIG_FILE == "config.cfg"
     assert paths.USERS_DB_FILE == "misc/users.db"
+    # lib/ of the ePiframe directory, wherever the process runs
+    assert str(Path(__file__).resolve().parents[3] / "lib") == paths.LIBRARY_DIR
 
 
 @pytest.mark.usefixtures("reload_paths")
 def test_directories_from_variables(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(paths.CONFIG_DIR_ENV, "/etc/epiframe")
     monkeypatch.setenv(paths.DATA_DIR_ENV, "/var/lib/epiframe")
+    monkeypatch.setenv(paths.LIBRARY_DIR_ENV, "/opt/epiframe/lib")
     importlib.reload(paths)
 
     assert paths.CONFIG_FILE == "/etc/epiframe/config.cfg"
     assert paths.USERS_DB_FILE == "/var/lib/epiframe/users.db"
+    assert paths.LIBRARY_DIR == "/opt/epiframe/lib"
