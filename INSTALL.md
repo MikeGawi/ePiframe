@@ -193,7 +193,7 @@ To get the needed values:
 * Enable ```[Weather]->show_weather=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file and set other weather stamp parameters like size, position and color
 * Now the weather stamp will appear on the photo after next frame update
 
-**_NOTE_** - To troubleshoot OpenWeather API key issues and connectivity check the [tools/testWeatherAPI.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testWeatherAPI.py) tool.
+**_NOTE_** - ```./ePiframe.py --test-weather``` [command](#command-line) checks the API key and the coordinates with the same request the frame makes (also before they are in the configuration) and offers to save them and enable the weather stamp. A new OpenWeather key can take a few hours to become active.
 
 ### Telegram Bot
 
@@ -206,27 +206,30 @@ To get the needed values:
 * Talk to [Bot Father](https://telegram.me/BotFather) - father of all bots
 * Create a new bot with ```/newbot``` command, set name ```ePiframeBot``` and username ```ePiframeBot``` (add some numbers at the end to make it unique or use other username)
 * BotFather will present _HTTP API token_, copy it and put in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file under ```[Telegram bot]->token```
-* You can set other bot options with _BotFather_ (i.e. description, image, if bot can be in group, etc.) but set up the possible commands by ```/mybots``` command, choose the _ePiframeBot_, then click _Edit Bot->Edit Commands_ and paste:
-	```
-	start - Show help
-	help - Show help
-	ping - Ping frame
-	echo - Say # text
-	status - Show frame status
-	reboot - Reboot frame
-	when - Show next update time
-	next - Trigger frame update
-	current - Show current photo
-	original - Show current original photo
-	longer - Display current photo # times longer
-	```
-	Now the commands will be visible in the Telegram App as a list.
-* Enable ```[Telegram bot]->use_telebot=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file
-* [Restart](#service-control) ePiframe service and from now on sending commands to ePiframe bot (search in Telegram App for username set in _BotFather_) will control the frame
+* You can set other bot options with _BotFather_ (i.e. description, image, if bot can be in group, etc.). The list of commands is registered by ePiframe itself when the bot starts and appears in the Telegram App menu
+* Run ```./ePiframe.py --test-telegram``` [command](#command-line) and enter the token: it checks the token and the connection, then search in Telegram App for the username set in _BotFather_ and write anything to the bot (from each chat that should control the frame, e.g. a private chat and a group). The bot answers with the id of the chat. Stop the test with Ctrl+C and let it save the token and the chat ids (it also enables the bot)
+* Or do it by hand: put the token in ```[Telegram bot]->token```, enable ```[Telegram bot]->use_telebot=1``` and put the chat ids in ```[Telegram bot]->chat_id``` (comma separated) in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Without chat ids the running bot answers every chat with its id
+* [Restart](#service-control) ePiframe service and from now on the commands sent from the allowed chats control the frame
 
-**_NOTE_** - To troubleshoot Telegram bot token key issues and connectivity check the [tools/testTelegramBot.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testTelegramBot.py) tool.
+The bot understands these commands:
+```
+start - Show help
+help - Show help
+ping - Ping frame
+echo - Say # text
+status - Show frame status
+reboot - Reboot frame
+when - Show next update time
+next - Trigger frame update
+current - Show current photo
+original - Show current original photo
+longer - Display current photo # times longer
+```
+A photo sent to the bot is displayed on the frame. Send it as a file to keep the original quality (Telegram compresses photos).
 
-**_❗ IMPORTANT ❗_** - You can limit number of users/groups that can control the ePiframe bot (all bots are public and accessible by others!) by setting ```[Telegram bot]->chat_id``` list in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) - that will allow only the defined chat ids to control bot. To get chat id use the tool above.
+**_NOTE_** - ```./ePiframe.py --check-config``` checks the bot token and the connection to Telegram; ```./ePiframe.py --test-telegram``` also shows the chat ids. Stop the ePiframe service before the test when the bot is already enabled: Telegram allows only one connection per bot.
+
+**_❗ IMPORTANT ❗_** - All bots are public and anybody can find them, so only the chats listed in ```[Telegram bot]->chat_id``` can control the frame. With an empty list nobody can (the bot only answers with the chat id); this is a change from ePiframe 1.x, where an empty list allowed everybody.
 
 ### Web User Interface
 
@@ -378,6 +381,8 @@ Syntax: ```ePiframe.py [option]```
 * ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
 * ```--users``` - manage users for the WebUI: add, change passwords, delete, etc.
 * ```--setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
+* ```--test-telegram``` - test the [Telegram Bot](#telegram-bot) token and connection; the bot answers every chat that writes to it with the chat id; offers to save the token and the chat ids
+* ```--test-weather``` - test the [Weather Stamp](#weather-stamp) OpenWeather API key and coordinates; offers to save them
 * ```--help``` - show help
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.

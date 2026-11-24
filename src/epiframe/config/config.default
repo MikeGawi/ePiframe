@@ -405,11 +405,11 @@ use_telebot=0
 # Default: empty
 token=
 
-# Chat ids to talk with.
-; Set the chat ids (take them from Telegram API) to narrow the chats that can control Telegram bot
-; Multiple allowed - comma separated
+# Chat ids allowed to control the frame (comma separated).
+# Write anything to the bot and it answers with the id of the chat to add here.
+; Only these chats can control the frame - Telegram bots are public and anybody can find them.
 # Example: 123456789,-987654321.
-# Default: empty (everyone can control bot)
+# Default: empty (nobody can control the bot)
 chat_id=
 
 [Web interface]

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from epiframe.users.console import USERS_ACTIONS_TAG, UsersConsole, read_password
+from epiframe.users.console import USERS_ACTIONS_TAG, UsersConsole
 from epiframe.users.store import Users
 from tests.epiframe.users.conftest import FAST_METHOD, LEGACY_PASSWORDS
 from tests.helpers.console import Answer, Console
@@ -132,14 +132,3 @@ def test_1x_user_logs_in(legacy_database: Path) -> None:
 
     assert "YOU HAVE LOGGED IN SUCCESSFULLY!" in console.lines
     assert users.by_username("alice").password_hash.startswith(FAST_METHOD)  # type: ignore[union-attr]
-
-
-@pytest.mark.parametrize(("terminal", "reader"), [(True, "getpass"), (False, "input")])
-def test_read_password(
-    monkeypatch: pytest.MonkeyPatch, terminal: bool, reader: str
-) -> None:
-    monkeypatch.setattr("sys.stdin.isatty", lambda: terminal)
-    monkeypatch.setattr("getpass.getpass", lambda _: "getpass")
-    monkeypatch.setattr("builtins.input", lambda _: "input")
-
-    assert read_password("Password: ") == reader

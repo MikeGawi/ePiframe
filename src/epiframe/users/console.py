@@ -3,15 +3,9 @@
 Same menu as 1.x; Ctrl+C or the end of the input leave it cleanly.
 """
 
-import getpass
-import sys
-from collections.abc import Callable
-
+from epiframe.core.console import Ask, Say, read_secret
 from epiframe.core.logs import get_logger
 from epiframe.users.store import UserError, Users
-
-Ask = Callable[[str], str]
-Say = Callable[[str], None]
 
 USERS_ACTIONS_TAG = "--------Users management: "
 TITLES = (
@@ -35,23 +29,14 @@ ANSWERS = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
 log = get_logger("users")
 
 
-def read_password(prompt: str) -> str:
-    """Hidden input on a terminal; plain ``input`` when the input is piped.
-
-    ``getpass`` reads ``/dev/tty`` even when stdin is a pipe (installer, tests),
-    so a piped run would wait for the keyboard.
-    """
-    return getpass.getpass(prompt) if sys.stdin.isatty() else input(prompt)
-
-
 class UsersConsole:
-    """The menu (``ask``, ``ask_password``, ``say``: input, read_password, print)."""
+    """The menu (``ask``, ``ask_password``, ``say``: input, read_secret, print)."""
 
     def __init__(
         self,
         users: Users,
         ask: Ask = input,
-        ask_password: Ask = read_password,
+        ask_password: Ask = read_secret,
         say: Say = print,
     ):
         self.users = users
