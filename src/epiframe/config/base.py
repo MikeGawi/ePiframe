@@ -109,6 +109,10 @@ class ConfigBase(ABC):
         if self._convert() or changed:
             self.save()
 
+    def legacy_entries(self) -> Sequence[LegacyEntry]:
+        """Renamed entries (``LEGACY``; overridable for configs built at runtime)."""
+        return self.LEGACY
+
     @abstractmethod
     def load_settings(self) -> list[ConfigProperty]:
         """Return the properties of the entries that need validation.
@@ -169,7 +173,7 @@ class ConfigBase(ABC):
 
     def _apply_legacy(self, values: dict[str, str]) -> dict[str, str]:
         migrated: dict[str, str] = {}
-        for entry in self.LEGACY:
+        for entry in self.legacy_entries():
             if entry.old in values and entry.new not in values:
                 values[entry.new] = entry.convert(values[entry.old])
                 migrated[entry.old] = entry.new

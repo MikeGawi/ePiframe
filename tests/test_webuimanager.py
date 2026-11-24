@@ -621,7 +621,7 @@ def test_settings_pages(client_no_login):
 
 def test_plugin_settings_pages(client_no_login):
     plugins = get_plugins_manager()
-    for plugin in plugins.get_plugins():
+    for plugin in plugins.plugins:
         for section in plugin.config.get_sections():
             response = client_no_login.get(
                 f"/plugins?plugin={plugin.name.title()}&variable={section}"

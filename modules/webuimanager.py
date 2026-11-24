@@ -168,7 +168,7 @@ class WebUIManager:
         ]
         for site in self.WEBSITES:
             self.app.add_url_rule(site.url, methods=site.methods, view_func=site.func)
-        for plugin in self.__backend.get_plugins().plugin_website():
+        for plugin in self.__backend.get_plugins().with_hook("add_website"):
             for website in plugin.add_website(
                 self, self.__users_manager, self.__backend
             ):
@@ -185,7 +185,7 @@ class WebUIManager:
             self.SiteBind("/api/display_power=", self.display_control),
             self.SiteBind("/api/display_power=<action>", self.display_control),
         ]
-        for plugin in self.__backend.get_plugins().plugin_api():
+        for plugin in self.__backend.get_plugins().with_hook("extend_api"):
             self.API += plugin.extend_api(self, self.__users_manager, self.__backend)
         for api_site in self.API:
             self.app.add_url_rule(
@@ -216,7 +216,7 @@ class WebUIManager:
                 self.__REBOOT_ACT,
             ),
         }
-        for plugin in self.__backend.get_plugins().plugin_action():
+        for plugin in self.__backend.get_plugins().with_hook("add_action"):
             self.ACTIONS = self.merge_dicts(
                 self.ACTIONS,
                 plugin.add_action(self, self.__users_manager, self.__backend),
@@ -756,7 +756,7 @@ class WebUIManager:
     # @app.route('/plugins', self.plugins, methods=['GET', 'POST'])
     @login_required
     def plugins(self):
-        if self.__backend.get_plugins().get_plugins():
+        if self.__backend.get_plugins().plugins:
             if not request.args.get("plugin") == self.__ORDER_LABEL:
                 curr_plugin = self.__get_current_plugin()
                 config = curr_plugin.config
@@ -825,11 +825,11 @@ class WebUIManager:
         return (
             [
                 plugin
-                for plugin in self.__backend.get_plugins().get_plugins()
+                for plugin in self.__backend.get_plugins().plugins
                 if plugin.name == request.args.get("plugin")
             ][0]
             if request.args.get("plugin")
-            else self.__backend.get_plugins().get_plugins()[0]
+            else self.__backend.get_plugins().plugins[0]
         )
 
     def __process_order(self, order: list) -> Response:
@@ -856,7 +856,7 @@ class WebUIManager:
             order="",
             plugin_name=curr_plugin.name,
             sett_name=settings,
-            plugins=[x.name for x in self.__backend.get_plugins().get_plugins()]
+            plugins=[x.name for x in self.__backend.get_plugins().plugins]
             + [self.__ORDER_LABEL],
             form=self.__build_settings(config, properties),
             navlabels=config.get_sections(),
@@ -871,9 +871,7 @@ class WebUIManager:
             order=order,
             plugin_name=self.__ORDER_LABEL,
             sett_name="",
-            plugins=[
-                plugin.name for plugin in self.__backend.get_plugins().get_plugins()
-            ]
+            plugins=[plugin.name for plugin in self.__backend.get_plugins().plugins]
             + [self.__ORDER_LABEL],
             form=None,
             navlabels="",

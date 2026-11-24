@@ -1,8 +1,8 @@
 import glob
 import os
 import shutil
-from unittest import mock
-from unittest.mock import patch, PropertyMock
+
+from unittest.mock import patch
 import pytest
 import requests_mock
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
@@ -10,7 +10,6 @@ from epiframe.config import manager as configmanager
 from epiframe.core import interval as intervalmanager
 from epiframe.core import schedule as timermanager
 from modules.backendmanager import BackendManager
-from modules.pluginsmanager import PluginsManager
 from modules.webuimanager import WebUIManager
 from tests.helpers.config import Config
 from tests.helpers.helpers import remove_file
@@ -19,7 +18,7 @@ from tests.helpers.backend_doubles import (
     MockedTimerManager,
     event_mock,
 )
-from tests.helpers.plugins import ORDER_FILE
+from tests.helpers.plugins import ORDER_FILE, plugin_manager_for_tests
 
 
 @pytest.fixture(scope="module")
@@ -35,18 +34,7 @@ def app_no_login():
     with (
         patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
         patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
-        mock.patch.object(
-            PluginsManager,
-            "_PluginsManager__PLUGINS_DIR",
-            return_value="tests/plugins/",
-            new_callable=PropertyMock,
-        ),
-        mock.patch.object(
-            PluginsManager,
-            "_PluginsManager__ORDER_FILE",
-            return_value=ORDER_FILE,
-            new_callable=PropertyMock,
-        ),
+        patch("modules.backendmanager.PluginManager", plugin_manager_for_tests),
     ):
         backend = BackendManager(event_mock, "")
         web_manager = WebUIManager(backend)
