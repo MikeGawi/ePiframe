@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from epiframe.core import system
-from epiframe.core.system import Memory, Usage
+from epiframe.core.system import CpuTimes, Memory, Usage
 
 MEMINFO = """\
 MemTotal:        3906000 kB
@@ -89,6 +89,49 @@ def test_load_average_invalid(proc: Path, content: str) -> None:
 
 def test_load_average_missing(proc: Path) -> None:
     assert system.load_average(proc) is None
+
+
+STAT = """\
+cpu  100 20 30 400 50 6 4 10 0 0
+cpu0 50 10 15 200 25 3 2 5 0 0
+intr 12345
+"""
+
+
+def test_cpu_times(proc: Path) -> None:
+    (proc / "stat").write_text(STAT)
+
+    # busy: user nice system irq softirq steal; idle + iowait are not busy
+    assert system.cpu_times(proc) == CpuTimes(busy=170, total=620)
+
+
+@pytest.mark.parametrize("content", ["", "intr 1 2 3\n", "cpu a b c d e f g h\n"])
+def test_cpu_times_invalid(proc: Path, content: str) -> None:
+    (proc / "stat").write_text(content)
+
+    assert system.cpu_times(proc) is None
+
+
+def test_cpu_times_missing(proc: Path) -> None:
+    assert system.cpu_times(proc) is None
+
+
+def test_cpu_percent_since() -> None:
+    assert CpuTimes(150, 300).percent_since(CpuTimes(100, 200)) == 50
+    assert CpuTimes(100, 200).percent_since(CpuTimes(100, 200)) is None
+    # counters reset (another boot)
+    assert CpuTimes(10, 20).percent_since(CpuTimes(100, 200)) is None
+
+
+def test_disk_usage(tmp_path: Path) -> None:
+    usage = system.disk_usage(tmp_path)
+
+    assert usage is not None
+    assert 0 < usage.used <= usage.total
+
+
+def test_disk_usage_missing(tmp_path: Path) -> None:
+    assert system.disk_usage(tmp_path / "missing") is None
 
 
 def test_temperature(tmp_path: Path) -> None:

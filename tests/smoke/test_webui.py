@@ -5,6 +5,8 @@ import time
 
 import requests
 
+from epiframe.stats.metrics import Sampler
+from epiframe.stats.store import MetricsStore
 from tests.smoke.conftest import REPOSITORY, Frame
 
 # the service's web thread without the daemon (ePiframe_service.py kills other
@@ -39,6 +41,8 @@ def wait_for(url: str, timeout: float = 30) -> requests.Response:
 def test_webui_starts_and_serves_pages(frame: Frame) -> None:
     port = free_port()
     frame.configure(use_web="1", web_host="127.0.0.1", web_port=str(port))
+    # a sample as the service's stats thread takes it (default stats_db_file)
+    MetricsStore(frame.directory / "stats.db").add(Sampler(frame.directory).sample())
     server = subprocess.Popen(
         [sys.executable, "-c", WEB_SERVER, str(REPOSITORY)],
         cwd=frame.directory,
@@ -51,6 +55,8 @@ def test_webui_starts_and_serves_pages(frame: Frame) -> None:
         home = wait_for(f"http://127.0.0.1:{port}/")
         status = requests.get(f"http://127.0.0.1:{port}/api/get_status", timeout=5)
         settings = requests.get(f"http://127.0.0.1:{port}/settings", timeout=5)
+        stats = requests.get(f"http://127.0.0.1:{port}/api/get_stats", timeout=5)
+        stats_page = requests.get(f"http://127.0.0.1:{port}/stats", timeout=5)
     finally:
         server.terminate()
         output, _ = server.communicate(timeout=30)
@@ -62,3 +68,7 @@ def test_webui_starts_and_serves_pages(frame: Frame) -> None:
     assert status.json()["state"] == "Idle"
     assert settings.status_code == 200
     assert "Use Local" in settings.text  # first section: Sources
+    assert stats.status_code == 200
+    assert len(stats.json()["time"]) == 1
+    assert stats_page.status_code == 200
+    assert "Temperature" in stats_page.text

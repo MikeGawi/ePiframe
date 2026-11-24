@@ -135,9 +135,11 @@ def test_1x_config_is_upgraded(config_file: Path) -> None:
 
     config = ConfigManager(config_file, DEFAULT)
 
-    # the 1.x index and list files were replaced by photo_db_file (Phase 3.6)
+    # the 1.x index and list files were replaced by photo_db_file (Phase 3.6),
+    # RRDtool by stats_db_file (Phase 3.16)
     assert config.get_obsolete() == [
         *GOOGLE_PHOTOS_ENTRIES,
+        "rrdtool_bin_path",
         "photo_index_file",
         "photo_list_file",
     ]

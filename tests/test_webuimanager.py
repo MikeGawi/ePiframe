@@ -11,6 +11,7 @@ from epiframe.config.paths import CONFIG_FILE_DEFAULT
 from epiframe.core import system
 from epiframe.core.system import Memory, Usage
 from epiframe.display import hdmi
+from epiframe.stats.store import MetricsStore
 from epiframe.version import VERSION
 from epiframe.users.model import User
 from epiframe.config.manager import ConfigManager
@@ -52,6 +53,7 @@ def test_websites():
     entries = [
         ("/get_image", ["GET"], None),
         ("/get_status", ["GET"], None),
+        ("/get_stats", ["GET"], None),
         ("/_log_stream", ["GET"], None),
         ("/_upload_photo", ["POST"], None),
         ("/_tools$", ["GET"], None),
@@ -82,6 +84,7 @@ def test_api_entries():
     entries = [
         "/api/get_image",
         "/api/get_status",
+        "/api/get_stats",
         "/api/get_log",
         "/api/upload_photo",
         "/api/action=",
@@ -321,6 +324,59 @@ def test_get_status(client_no_login, url):
         assert json["update"]
 
 
+def test_get_stats_login(client):
+    response = client.get("/get_stats")
+    assert response.location == "/login?next=%2Fget_stats"
+    assert response.status_code == HTTPStatus.FOUND
+
+
+@pytest.mark.parametrize("url", ["/get_stats", "/api/get_stats"])
+def test_get_stats(app_no_config, url, tmp_path):
+    database = tmp_path / "stats.db"
+    MetricsStore(database).add({"load1": 0.5, "temperature": 50, "cpu": 7})
+    settings = {"stats_db_file": str(database), "units": "imperial"}
+
+    with patch.dict(Config.settings, settings):
+        response = app_no_config.test_client().get(
+            url, query_string={"metrics": "load1,temperature"}
+        )
+
+    assert response.status_code == HTTPStatus.OK
+    json = response.json
+    assert json["period"] == "day"
+    assert json["step"] == 10
+    assert len(json["time"]) == 1
+    assert [
+        (metric["name"], metric["unit"], metric["values"]) for metric in json["metrics"]
+    ] == [
+        ("load1", "", [0.5]),
+        ("temperature", "°F", [122.0]),
+    ]
+
+
+def test_get_stats_without_data(app_no_config, tmp_path):
+    database = tmp_path / "stats.db"
+
+    with patch.dict(Config.settings, {"stats_db_file": str(database)}):
+        json = app_no_config.test_client().get("/api/get_stats?period=year").json
+
+    assert json["period"] == "year"
+    assert json["time"] == []
+    assert all(metric["values"] == [] for metric in json["metrics"])
+    assert not database.exists()
+
+
+@pytest.mark.parametrize(
+    ("query", "error"),
+    [("period=hour", "Unknown period 'hour'"), ("metrics=x", "Unknown metrics: x")],
+)
+def test_get_stats_bad_request(client_no_login, query, error):
+    response = client_no_login.get(f"/api/get_stats?{query}")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json["error"].startswith(error)
+
+
 def test_get_status_nothing_available(client_no_login):
     with (
         patch.object(system, "memory", return_value=None),
@@ -406,6 +462,9 @@ def test_stats(client_no_login):
     response = client_no_login.post("/stats")
     assert not response.location
     assert response.status_code == HTTPStatus.OK
+    # one chart per group of metrics, one choice per period
+    assert b'<option value="load1,load5,load15" selected>Load</option>' in response.data
+    assert b'<option value="year">Year</option>' in response.data
 
 
 def test_logs(client_no_login):

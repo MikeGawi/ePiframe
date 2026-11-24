@@ -76,6 +76,47 @@ e.g.
 }
 ```
 
+## Get Statistics
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/get_stats``` | GET | <ul><li>```period``` - ```day``` (default), ```week```, ```month``` or ```year```</li><li>```metrics``` - comma separated metric names (default: all)</li></ul> |
+
+Returns the statistics gathered by the ePiframe service (when ```show_stats``` is enabled) in JSON format.
+Samples are taken every 10 seconds (written once a minute) and kept for a day; averages are kept for 10 minutes (a week),
+hours (a month) and days (a year). Periods of averages start at multiples of their length in UTC.
+
+Metrics: ```load1```, ```load5```, ```load15``` (OS load), ```cpu``` (CPU usage, %), ```memory_total```,
+```memory_used```, ```swap_total```, ```swap_used``` (MiB), ```temperature``` (Celsius or Fahrenheit according to
+units configuration), ```disk``` (usage of the disk holding the statistics database, %).
+
+**Examples:**
+* ```/api/get_stats``` - all metrics of the last day
+* ```/api/get_stats?period=week&metrics=load1,load5,load15``` - loads of the last week
+
+**Returns:**
+
+JSON format:
+* ```period``` - the period
+* ```step``` - seconds between the points
+* ```time``` - Unix times (seconds) of the points
+* ```metrics``` - list of metrics with ```name```, ```label```, ```unit``` and ```values``` (one per point, ```null``` if not measured)
+
+e.g.
+
+```
+{
+   "metrics":[
+      {"label":"Load 1 min","name":"load1","unit":"","values":[0.52,0.48,null]}
+   ],
+   "period":"day",
+   "step":10,
+   "time":[1732442400,1732442410,1732442420]
+}
+```
+
+An unknown period or metric returns HTTP status 400 with ```{"error": "<message>"}```.
+
 ## Get Log
 
 | Command | Type | Parameters |

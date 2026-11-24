@@ -25,7 +25,7 @@ echo -e '
 
 function install_apts {
 	echo -e '\n\033[0;30mInstalling system components\033[0m'
-	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="dcraw" ["RPi.GPIO"]="RPi.GPIO" ["RRDTool"]="rrdtool"\
+	declare -A apts=( ["ImageMagick"]="imagemagick" ["WebP Format"]="webp" ["RAW formats"]="dcraw" ["RPi.GPIO"]="RPi.GPIO"\
 				  ["LibAtlas"]="libatlas-base-dev" ["Python 3"]="python3" ["Pip 3"]="python3-pip" ["FBImageviewer"]="fbi")
 	for apt in "${!apts[@]}"; do
 		printf '\e[1;37m%-30s\e[m' "Installing $apt:"

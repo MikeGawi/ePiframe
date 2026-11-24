@@ -195,6 +195,7 @@ def test_settings(make_frame: MakeFrame) -> None:
         use_web="0",
         use_telebot="1",
         show_stats="0",
+        stats_db_file="data/stats.db",
     )
 
     assert frame.slide_interval == 300
@@ -207,6 +208,7 @@ def test_settings(make_frame: MakeFrame) -> None:
     assert frame.web_enabled is False
     assert frame.telegram_enabled is True
     assert frame.stats_enabled is False
+    assert frame.stats_file == Path("data/stats.db")
 
 
 def test_settings_other_values(make_frame: MakeFrame) -> None:

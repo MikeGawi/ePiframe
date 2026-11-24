@@ -11,6 +11,7 @@ needs ``sudo`` without a password (``sudo -n``, never asks), like the default
 """
 
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import timedelta
@@ -46,6 +47,21 @@ class Usage:
 class Memory:
     ram: Usage
     swap: Usage
+
+
+@dataclass(frozen=True)
+class CpuTimes:
+    """Time the CPUs spent since boot (``/proc/stat``, clock ticks)."""
+
+    busy: int
+    total: int
+
+    def percent_since(self, previous: "CpuTimes") -> float | None:
+        """CPU usage between ``previous`` and these times, in percent."""
+        total = self.total - previous.total
+        if total <= 0:
+            return None
+        return (self.busy - previous.busy) * 100 / total
 
 
 def _read(path: Path) -> str | None:
@@ -98,6 +114,36 @@ def load_average(proc: Path = PROC_DIR) -> tuple[float, float, float] | None:
     except ValueError:
         return None
     return one, five, fifteen
+
+
+def _cpu_ticks(text: str) -> list[int]:
+    """user nice system idle iowait irq softirq steal of all CPUs (guest is in
+    user); empty if ``text`` is not ``/proc/stat``."""
+    fields = (text.splitlines() or [""])[0].split()
+    if fields[:1] != ["cpu"]:
+        return []
+    try:
+        return [int(value) for value in fields[1:9]]
+    except ValueError:
+        return []
+
+
+def cpu_times(proc: Path = PROC_DIR) -> CpuTimes | None:
+    """All CPUs together; idle and I/O wait count as not busy."""
+    ticks = _cpu_ticks(_read(proc / "stat") or "")
+    if not ticks:
+        return None
+    idle = sum(ticks[3:5])
+    return CpuTimes(sum(ticks) - idle, sum(ticks))
+
+
+def disk_usage(path: Path) -> Usage | None:
+    """Used and total space of the file system holding ``path``."""
+    try:
+        usage = shutil.disk_usage(path)
+    except OSError:
+        return None
+    return Usage(usage.used, usage.total)
 
 
 def temperature(path: Path = THERMAL_FILE) -> float | None:

@@ -98,7 +98,6 @@ def machine_independent_paths() -> dict[str, str]:
     """FILE entries that must exist: real ImageMagick, any file for the others."""
     return {
         "convert_bin_path": CONVERT or sys.executable,
-        "rrdtool_bin_path": sys.executable,
         "fbi_bin_path": sys.executable,
     }
 

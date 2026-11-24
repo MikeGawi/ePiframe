@@ -61,7 +61,6 @@ def _general_settings() -> list[ConfigProperty]:
         ConfigProperty("photo_convert_path", PropertyType.FILE),
         ConfigProperty("log_files", not_empty=False),
         ConfigProperty("convert_bin_path", PropertyType.FILE),
-        ConfigProperty("rrdtool_bin_path", PropertyType.FILE),
         ConfigProperty("fbi_bin_path", PropertyType.FILE),
     ]
 
