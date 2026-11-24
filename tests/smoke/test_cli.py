@@ -236,3 +236,21 @@ def test_weather_offline_still_shows_the_photo(frame: Frame) -> None:
     assert "Fail! No connection to the weather service" in result.stdout
     assert "secret-api-key" not in result.stdout + result.stderr
     assert (frame.directory / "photo.bmp").exists()
+
+
+def test_users_management(frame: Frame) -> None:
+    # piped input: passwords are read without a terminal (no getpass)
+    answers = "\n".join(
+        ["1", "admin", "secret", "secret", "", "5", "admin", "secret", "", "6", ""]
+    )
+
+    result = frame.run("--users", answers=answers)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "USER ADDED SUCCESSFULLY!" in result.stdout
+    assert "YOU HAVE LOGGED IN SUCCESSFULLY!" in result.stdout
+    assert "User admin added!" in result.stdout
+    with sqlite3.connect(frame.directory / "users.db") as database:
+        (password_hash,) = database.execute("SELECT hash FROM users").fetchone()
+    database.close()
+    assert password_hash.startswith("scrypt:")

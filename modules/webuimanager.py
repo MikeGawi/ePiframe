@@ -23,10 +23,9 @@ from wtforms import (
     FloatField,
 )
 from wtforms.widgets import NumberInput, PasswordInput
-from misc.user import User
+from epiframe.users.model import User
+from epiframe.users.store import UserError, Users
 from typing import TYPE_CHECKING
-import modules.usersmanager as users_manager
-import modules.databasemanager as database_manager
 from epiframe.config.manager import ConfigManager
 from epiframe.config.property import PropertyType
 from epiframe.config import paths
@@ -115,8 +114,7 @@ class WebUIManager:
 
     def __init__(self, backend: backend_manager.BackendManager):
         self.__backend = backend
-        self.__db_manager = database_manager.DatabaseManager()
-        self.__users_manager = users_manager.UsersManager(self.__db_manager)
+        self.__users_manager = Users(paths.USERS_DB_FILE)
 
         self.app = Flask(__name__, root_path=backend.get_path())
         self.app.config["SECRET_KEY"] = EPIFRAME_SECRET
@@ -277,16 +275,19 @@ class WebUIManager:
             remember = True if request.form.get("remember") else False
 
             if username:
-                try:
-                    self.__users_manager.check(username, password)
-                    login_user(self.load_user(username), remember=remember)
-                except Exception:
-                    flash("Please check your login details and try again!")
+                self.__log_in(username, password or "", remember)
             else:
                 flash("Please fill in all required data!")
             return redirect("/")
         else:
             return render_template("login.html")
+
+    def __log_in(self, username: str, password: str, remember: bool):
+        try:
+            user = self.__users_manager.authenticate(username, password)
+            login_user(user, remember=remember)
+        except UserError:
+            flash("Please check your login details and try again!")
 
     # @app.route('/logout')
     @login_required
@@ -295,15 +296,7 @@ class WebUIManager:
         return redirect("/")
 
     def load_user(self, username: str) -> Optional[User]:
-        return_value = None
-
-        try:
-            result = self.__users_manager.get_by_username(username)
-            return_value = result[0] if result and len(result) > 0 else None
-        except Exception:
-            pass
-
-        return return_value
+        return self.__users_manager.by_username(username)
 
     def load_user_from_request(self, request_data) -> Optional[User]:
         result = None
@@ -315,7 +308,7 @@ class WebUIManager:
                 api_key = self.__get_api_from_header(api_key)
 
         if api_key:
-            result = self.__get_by_api(api_key, result)
+            result = self.__users_manager.by_api_key(api_key)
 
         return result
 
@@ -329,14 +322,6 @@ class WebUIManager:
         except Exception:
             pass
         return api_key
-
-    def __get_by_api(self, api_key: str, result: Optional[User]) -> Optional[User]:
-        try:
-            result_value = self.__users_manager.get_by_api(api_key)
-            result = result_value[0] if result_value and len(result_value) > 0 else None
-        except Exception:
-            pass
-        return result
 
     # @app.route('/get_image')
     @login_required

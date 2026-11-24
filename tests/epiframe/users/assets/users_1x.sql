@@ -1,0 +1,10 @@
+BEGIN TRANSACTION;
+CREATE TABLE salts (id INTEGER PRIMARY KEY ASC, userid INTEGER, salt text, FOREIGN KEY(userid) REFERENCES users(id));
+INSERT INTO "salts" VALUES(1,1,'$6$zPmWiucCRX0L5wGo');
+INSERT INTO "salts" VALUES(2,2,'$6$NKWVLFEsNFbdFMpw');
+INSERT INTO "salts" VALUES(3,3,'$6$EmLIrUgI0j1W02D/');
+CREATE TABLE users (id INTEGER PRIMARY KEY ASC, username text, hash text, api text);
+INSERT INTO "users" VALUES(1,'alice','1ff3bc398c2ac5cbc6c57b35a587d37f','aaaa1111bbbb2222cccc3333dddd4444');
+INSERT INTO "users" VALUES(2,'bob','9d44cb19078c9cc3951612bd0841eea6','bbbb1111bbbb2222cccc3333dddd4444');
+INSERT INTO "users" VALUES(3,'carol','5803e8d66eee4e3882a8f048773480af','cccc1111bbbb2222cccc3333dddd4444');
+COMMIT;
