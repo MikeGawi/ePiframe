@@ -28,3 +28,22 @@ class Background(_Option):
     WHITE = "white"
     PHOTO = "photo"
     CROP = "crop"
+
+
+class DisplayType(_Option):
+    """Kind of the connected display (``display_type`` setting)."""
+
+    SPI = "SPI"
+    HDMI = "HDMI"
+
+    @classmethod
+    def is_hdmi(cls, value: str | None) -> bool:
+        """Return whether ``value`` names the HDMI display (any letter case)."""
+        return value is not None and value.lower() == cls.HDMI.lower()
+
+
+class EpaperType(_Option):
+    """Maker of the e-Paper display (``epaper_type`` setting)."""
+
+    WAVESHARE = "Waveshare"
+    PIMORONI = "Pimoroni"

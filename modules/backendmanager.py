@@ -8,7 +8,8 @@ from epiframe.config import manager as config_manager
 from epiframe.config import paths
 from epiframe.core import interval, schedule
 from epiframe.core.pidfile import PidFile
-from modules.displaymanager import DisplayManager
+from epiframe.display import hdmi
+from epiframe.display.options import DisplayType
 from modules.weathermanager import WeatherManager
 
 
@@ -43,6 +44,7 @@ class BackendManager:
     def __init__(self, event, path: str):
         self.__event = event
         self.__path = path
+        self.__hdmi_power = hdmi.HdmiPower()
         self.__last_date = None
         self.__load_config()
         self.__load_interval_and_schedule()
@@ -325,16 +327,15 @@ class BackendManager:
     def start_system_command(cmd) -> str:
         return os.popen(cmd).read()
 
-    @staticmethod
-    def get_display_power() -> str:
-        return DisplayManager.get_display_power()
+    def get_display_power(self) -> str:
+        # "1" on, "0" off or unknown (as 1.x)
+        return "1" if self.__hdmi_power.state() else "0"
 
-    @staticmethod
-    def display_power(on_off: bool):
-        DisplayManager.control_display_power(on_off)
+    def display_power(self, on_off: bool):
+        self.__hdmi_power.set(on_off)
 
     def display_power_config(self, on_off: bool):
-        if DisplayManager.is_hdmi(
+        if DisplayType.is_hdmi(
             self.__config.get("display_type")
         ) and self.__config.getint("control_display_power"):
             self.display_power(on_off)

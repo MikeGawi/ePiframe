@@ -7,6 +7,7 @@ import pytest
 from http import HTTPStatus
 
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
+from epiframe.display import hdmi
 from epiframe.version import VERSION
 from misc.user import User
 from epiframe.config.manager import ConfigManager
@@ -416,11 +417,11 @@ def test_get_image_api_original_binary(app_no_config, url):
 
 
 def test_display_power_empty(client_no_login):
-    with patch.object(os, "popen", web_mocked_system):
+    with patch.object(hdmi.HdmiPower, "state", return_value=True):
         response = client_no_login.get("/api/display_power=")
         assert not response.location
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {"state": "data"}
+        assert response.json == {"state": "1"}
 
 
 def test_display_power_wrong(client_no_login):
@@ -430,20 +431,20 @@ def test_display_power_wrong(client_no_login):
 
 @pytest.mark.parametrize("action", ["0", "false", "off"])
 def test_display_power_off(client_no_login, action):
-    with patch.object(os, "popen", web_mocked_system), Capturing() as output:
+    with patch.object(hdmi.HdmiPower, "set") as power:
         response = client_no_login.get(f"/api/display_power={action}")
         assert response.status_code == HTTPStatus.OK
 
-    assert output == ["sudo vcgencmd display_power 0 2> /dev/null"]
+    power.assert_called_once_with(False)
 
 
 @pytest.mark.parametrize("action", ["1", "true", "on"])
 def test_display_power_on(client_no_login, action):
-    with patch.object(os, "popen", web_mocked_system), Capturing() as output:
+    with patch.object(hdmi.HdmiPower, "set") as power:
         response = client_no_login.get(f"/api/display_power={action}")
         assert response.status_code == HTTPStatus.OK
 
-    assert output == ["sudo vcgencmd display_power 1 2> /dev/null"]
+    power.assert_called_once_with(True)
 
 
 def test_login_ok(client):
@@ -495,7 +496,7 @@ def test_login_nok_empty(client):
 
 def test_load_from_request(client):
     with (
-        patch.object(os, "popen", web_mocked_system),
+        patch.object(hdmi.HdmiPower, "state", return_value=True),
         patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
@@ -503,12 +504,12 @@ def test_load_from_request(client):
         )
         assert not response.location
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {"state": "data"}
+        assert response.json == {"state": "1"}
 
 
 def test_load_from_request_nok(client):
     with (
-        patch.object(os, "popen", web_mocked_system),
+        patch.object(hdmi.HdmiPower, "state", return_value=True),
         patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
@@ -524,7 +525,7 @@ def test_load_from_request_nok(client):
 
 def test_load_from_header(client):
     with (
-        patch.object(os, "popen", web_mocked_system),
+        patch.object(hdmi.HdmiPower, "state", return_value=True),
         patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(
@@ -535,12 +536,12 @@ def test_load_from_header(client):
         )
         assert not response.location
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {"state": "data"}
+        assert response.json == {"state": "1"}
 
 
 def test_load_from_header_nok(client):
     with (
-        patch.object(os, "popen", web_mocked_system),
+        patch.object(hdmi.HdmiPower, "state", return_value=True),
         patch.object(UsersManager, "get_by_api", mock_get_by_api),
     ):
         response = client.get(

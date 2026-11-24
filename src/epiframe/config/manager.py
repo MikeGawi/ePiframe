@@ -10,12 +10,11 @@ from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
 from epiframe.core.network import validate_ip
-from epiframe.display.options import Background
+from epiframe.display.options import Background, ColorMode, DisplayType, EpaperType
 from epiframe.photos import selection
 from epiframe.processing import imagemagick
 from epiframe.sources import drive
 from epiframe.sources.local import create_directory
-from modules.displaymanager import DisplayManager
 from modules.telebotmanager import TelebotManager
 from modules.weathermanager import WeatherManager
 from modules.weatherstampmanager import WeatherStampManager
@@ -69,13 +68,13 @@ def _general_settings() -> list[ConfigProperty]:
 
 
 def _display_settings() -> list[ConfigProperty]:
-    spi = _on_display(DisplayManager.get_spi())
-    hdmi = _on_display(DisplayManager.get_hdmi())
+    spi = _on_display(DisplayType.SPI)
+    hdmi = _on_display(DisplayType.HDMI)
     timer_check = CrossCheck(schedule.verify, ("start_times", "stop_times"))
     return [
-        ConfigProperty("display_type", possible=DisplayManager.get_displays()),
-        ConfigProperty("epaper_type", possible=DisplayManager.get_epapers(), **spi),
-        ConfigProperty("epaper_color", possible=DisplayManager.get_colors(), **spi),
+        ConfigProperty("display_type", possible=DisplayType.values()),
+        ConfigProperty("epaper_type", possible=EpaperType.values(), **spi),
+        ConfigProperty("epaper_color", possible=ColorMode.values(), **spi),
         ConfigProperty("display", **spi),
         ConfigProperty("clear_display", BOOLEAN, **spi),
         ConfigProperty("tty", INTEGER, min_value=0, **hdmi),
@@ -101,8 +100,8 @@ def _display_settings() -> list[ConfigProperty]:
 
 
 def _image_settings() -> list[ConfigProperty]:
-    spi = _on_display(DisplayManager.get_spi())
-    hdmi = _on_display(DisplayManager.get_hdmi())
+    spi = _on_display(DisplayType.SPI)
+    hdmi = _on_display(DisplayType.HDMI)
     return [
         ConfigProperty("convert", BOOLEAN),
         ConfigProperty(
@@ -138,7 +137,7 @@ def _image_settings() -> list[ConfigProperty]:
             min_value=0.0,
             max_value=0.99,
             dependency="epaper_type",
-            dependency_value=DisplayManager.get_pimoroni(),
+            dependency_value=EpaperType.PIMORONI,
         ),
     ]
 

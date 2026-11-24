@@ -118,6 +118,11 @@ epaper_color=BW
 
 # Used for e-Paper SPI displays!
 # Name of the display class from Waveshare or Pimoroni Inky python codes.
+# Waveshare: the driver name, e.g. epd7in5_V2.
+# Pimoroni: phat, what, inky_ssd1608, inky_ssd1683 (black/white/red or yellow),
+# inky_uc8159, inky_ac073tc1a (Impression 7 colors),
+# inky_e640, inky_e673, inky_el133uf1 (Impression Spectra 6),
+# inky_jd79661, inky_jd79668, inky_ssd2683 (black/white/red/yellow).
 # Default: epd7in5_V2
 display=epd7in5_V2
 
@@ -298,7 +303,9 @@ brightness=0
 # Default:10 (+10% more)
 contrast=10
 
-# Pimoroni Impressions e-paper displays saturation factor.
+# Saturation of the colors on Pimoroni multicolor displays
+# (Impression 7 colors and Spectra 6, black/white/red/yellow).
+# Higher values give more saturated colors, lower ones use the softer colors of the panel.
 # Possible values 0.0 - 0.99 float
 # Default:0.8
 pimoroni_saturation=0.8

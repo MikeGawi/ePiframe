@@ -1,4 +1,6 @@
-from epiframe.display.options import Background, ColorMode
+import pytest
+
+from epiframe.display.options import Background, ColorMode, DisplayType, EpaperType
 
 
 def test_color_mode_values_in_webui_order() -> None:
@@ -24,3 +26,19 @@ def test_options_compare_as_strings() -> None:
     assert colors["BW"] == "black"
     assert ColorMode.C7.lower() == "7 colors"
     assert f"{Background.CROP}" == "crop"
+
+
+def test_display_type_values() -> None:
+    assert DisplayType.values() == ["SPI", "HDMI"]
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("HDMI", True), ("hdmi", True), ("SPI", False), ("", False), (None, False)],
+)
+def test_display_type_is_hdmi(value: str | None, expected: bool) -> None:
+    assert DisplayType.is_hdmi(value) is expected
+
+
+def test_epaper_type_values() -> None:
+    assert EpaperType.values() == ["Waveshare", "Pimoroni"]

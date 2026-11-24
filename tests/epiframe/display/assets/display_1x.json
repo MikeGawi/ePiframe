@@ -1,0 +1,1017 @@
+{
+ "waveshare": [
+  {
+   "image": "waveshare.bmp",
+   "color": "BW+Red",
+   "mode": "1",
+   "black": "002491e6ba14cc6c2af228f865e52c86c7a688447fd07f9c15b6f3848edfe4aa",
+   "color_plane": "9e42cb47c8874f4fd1a939da79541e5ca186aca364c186c428d060df0ad1f6af"
+  },
+  {
+   "image": "waveshare.bmp",
+   "color": "BW+Yellow",
+   "mode": "1",
+   "black": "002491e6ba14cc6c2af228f865e52c86c7a688447fd07f9c15b6f3848edfe4aa",
+   "color_plane": "9e42cb47c8874f4fd1a939da79541e5ca186aca364c186c428d060df0ad1f6af"
+  },
+  {
+   "image": "sample",
+   "color": "BW+Red",
+   "mode": "1",
+   "black": "1cb29ae8ab5dd7fc853717eb9b086881d78011b935858cc973e803bfaa0c4759",
+   "color_plane": "ce31f5527ce15b3946b238d9dd9de94cb16c604ebd2592920605f1b6e65e7c31"
+  },
+  {
+   "image": "sample",
+   "color": "BW+Yellow",
+   "mode": "1",
+   "black": "082f9689e5d143ff720c83359f58812100f353c647f5b6a639ba1190637ecf90",
+   "color_plane": "88bcb382f9d6b4b1c7cf39a3a5831f20941933e88742c1df07079ba452748e49"
+  }
+ ],
+ "pimoroni": [
+  {
+   "display": "phat",
+   "color": "BW",
+   "init": [
+    "colour='black'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "phat",
+   "color": "BW+Red",
+   "init": [
+    "colour='red'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "fbc3df9127cb018cf40cd33985ac69a41bf5522aa8f27591e38ef96d8f7e7668"
+   }
+  },
+  {
+   "display": "phat",
+   "color": "BW+Yellow",
+   "init": [
+    "colour='yellow'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     255,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "82b32512bafdb9144df9a9994cd7e2dda9c7bf2627d30c9b5dfa0cdb461c1bda"
+   }
+  },
+  {
+   "display": "phat",
+   "color": "4 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "phat",
+   "color": "7 colors",
+   "error": "'InkyPHAT' object has no attribute 'SATURATED_PALETTE'"
+  },
+  {
+   "display": "phat",
+   "color": "Other",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "what",
+   "color": "BW",
+   "init": [
+    "colour='black'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "what",
+   "color": "BW+Red",
+   "init": [
+    "colour='red'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "fbc3df9127cb018cf40cd33985ac69a41bf5522aa8f27591e38ef96d8f7e7668"
+   }
+  },
+  {
+   "display": "what",
+   "color": "BW+Yellow",
+   "init": [
+    "colour='yellow'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     255,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "82b32512bafdb9144df9a9994cd7e2dda9c7bf2627d30c9b5dfa0cdb461c1bda"
+   }
+  },
+  {
+   "display": "what",
+   "color": "4 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "what",
+   "color": "7 colors",
+   "error": "'InkyWHAT' object has no attribute 'SATURATED_PALETTE'"
+  },
+  {
+   "display": "what",
+   "color": "Other",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ssd1608",
+   "color": "BW",
+   "init": [
+    "colour='black'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ssd1608",
+   "color": "BW+Red",
+   "init": [
+    "colour='red'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "fbc3df9127cb018cf40cd33985ac69a41bf5522aa8f27591e38ef96d8f7e7668"
+   }
+  },
+  {
+   "display": "inky_ssd1608",
+   "color": "BW+Yellow",
+   "init": [
+    "colour='yellow'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     255,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "82b32512bafdb9144df9a9994cd7e2dda9c7bf2627d30c9b5dfa0cdb461c1bda"
+   }
+  },
+  {
+   "display": "inky_ssd1608",
+   "color": "4 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ssd1608",
+   "color": "7 colors",
+   "error": "'Inky' object has no attribute 'SATURATED_PALETTE'"
+  },
+  {
+   "display": "inky_ssd1608",
+   "color": "Other",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_uc8159",
+   "color": "BW",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     0,
+     255,
+     0
+    ],
+    [
+     0,
+     0,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     0
+    ],
+    [
+     255,
+     140,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "559c14cabc4f004ff9be6c790361ef137ef5f8bf2274a15318fb648911dfd333"
+   }
+  },
+  {
+   "display": "inky_uc8159",
+   "color": "BW+Red",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     0,
+     255,
+     0
+    ],
+    [
+     0,
+     0,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     0
+    ],
+    [
+     255,
+     140,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "559c14cabc4f004ff9be6c790361ef137ef5f8bf2274a15318fb648911dfd333"
+   }
+  },
+  {
+   "display": "inky_uc8159",
+   "color": "BW+Yellow",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     0,
+     255,
+     0
+    ],
+    [
+     0,
+     0,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     0
+    ],
+    [
+     255,
+     140,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "559c14cabc4f004ff9be6c790361ef137ef5f8bf2274a15318fb648911dfd333"
+   }
+  },
+  {
+   "display": "inky_uc8159",
+   "color": "4 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     0,
+     255,
+     0
+    ],
+    [
+     0,
+     0,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     0
+    ],
+    [
+     255,
+     140,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "559c14cabc4f004ff9be6c790361ef137ef5f8bf2274a15318fb648911dfd333"
+   }
+  },
+  {
+   "display": "inky_uc8159",
+   "color": "7 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     0,
+     255,
+     0
+    ],
+    [
+     0,
+     0,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     0
+    ],
+    [
+     255,
+     140,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "559c14cabc4f004ff9be6c790361ef137ef5f8bf2274a15318fb648911dfd333"
+   }
+  },
+  {
+   "display": "inky_uc8159",
+   "color": "Other",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     0,
+     255,
+     0
+    ],
+    [
+     0,
+     0,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     0
+    ],
+    [
+     255,
+     140,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "559c14cabc4f004ff9be6c790361ef137ef5f8bf2274a15318fb648911dfd333"
+   }
+  },
+  {
+   "display": "inky_ssd1683",
+   "color": "BW",
+   "init": [
+    "colour='black'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ssd1683",
+   "color": "BW+Red",
+   "init": [
+    "colour='red'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "fbc3df9127cb018cf40cd33985ac69a41bf5522aa8f27591e38ef96d8f7e7668"
+   }
+  },
+  {
+   "display": "inky_ssd1683",
+   "color": "BW+Yellow",
+   "init": [
+    "colour='yellow'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     255,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "82b32512bafdb9144df9a9994cd7e2dda9c7bf2627d30c9b5dfa0cdb461c1bda"
+   }
+  },
+  {
+   "display": "inky_ssd1683",
+   "color": "4 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ssd1683",
+   "color": "7 colors",
+   "error": "'Inky' object has no attribute 'SATURATED_PALETTE'"
+  },
+  {
+   "display": "inky_ssd1683",
+   "color": "Other",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ac073tc1a",
+   "color": "BW",
+   "init": [
+    "colour='black'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ac073tc1a",
+   "color": "BW+Red",
+   "init": [
+    "colour='red'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     0,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "fbc3df9127cb018cf40cd33985ac69a41bf5522aa8f27591e38ef96d8f7e7668"
+   }
+  },
+  {
+   "display": "inky_ac073tc1a",
+   "color": "BW+Yellow",
+   "init": [
+    "colour='yellow'",
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ],
+    [
+     255,
+     255,
+     0
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "82b32512bafdb9144df9a9994cd7e2dda9c7bf2627d30c9b5dfa0cdb461c1bda"
+   }
+  },
+  {
+   "display": "inky_ac073tc1a",
+   "color": "4 colors",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  },
+  {
+   "display": "inky_ac073tc1a",
+   "color": "7 colors",
+   "error": "'Inky' object has no attribute 'SATURATED_PALETTE'"
+  },
+  {
+   "display": "inky_ac073tc1a",
+   "color": "Other",
+   "init": [
+    "__init__"
+   ],
+   "palette": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     255,
+     255,
+     255
+    ]
+   ],
+   "images": {
+    "waveshare.bmp": "a16f5f75ddde0518e573dbb8c3bdd7f1eb11fcf131004b514e302ea529ef4bb1",
+    "sample": "5cc75f35f2556aa2ca6cabf0b5a60ab6c5de64121738bd708ae932f023adffb9"
+   }
+  }
+ ]
+}
