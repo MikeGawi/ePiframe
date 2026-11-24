@@ -15,9 +15,9 @@ from epiframe.photos import selection
 from epiframe.processing import imagemagick
 from epiframe.sources import drive
 from epiframe.sources.local import create_directory
+from epiframe.weather.openweather import Units
+from epiframe.weather.stamp import FontColor, Position
 from modules.telebotmanager import TelebotManager
-from modules.weathermanager import WeatherManager
-from modules.weatherstampmanager import WeatherStampManager
 
 BOOLEAN = PropertyType.BOOLEAN
 INTEGER = PropertyType.INTEGER
@@ -58,7 +58,7 @@ def _source_settings() -> list[ConfigProperty]:
 
 def _general_settings() -> list[ConfigProperty]:
     return [
-        ConfigProperty("units", possible=WeatherManager.get_units()),
+        ConfigProperty("units", possible=Units.values()),
         ConfigProperty("photo_convert_path", PropertyType.FILE),
         ConfigProperty("log_files", not_empty=False),
         ConfigProperty("convert_bin_path", PropertyType.FILE),
@@ -171,13 +171,13 @@ def _weather_settings() -> list[ConfigProperty]:
             "position",
             INTEGER,
             dependency="show_weather",
-            possible=WeatherStampManager.get_positions(),
+            possible=Position.values(),
         ),
         ConfigProperty("font", INTEGER, dependency="show_weather", min_value=8),
         ConfigProperty(
             "font_color",
             dependency="show_weather",
-            possible=WeatherStampManager.get_colors(),
+            possible=FontColor.values(),
         ),
     ]
 
