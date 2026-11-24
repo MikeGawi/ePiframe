@@ -1,17 +1,33 @@
-"""System information read straight from ``/proc`` and ``/sys`` (no shell commands).
+"""The system the frame runs on: information and power commands (no shell).
 
-Every reader returns ``None`` when the information is not available (other OS, a
-missing or unreadable file), so callers can show what they have.
+The information is read straight from ``/proc`` and ``/sys``; every reader returns
+``None`` when it is not available (other OS, a missing or unreadable file), so
+callers can show what they have.
+
+The commands (reboot, power off, restart of the ePiframe service) run
+``systemctl`` with an argument list. The service runs as root; any other user
+needs ``sudo`` without a password (``sudo -n``, never asks), like the default
+``pi`` user of Raspberry Pi OS.
 """
 
+import os
+import subprocess
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
+
+from epiframe.core.logs import get_logger
 
 PROC_DIR = Path("/proc")
 THERMAL_FILE = Path("/sys/class/thermal/thermal_zone0/temp")
 
 KIBIBYTE = 1024
+
+SERVICE = "ePiframe.service"
+SYSTEMCTL = "systemctl"
+COMMAND_TIMEOUT = 30
+
+log = get_logger("system")
 
 
 @dataclass(frozen=True)
@@ -91,3 +107,57 @@ def temperature(path: Path = THERMAL_FILE) -> float | None:
         return int((text or "").strip()) / 1000
     except ValueError:
         return None
+
+
+def fahrenheit(celsius: float) -> float:
+    return celsius * 1.8 + 32
+
+
+def _privileged(command: list[str]) -> list[str]:
+    return command if os.geteuid() == 0 else ["sudo", "-n", *command]
+
+
+def run(command: list[str]) -> bool:
+    """Run ``command``; return whether it succeeded (a failure is logged)."""
+    try:
+        result = subprocess.run(  # noqa: S603 - argument list, no shell
+            command,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=COMMAND_TIMEOUT,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        log.error(f"Can't run {' '.join(command)}: {error}")
+        return False
+    if result.returncode:
+        message = result.stderr.strip() or f"exit code {result.returncode}"
+        log.error(f"{' '.join(command)} failed: {message}")
+    return result.returncode == 0
+
+
+def service_running(service: str = SERVICE) -> bool:
+    """Return whether the systemd ``service`` is active."""
+    command = [SYSTEMCTL, "is-active", "--quiet", service]
+    try:
+        result = subprocess.run(  # noqa: S603 - argument list, no shell
+            command, capture_output=True, check=False, timeout=COMMAND_TIMEOUT
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0
+
+
+def reboot() -> bool:
+    return run(_privileged([SYSTEMCTL, "reboot"]))
+
+
+def power_off() -> bool:
+    return run(_privileged([SYSTEMCTL, "poweroff"]))
+
+
+def restart_service(service: str = SERVICE) -> bool:
+    # --no-block: the service may restart itself (WebUI, Telegram bot), don't
+    # wait for the job that stops this very process
+    return run(_privileged([SYSTEMCTL, "--no-block", "restart", service]))

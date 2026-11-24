@@ -5,24 +5,29 @@ from unittest.mock import patch
 import pytest
 from http import HTTPStatus
 
+from datetime import timedelta
+
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
+from epiframe.core import system
+from epiframe.core.system import Memory, Usage
 from epiframe.display import hdmi
 from epiframe.version import VERSION
 from epiframe.users.model import User
 from epiframe.config.manager import ConfigManager
 from epiframe.users.store import UserError, Users
+from modules import webuimanager
 from modules.webuimanager import WebUIManager
 from tests.helpers.capturing import Capturing
 from tests.helpers.config import Config
 from tests.helpers.helpers import not_raises
-from tests.helpers.backend_doubles import get_backend_manager
+from tests.helpers.frame import get_frame
 from tests.helpers.plugins import get_plugins_manager
 
 
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def test_init():
     with not_raises(Exception):
-        WebUIManager(get_backend_manager())
+        WebUIManager(get_frame())
 
 
 def test_menu_entries():
@@ -280,8 +285,11 @@ def test_logout(client_no_login):
 @pytest.mark.parametrize("url", ["/get_status", "/api/get_status"])
 def test_get_status(client_no_login, url):
     with (
-        patch.object(os, "popen", web_mocked_system),
-        patch.object(os, "system", web_mocked_system),
+        patch.object(system, "memory", return_value=Memory(Usage(1, 4), Usage(0, 0))),
+        patch.object(system, "load_average", return_value=(0.5, 0.25, 0.125)),
+        patch.object(system, "uptime", return_value=timedelta(days=1, seconds=5)),
+        patch.object(system, "temperature", return_value=48.3),
+        patch.object(system, "service_running", return_value=True),
     ):
         response = client_no_login.get(url)
         assert not response.location
@@ -303,14 +311,52 @@ def test_get_status(client_no_login, url):
 
         assert json["converted"] == 0
         assert json["original"] == 0
-        assert json["load"] == "data"
-        assert json["mem"] == "data%"
-        assert json["service"] == "data"
+        assert json["load"] == "0.50 0.25 0.12"
+        assert json["mem"] == "25%"
+        assert json["service"] == "Running"
         assert json["state"] == "Idle"
-        assert json["temp"] == "data°C"
-        assert json["uptime"] == "data"
+        assert json["temp"] == "48.3°C"
+        assert json["uptime"] == "up 1 day"
         assert json["version"] == VERSION
         assert json["update"]
+
+
+def test_get_status_nothing_available(client_no_login):
+    with (
+        patch.object(system, "memory", return_value=None),
+        patch.object(system, "load_average", return_value=None),
+        patch.object(system, "uptime", return_value=None),
+        patch.object(system, "temperature", return_value=None),
+        patch.object(system, "service_running", return_value=False),
+    ):
+        json = client_no_login.get("/api/get_status").json
+
+    assert (json["mem"], json["load"], json["uptime"], json["temp"]) == ("-",) * 4
+    assert json["service"] == "Not running!"
+
+
+@pytest.mark.parametrize(
+    ("celsius", "metric", "expected"),
+    [(50, True, "50.0°C"), (50, False, "122.0°F"), (None, False, "-")],
+)
+def test_temperature_text(celsius, metric, expected):
+    assert webuimanager.temperature_text(celsius, metric) == expected
+
+
+@pytest.mark.parametrize(
+    ("uptime", "expected"),
+    [
+        (
+            timedelta(days=8, hours=14, minutes=52, seconds=7),
+            "up 1 week, 1 day, 14 hours, 52 minutes",
+        ),
+        (timedelta(weeks=2, minutes=1), "up 2 weeks, 1 minute"),
+        (timedelta(seconds=59), "up 0 minutes"),
+        (None, "-"),
+    ],
+)
+def test_uptime_text(uptime, expected):
+    assert webuimanager.uptime_text(uptime) == expected
 
 
 @pytest.mark.parametrize("url", ["/_upload_photo", "/api/upload_photo"])
@@ -556,18 +602,16 @@ def test_load_from_header_nok(client):
 
 @pytest.mark.parametrize("url", ["/api/action=", "/_tools$"])
 def test_action_empty(client_no_login, url):
-    with patch.object(os, "popen", web_mocked_system):
-        response = client_no_login.get(url)
-        assert response.status_code == HTTPStatus.OK
-        assert response.json == {"error": "No Action!"}
+    response = client_no_login.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {"error": "No Action!"}
 
 
 @pytest.mark.parametrize("url", ["/api/action=do_a_flip", "/_tools$do_a_flip"])
 def test_action_wrong(client_no_login, url):
-    with patch.object(os, "popen", web_mocked_system):
-        response = client_no_login.get(url)
-        assert response.status_code == HTTPStatus.OK
-        assert response.json == {"error": "Action Unknown!"}
+    response = client_no_login.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {"error": "Action Unknown!"}
 
 
 @pytest.mark.parametrize("url", ["/api/action=next", "/_tools$next"])
@@ -577,37 +621,37 @@ def test_action_next(client_no_login, url):
         assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
-    assert output == ["IntervalManager_remove", "Event triggered params='NOPARAMS'"]
+    assert output == ["Event triggered Trigger.NEXT_PHOTO"]
 
 
 @pytest.mark.parametrize("url", ["/api/action=restart", "/_tools$restart"])
 def test_action_restart(client_no_login, url):
-    with patch.object(os, "system", web_mocked_system), Capturing() as output:
+    with patch.object(system, "restart_service") as command:
         response = client_no_login.get(url)
         assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
-    assert output == ["sudo systemctl restart ePiframe.service"]
+    command.assert_called_once_with()
 
 
 @pytest.mark.parametrize("url", ["/api/action=reboot", "/_tools$reboot"])
 def test_action_reboot(client_no_login, url):
-    with patch.object(os, "system", web_mocked_system), Capturing() as output:
+    with patch.object(system, "reboot") as command:
         response = client_no_login.get(url)
         assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
-    assert output == ["sudo reboot"]
+    command.assert_called_once_with()
 
 
 @pytest.mark.parametrize("url", ["/api/action=poweroff", "/_tools$poweroff"])
 def test_action_power_off(client_no_login, url):
-    with patch.object(os, "system", web_mocked_system), Capturing() as output:
+    with patch.object(system, "power_off") as command:
         response = client_no_login.get(url)
         assert response.status_code == HTTPStatus.OK
         assert response.json == {"status": "OK"}
 
-    assert output == ["sudo poweroff"]
+    command.assert_called_once_with()
 
 
 def test_settings_pages(client_no_login):
@@ -660,11 +704,6 @@ def test_plugin_action(client_no_login):
     assert "I'm dummy" in output
 
 
-class WebMockRead:
-    def read(self):
-        return "data"
-
-
 def mock_check(self, username: str, password: str) -> User:
     return User(1, "username", "hash", "api")
 
@@ -681,14 +720,9 @@ def mock_get_by_api(self, api: str) -> User | None:
     return User(1, "username", "hash", "api") if api == "api_key" else None
 
 
-def web_mocked_system(*args, **kwargs):
-    print("".join(args) + "".join(kwargs))
-    return WebMockRead()
-
-
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def get_webui_manager():
-    return WebUIManager(get_backend_manager())
+    return WebUIManager(get_frame())
 
 
 @pytest.mark.parametrize("injection", ["' OR '1'='1", "x' OR 1=1 --"])

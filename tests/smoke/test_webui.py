@@ -12,9 +12,10 @@ from tests.smoke.conftest import REPOSITORY, Frame
 WEB_SERVER = """
 import sys
 sys.path.insert(0, sys.argv[1])
-from modules.backendmanager import BackendManager
+from epiframe.config import paths
+from epiframe.service.frame import Frame
 from modules.webuimanager import WebUIManager
-WebUIManager(BackendManager(lambda params: None, sys.argv[1])).start()
+WebUIManager(Frame(lambda trigger: None, paths.CONFIG_FILE, sys.argv[1])).start()
 """
 
 

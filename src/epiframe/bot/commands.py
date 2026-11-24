@@ -93,38 +93,51 @@ class Chat(Protocol):
     def send_photo(self, path: Path) -> None: ...
 
 
+class Multiplier(Protocol):
+    """Display time multiplier of the current photo."""
+
+    def read(self) -> int: ...
+
+    def save(self, multiplier: int) -> None: ...
+
+
 class Frame(Protocol):
-    """What the bot needs from the frame (the 1.x ``BackendManager`` provides it)."""
+    """What the bot needs from the frame (:class:`epiframe.service.frame.Frame`)."""
+
+    @property
+    def token(self) -> str: ...
+
+    @property
+    def chat_id(self) -> str: ...
+
+    @property
+    def busy(self) -> bool: ...
+
+    @property
+    def metric(self) -> bool: ...
+
+    @property
+    def interval_enabled(self) -> bool: ...
+
+    @property
+    def max_interval(self) -> int: ...
+
+    @property
+    def multiplier(self) -> Multiplier: ...
 
     def refresh(self) -> None: ...
 
-    def get_token(self) -> str: ...
+    def next_photo(self) -> None: ...
 
-    def get_chat_id(self) -> str: ...
+    def redisplay(self) -> None: ...
 
-    def pid_file_exists(self) -> bool: ...
+    def download_file(self, extension: str) -> Path: ...
 
-    def fire_event(self) -> None: ...
+    def current_file(self) -> Path | None: ...
 
-    def refresh_frame(self) -> None: ...
+    def original_file(self) -> Path | None: ...
 
-    def get_download_file(self) -> str: ...
-
-    def get_current_file(self) -> str | None: ...
-
-    def get_original_file(self) -> str | None: ...
-
-    def get_next_time(self) -> str: ...
-
-    def is_interval_mult_enabled(self) -> bool: ...
-
-    def get_interval(self) -> int: ...
-
-    def get_max_interval(self) -> int: ...
-
-    def save_interval(self, number: int) -> None: ...
-
-    def is_metric(self) -> bool: ...
+    def next_update_text(self) -> str: ...
 
     def reboot(self) -> None: ...
 
@@ -158,7 +171,7 @@ def _temperature(celsius: float | None, metric: bool) -> list[str]:
         return []
     if metric:
         return [f"Temperature: {celsius:.1f} \N{DEGREE SIGN}C"]
-    return [f"Temperature: {celsius * 1.8 + 32:.1f} \N{DEGREE SIGN}F"]
+    return [f"Temperature: {system.fahrenheit(celsius):.1f} \N{DEGREE SIGN}F"]
 
 
 def status_lines(metric: bool, proc: Path, thermal: Path) -> list[str]:
@@ -211,7 +224,7 @@ class Commands:
         chat.send_text(argument or ECHO_REP)
 
     def status(self, _argument: str, chat: Chat) -> None:
-        lines = status_lines(self.frame.is_metric(), self.proc, self.thermal)
+        lines = status_lines(self.frame.metric, self.proc, self.thermal)
         chat.send_text("\n".join(lines) or ERROR_REP)
 
     def reboot(self, _argument: str, chat: Chat) -> None:
@@ -219,30 +232,30 @@ class Commands:
         self.frame.reboot()
 
     def when(self, _argument: str, chat: Chat) -> None:
-        chat.send_text(f"{NEXT_UPDATE_MSG}\n{self.frame.get_next_time()}")
+        chat.send_text(f"{NEXT_UPDATE_MSG}\n{self.frame.next_update_text()}")
 
     def next(self, _argument: str, chat: Chat) -> None:
-        if self.frame.pid_file_exists():
+        if self.frame.busy:
             chat.send_text(PROGRESS_REP)
             return
-        self.frame.fire_event()
+        self.frame.next_photo()
         chat.send_text(OK_REP)
 
     def current(self, _argument: str, chat: Chat) -> None:
-        self._send_file(self.frame.get_current_file(), chat)
+        self._send_file(self.frame.current_file(), chat)
 
     def original(self, _argument: str, chat: Chat) -> None:
-        self._send_file(self.frame.get_original_file(), chat)
+        self._send_file(self.frame.original_file(), chat)
 
     @staticmethod
-    def _send_file(path: str | None, chat: Chat) -> None:
+    def _send_file(path: Path | None, chat: Chat) -> None:
         if path:
-            chat.send_photo(Path(path))
+            chat.send_photo(path)
         else:
             chat.send_text(ERROR_REP)
 
     def longer(self, argument: str, chat: Chat) -> None:
-        if not self.frame.is_interval_mult_enabled():
+        if not self.frame.interval_enabled:
             chat.send_text(LONGER_OFF_REP)
         elif not argument:
             chat.send_text(LONGER_REP)
@@ -257,10 +270,10 @@ class Commands:
         if value <= 0:
             chat.send_text(VALUE_REP)
             return
-        current = max(self.frame.get_interval(), 0)
-        maximum = self.frame.get_max_interval()
+        current = max(self.frame.multiplier.read(), 0)
+        maximum = self.frame.max_interval
         total = min(value + current, maximum)
-        self.frame.save_interval(total)
+        self.frame.multiplier.save(total)
         summed = f"\n{LONGER_SUM_MSG}" if current else ""
         chat.send_text(f"{OK_REP}\n{LONGER_MSG.format(total, maximum)}{summed}")
 

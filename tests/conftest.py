@@ -7,17 +7,12 @@ import pytest
 import requests_mock
 from epiframe.config.paths import CONFIG_FILE_DEFAULT
 from epiframe.config import manager as configmanager
-from epiframe.core import interval as intervalmanager
-from epiframe.core import schedule as timermanager
-from modules.backendmanager import BackendManager
+from epiframe.service import frame as frame_module
+from epiframe.service.frame import Frame
 from modules.webuimanager import WebUIManager
 from tests.helpers.config import Config
+from tests.helpers.frame import event_mock
 from tests.helpers.helpers import remove_file
-from tests.helpers.backend_doubles import (
-    MockedIntervalManager,
-    MockedTimerManager,
-    event_mock,
-)
 from tests.helpers.plugins import ORDER_FILE, plugin_manager_for_tests
 
 
@@ -31,13 +26,9 @@ def requests_mocker():
 @patch("epiframe.config.paths.CONFIG_FILE", CONFIG_FILE_DEFAULT)
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app_no_login():
-    with (
-        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
-        patch("modules.backendmanager.PluginManager", plugin_manager_for_tests),
-    ):
-        backend = BackendManager(event_mock, "")
-        web_manager = WebUIManager(backend)
+    with patch.object(frame_module, "PluginManager", plugin_manager_for_tests):
+        frame = Frame(event_mock, CONFIG_FILE_DEFAULT, "")
+        web_manager = WebUIManager(frame)
     app = web_manager.app
     app.config.update(
         {
@@ -51,13 +42,9 @@ def app_no_login():
 @pytest.fixture()
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app_no_config():
-    with (
-        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
-        patch.object(configmanager, "ConfigManager", Config),
-    ):
-        backend = BackendManager(event_mock, ".")
-        web_manager = WebUIManager(backend)
+    with patch.object(configmanager, "ConfigManager", Config):
+        frame = Frame(event_mock, ".", ".")
+        web_manager = WebUIManager(frame)
     app = web_manager.app
     app.config.update(
         {
@@ -72,12 +59,8 @@ def app_no_config():
 @patch("epiframe.config.paths.CONFIG_FILE", CONFIG_FILE_DEFAULT)
 @patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
 def app():
-    with (
-        patch.object(timermanager, "WeeklySchedule", MockedTimerManager),
-        patch.object(intervalmanager, "IntervalMultiplier", MockedIntervalManager),
-    ):
-        backend = BackendManager(event_mock, ".")
-        web_manager = WebUIManager(backend)
+    frame = Frame(event_mock, CONFIG_FILE_DEFAULT, ".")
+    web_manager = WebUIManager(frame)
     app = web_manager.app
     app.config.update(
         {

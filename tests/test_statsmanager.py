@@ -1,13 +1,15 @@
 import os
 from unittest.mock import patch
-from modules.statsmanager import StatsManager
+import pytest
+
+from modules.statsmanager import StatsManager, to_fahrenheit
 from tests.helpers.capturing import Capturing
 
 
 def test_init():
     with patch.object(os, "system", mocked_system):
         with Capturing() as output:
-            StatsManager(backend=MockBackend())
+            StatsManager(frame=MockFrame())
 
     assert output == [
         "rrdtool_bin_path create PATH/static/data/load.rrd "
@@ -30,7 +32,7 @@ def test_feed():
         patch.object(os, "system", mocked_system),
         patch.object(os.path, "exists", mocked_exists),
     ):
-        stats_manager = StatsManager(backend=MockBackend())
+        stats_manager = StatsManager(frame=MockFrame())
         with Capturing() as output:
             stats_manager.feed_stats()
 
@@ -69,15 +71,27 @@ class MockConfig:
         return text
 
 
-class MockBackend:
-    @staticmethod
-    def get_path():
-        return "PATH"
+class MockFrame:
+    root = "PATH"
+    metric = True
+    config = MockConfig()
 
-    @staticmethod
-    def is_metric():
-        return True
 
-    @staticmethod
-    def get_config():
-        return MockConfig()
+def test_feed_fahrenheit():
+    frame = MockFrame()
+    frame.metric = False
+    with (
+        patch.object(os, "popen", lambda command: MockRead("20")),
+        patch.object(os, "system", mocked_system),
+        patch.object(os.path, "exists", mocked_exists),
+    ):
+        stats_manager = StatsManager(frame=frame)
+        with Capturing() as output:
+            stats_manager.feed_stats()
+
+    assert output[-1] == "rrdtool_bin_path update PATH/static/data/temp.rrd N:68.0"
+
+
+@pytest.mark.parametrize(("celsius", "expected"), [("37.8", "100.0"), ("abc", "-")])
+def test_to_fahrenheit(celsius, expected):
+    assert to_fahrenheit(celsius) == expected
