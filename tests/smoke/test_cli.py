@@ -1,5 +1,6 @@
 import shutil
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 from PIL import Image
@@ -176,7 +177,7 @@ def test_full_chain_converts_photos_in_order(frame: Frame) -> None:
     converted = frame.directory / "photo.bmp"
     with Image.open(converted) as image:
         assert image.size == (800, 480)
-    with sqlite3.connect(frame.directory / "photos.db") as database:
+    with closing(sqlite3.connect(frame.directory / "photos.db")) as database:
         assert database.execute("SELECT COUNT(*) FROM photos").fetchone() == (3,)
 
 

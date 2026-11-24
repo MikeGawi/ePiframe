@@ -266,7 +266,9 @@ def test_missing_api_keys_are_filled(legacy_database: Path) -> None:
 
 def test_connections_are_closed(database: Path) -> None:
     # 1.x kept one connection open forever: "unclosed database" ResourceWarning
-    # (emitted by Python 3.13+ when a connection is garbage collected open)
+    # (emitted by Python 3.13+ when a connection is garbage collected open);
+    # collect first: garbage left by other tests must not be counted here
+    gc.collect()
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         users = Users(database, method=FAST_METHOD)
