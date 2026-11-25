@@ -12,10 +12,11 @@ from epiframe.config import paths
 from epiframe.core.logs import get_logger, setup_logging
 from epiframe.service.frame import Frame, Trigger, timestamp_text
 from misc.daemon import Daemon
-from modules.statsmanager import STATS_STEP
 from epiframe.bot.telegram import TelegramBot
+from epiframe.stats.metrics import SAMPLE_INTERVAL, Sampler
+from epiframe.stats.recorder import Recorder
+from epiframe.stats.store import MetricsStore
 from modules.webuimanager import WebUIManager
-from modules.statsmanager import StatsManager
 
 log = get_logger("service")
 
@@ -29,7 +30,6 @@ class Service(Daemon):
 
     __telebot: TelegramBot = None
     __web_man: WebUIManager = None
-    __stats_man: StatsManager = None
     __telebot_thread: Thread = None
     __web_thread: Thread = None
     __stats_thread: Thread = None
@@ -113,17 +113,17 @@ class Service(Daemon):
             self.__scheduler.run()
 
     def stats_thread(self):
-        self.__stats_man = StatsManager(self.__frame)
+        store = MetricsStore(self.__frame.stats_file)
+        recorder = Recorder(store, Sampler(store.path.absolute().parent))
         while True:
             self.__frame.refresh()
             if self.__frame.web_enabled and self.__frame.stats_enabled:
                 try:
-                    self.__stats_man.feed_stats()
+                    recorder.record()
                 except Exception as exception:
                     log.error(self.__ERROR_STATS.format(exception))
-                    pass
 
-            time.sleep(STATS_STEP)
+            time.sleep(SAMPLE_INTERVAL)
 
     def web_thread(self):
         while True:

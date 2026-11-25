@@ -11,59 +11,71 @@
 			</div>
 			<div class="col-auto flex-fill px-1">
 				<select class="form-select form-select-sm" onInput='act()' id='dropdown'>
-			  		<option value="load" selected>Loads</option>
-			  		<option value="mem">Memory</option>
-		  			<option value="temp">Temperature</option>
+				{% for name, metrics in groups.items() %}
+					<option value="{{ metrics|join(',') }}"{% if loop.first %} selected{% endif %}>{{ name }}</option>
+				{% endfor %}
+				</select>
+			</div>
+			<div class="col-auto px-1">
+				<select class="form-select form-select-sm" onInput='act()' id='period'>
+				{% for period in periods %}
+					<option value="{{ period }}"{% if loop.first %} selected{% endif %}>{{ period|capitalize }}</option>
+				{% endfor %}
 				</select>
 			</div>
 		</div>
 		<div class="row align-middle mx-2 px-0 py-2">
 			<div class="col col-auto flex-fill"></div>
-			<div id="graph" class="col col-auto" style="font-size:10px"></div>
+			<div id="graph" class="col col-auto" style="font-size:10px;width:600px;height:300px"></div>
+			<div class="col col-auto flex-fill"></div>
+		</div>
+		<div class="row align-middle mx-2 px-0 py-2">
+			<div class="col col-auto flex-fill"></div>
+			<div id="legend" class="col col-auto"></div>
 			<div class="col col-auto flex-fill"></div>
 		</div>
 		<img class="row mx-auto" id="load-img" src="{{ url_for('static', filename='loader.gif') }}" />
 	</div>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/javascriptrrd/binaryXHR.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/javascriptrrd/rrdFile.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/javascriptrrd/rrdFlotSupport.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/javascriptrrd/rrdFlot.js') }}"></script>
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/flot/jquery.flot.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/flot/jquery.flot.selection.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/flot/jquery.flot.tooltip.min.js') }}"></script>
 	<script>
-		function draw(bf) {
-			var rrdflot_defaults = {graph_width:"600px", graph_height:"225px", scale_width:"300px", scale_height:"90px"};
-			var gtype_format={'load1':{ title:'Load 1 min', label:'Load 1 min', color:"#FBD148", checked:true }, 'load5':{ title:'Load 5 min', label:'Load 5 min', color:'#F9975D', checked:true}, 'load15':{title:'Load 15 min', label:'Load 15 min', color:'#C85C5C', checked:true}};
-			var optionValue = document.getElementById("dropdown").value;
-			var graph_options = {tooltipOpts: { content: '<b>%s</b><br/>Value: %y.3' }}
+		var colors = ["#FBD148", "#F9975D", "#C85C5C", "#5584AC"];
 
-			if (optionValue == 'temp') {
-				ds_op_list = ['temp'];
-				gtype_format={'temp':{ title:'Temperature', label:'Temperature', color:"#5584AC", checked:true }};
-			} else if (optionValue == 'mem') {
-				ds_op_list = ['total', 'used', 'free', 'available'];
-				gtype_format={'total':{ title:'Total Memory', label:'Total Memory', color: "#542E71", checked:true }, 'used':{ title:'Used Memory', label:'Used Memory', color:'#FB3640', checked:true }, 'free': { title:'Free Memory', label:'Free Memory', color:'#FDCA40', checked:true }, 'available': { title:'Available Memory', label:'Available Memory', color:'#A799B7', checked:true }};
-			}
+		// Flot 0.7 shows time axes in UTC: shift the times to the browser's zone
+		function local(seconds) {
+			var milliseconds = seconds * 1000;
+			return milliseconds - new Date(milliseconds).getTimezoneOffset() * 60000;
+		}
 
-			var graph = new rrdFlot("graph", new RRDFile(bf), graph_options, gtype_format, rrdflot_defaults);
-   			$('#load-img').hide();
+		function draw(data) {
+			var lines = data.metrics.map(function(metric, index) {
+				var unit = metric.unit ? " [" + metric.unit + "]" : "";
+				return {
+					label: metric.label + unit,
+					color: colors[index % colors.length],
+					data: metric.values.map(function(value, point) {
+						return [local(data.time[point]), value];
+					})
+				};
+			});
+			$.plot($("#graph"), lines, {
+				xaxis: {mode: "time", timeformat: data.period == "day" ? "%H:%M" : "%d.%m"},
+				grid: {hoverable: true},
+				legend: {container: $("#legend")},
+				tooltip: true,
+				tooltipOpts: {content: "<b>%s</b><br/>%y.2"}
+			});
+			$('#load-img').hide();
 		}
 
 		function act() {
-   			$('#load-img').show();
+			$('#load-img').show();
 			$("#graph").html("");
-			var fname="{{ url_for('static', filename='data/load.rrd') }}";
-			var optionValue = document.getElementById("dropdown").value;
-
-			if (optionValue == 'temp') {
-				fname="{{ url_for('static', filename='data/temp.rrd') }}";
-			} else if (optionValue == 'mem') {
-				fname="{{ url_for('static', filename='data/mem.rrd') }}";
-			}
-
-			FetchBinaryURLAsync(fname, draw)
+			$.getJSON("/get_stats", {
+				metrics: $("#dropdown").val(),
+				period: $("#period").val()
+			}, draw);
 		}
 
 		act();

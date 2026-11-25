@@ -139,7 +139,8 @@ dmypy.json
 /time
 /pid
 /list
-/static/data/*.rrd
+/stats.db
+/stats.db-journal
 /origphoto_thumb.*
 /photo.bmp
 /photo_thumb.jpg

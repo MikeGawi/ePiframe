@@ -31,6 +31,9 @@ from epiframe.config import paths
 from epiframe.core import system
 from epiframe.core.media_types import EXTENSIONS, EXTENSION_TO_TYPE
 from epiframe.service.frame import Frame
+from epiframe.stats.charts import chart_data, parse_query
+from epiframe.stats.metrics import GROUPS
+from epiframe.stats.store import MetricsStore, Period
 from epiframe.version import VERSION
 from werkzeug.utils import secure_filename
 from tempfile import mkstemp
@@ -186,6 +189,7 @@ class WebUIManager:
         self.WEBSITES = [
             self.SiteBind("/get_image", self.get_image),
             self.SiteBind("/get_status", self.get_status),
+            self.SiteBind("/get_stats", self.get_stats),
             self.SiteBind("/_log_stream", self.stream),
             self.SiteBind("/_upload_photo", self.upload_photo, methods=["POST"]),
             self.SiteBind("/_tools$", self.tools_functions),
@@ -216,6 +220,7 @@ class WebUIManager:
         self.API = [
             self.SiteBind("/api/get_image", self.get_image),
             self.SiteBind("/api/get_status", self.get_status),
+            self.SiteBind("/api/get_stats", self.get_stats),
             self.SiteBind("/api/get_log", self.stream),
             self.SiteBind("/api/upload_photo", self.upload_photo, methods=["POST"]),
             self.SiteBind("/api/action=", self.tools_functions),
@@ -401,6 +406,16 @@ class WebUIManager:
             version=VERSION,
         )
 
+    # @app.route('/get_stats')
+    @login_required
+    def get_stats(self):
+        try:
+            query = parse_query(request.args)
+        except ValueError as error:
+            return jsonify(error=str(error)), 400
+        series = MetricsStore(self.__frame.stats_file).series(query.period, query.names)
+        return jsonify(chart_data(series, query.period, self.__frame.metric))
+
     # @app.route('/_upload_photo', methods=['POST'])
     @login_required
     def upload_photo(self):
@@ -486,10 +501,7 @@ class WebUIManager:
                 self.__LOGS_HTML
             ),
             self.__STATS_HTML.replace(self.__HTML_IND, str()): render_template(
-                self.__STATS_HTML, version=VERSION
-            ),
-            self.__STATS_HTML.replace(self.__HTML_IND, str()): render_template(
-                self.__STATS_HTML, version=VERSION
+                self.__STATS_HTML, version=VERSION, groups=GROUPS, periods=list(Period)
             ),
             self.__SETTINGS_HTML.replace(self.__HTML_IND, str()): redirect(
                 "/{}/{}".format(

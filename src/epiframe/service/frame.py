@@ -173,6 +173,11 @@ class Frame:
     def stats_enabled(self) -> bool:
         return self._enabled("show_stats")
 
+    @property
+    def stats_file(self) -> Path:
+        """The statistics database (``epiframe.stats.store``)."""
+        return Path(self.config.get("stats_db_file"))
+
     # ------------------------------------------------------------- photo change
 
     @property

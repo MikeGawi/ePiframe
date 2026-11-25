@@ -64,7 +64,7 @@ Move to [next steps](#next-steps)
 
 * Install APTs:
 ```
-sudo apt-get install imagemagick webp rrdtool dcraw libatlas-base-dev python3 python3-pip RPi.GPIO fbi
+sudo apt-get install imagemagick webp dcraw libatlas-base-dev python3 python3-pip RPi.GPIO fbi
 ```
 * Install PIPs:
 ```
