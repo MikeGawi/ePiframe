@@ -190,6 +190,16 @@ def test_import_of_a_wrong_file(client: FlaskClient, frame: Frame) -> None:
     assert frame.config_file.read_text() == before
 
 
+def test_settings_with_errors_are_not_saved(client: FlaskClient, frame: Frame) -> None:
+    form = {"convert_bin_path": "/missing/convert", "SAVE": "SAVE"}
+
+    client.post("/settings/General", data=form)
+    page = client.get("/settings/General").text
+
+    assert "/missing/convert" not in frame.config_file.read_text()
+    assert "convert_bin_path configuration entry path does not exist!" in page
+
+
 def test_import_without_file(client: FlaskClient) -> None:
     response = client.post("/import")
 

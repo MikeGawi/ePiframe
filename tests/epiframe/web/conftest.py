@@ -1,5 +1,6 @@
 """A WebUI of a frame in ``tmp_path`` (config, users, secret key, photos)."""
 
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,13 @@ PASSWORD = "secret"  # noqa: S105 (test user)
 FAST_HASH = "scrypt:1024:8:1"
 
 MakeWeb = Callable[..., WebUI]
+
+# FILE entries must exist or the configuration can't be saved or imported; the
+# defaults (/usr/bin/convert, /usr/bin/fbi) are missing on CI machines
+MACHINE_INDEPENDENT = {
+    "convert_bin_path": sys.executable,
+    "fbi_bin_path": sys.executable,
+}
 
 
 @pytest.fixture
@@ -72,7 +80,7 @@ def make_web(
     monkeypatch.setattr(frame_module, "PluginManager", _plugins)
 
     def make(*, plugins: bool = False, login: bool = False, **entries: str) -> WebUI:
-        write_config(tmp_path / "config.cfg", **entries)
+        write_config(tmp_path / "config.cfg", **(MACHINE_INDEPENDENT | entries))
         frame = Frame(
             triggers.append,
             tmp_path / "config.cfg",
