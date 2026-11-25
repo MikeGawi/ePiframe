@@ -102,7 +102,7 @@ def test_when(commands: Commands) -> None:
 
 def test_next(commands: Commands, frame: FakeFrame) -> None:
     assert run(commands, "/next") == [("text", "OK")]
-    assert frame.calls == [("fire_event",)]
+    assert frame.calls == [("next_photo",)]
 
 
 def test_next_busy(commands: Commands, frame: FakeFrame) -> None:
@@ -113,13 +113,13 @@ def test_next_busy(commands: Commands, frame: FakeFrame) -> None:
 
 
 def test_current(commands: Commands, frame: FakeFrame) -> None:
-    frame.current = "/frame/photo.bmp"
+    frame.current = Path("/frame/photo.bmp")
 
     assert run(commands, "/current") == [("photo", Path("/frame/photo.bmp"))]
 
 
 def test_original(commands: Commands, frame: FakeFrame) -> None:
-    frame.original = "/frame/origphoto.jpg"
+    frame.original = Path("/frame/origphoto.jpg")
 
     assert run(commands, "/original") == [("photo", Path("/frame/origphoto.jpg"))]
 
@@ -133,11 +133,11 @@ def test_longer(commands: Commands, frame: FakeFrame) -> None:
     assert run(commands, "/longer 2 and more") == [
         ("text", "OK\nWill be displayed 2 time(s) longer (5 is max in configuration)")
     ]
-    assert frame.calls == [("save_interval", 2)]
+    assert frame.calls == [("save_multiplier", 2)]
 
 
 def test_longer_sums_up(commands: Commands, frame: FakeFrame) -> None:
-    frame.interval = 2
+    frame.multiplier.value = 2
 
     assert run(commands, "/longer 1") == [
         (
@@ -146,23 +146,23 @@ def test_longer_sums_up(commands: Commands, frame: FakeFrame) -> None:
             "\nMultiplication sum up if already set",
         )
     ]
-    assert frame.calls == [("save_interval", 3)]
+    assert frame.calls == [("save_multiplier", 3)]
 
 
 def test_longer_is_capped(commands: Commands, frame: FakeFrame) -> None:
-    frame.interval = 4
+    frame.multiplier.value = 4
 
     run(commands, "/longer 7")
 
-    assert frame.calls == [("save_interval", 5)]
+    assert frame.calls == [("save_multiplier", 5)]
 
 
 def test_longer_negative_interval_ignored(commands: Commands, frame: FakeFrame) -> None:
-    frame.interval = -1
+    frame.multiplier.value = -1
 
     run(commands, "/longer 1")
 
-    assert frame.calls == [("save_interval", 1)]
+    assert frame.calls == [("save_multiplier", 1)]
 
 
 @pytest.mark.parametrize("value", ["0", "-1", "x", "1.5"])
@@ -176,7 +176,7 @@ def test_longer_without_value(commands: Commands) -> None:
 
 
 def test_longer_disabled(commands: Commands, frame: FakeFrame) -> None:
-    frame.multiplication = False
+    frame.interval_enabled = False
 
     assert run(commands, "/longer 2") == [
         ("text", "Interval multiplication is disabled in configuration")

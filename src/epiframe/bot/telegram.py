@@ -120,11 +120,11 @@ class TelegramBot:
     def __init__(self, frame: Frame, bot: telebot.TeleBot | None = None) -> None:
         frame.refresh()
         self.frame = frame
-        self.token = frame.get_token()
+        self.token = frame.token
         self.bot = bot or connect(self.token)
         self.commands = Commands(frame)
         self.bot.set_update_listener(self.handle)
-        if not allowed_chats(frame.get_chat_id()):
+        if not allowed_chats(frame.chat_id):
             log.warning(
                 "Telegram bot: chat_id is empty, nobody can control the frame "
                 "(the bot answers with the chat id to add)"
@@ -165,7 +165,7 @@ class TelegramBot:
                 chat.send_text(ERROR_REP)
 
     def dispatch(self, message: Message, chat: TelegramChat) -> None:
-        allowed = allowed_chats(self.frame.get_chat_id())
+        allowed = allowed_chats(self.frame.chat_id)
         if chat.chat_id not in allowed:
             self.refuse(chat, bool(allowed))
         elif message.content_type == "text":
@@ -183,13 +183,13 @@ class TelegramBot:
 
     def show_photo(self, file_id: str, extension: str, chat: TelegramChat) -> None:
         """Save the photo as the downloaded photo and send it to the display."""
-        if self.frame.pid_file_exists():
+        if self.frame.busy:
             chat.send_text(f"{PROGRESS_REP}\n{LATER_REP}")
             return
         info = self.bot.get_file(file_id)
         if not info.file_path:
             raise ValueError("Telegram gave no file to download")
         content = self.bot.download_file(info.file_path)
-        Path(f"{self.frame.get_download_file()}.{extension}").write_bytes(content)
-        self.frame.refresh_frame()
+        self.frame.download_file(extension).write_bytes(content)
+        self.frame.redisplay()
         chat.send_text(SENDING_REP)

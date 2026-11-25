@@ -7,10 +7,12 @@ import os
 import signal
 import subprocess
 from threading import Thread
+from datetime import datetime, timedelta
+from epiframe.config import paths
 from epiframe.core.logs import get_logger, setup_logging
+from epiframe.service.frame import Frame, Trigger, timestamp_text
 from misc.daemon import Daemon
 from modules.statsmanager import STATS_STEP
-import modules.backendmanager as backend
 from epiframe.bot.telegram import TelegramBot
 from modules.webuimanager import WebUIManager
 from modules.statsmanager import StatsManager
@@ -33,7 +35,7 @@ class Service(Daemon):
     __stats_thread: Thread = None
     __event: sched.Event = None
     __plugin_threads = []
-    __backend: backend.BackendManager = None
+    __frame: Frame = None
     __scheduler: sched.scheduler = None
 
     __SERVICE_LOG_IND = "--------ePiframe Service: "
@@ -61,9 +63,13 @@ class Service(Daemon):
     __TGBOT_ARG = "telegram"
 
     def run(self, args=None):
-        self.__backend = backend.BackendManager(self.event, self.__config_path)
+        self.__frame = Frame(
+            self.event,
+            os.path.join(self.__config_path, paths.CONFIG_FILE),
+            self.__config_path,
+        )
         # the service runs in the background: log to the file only
-        setup_logging(self.__backend.get_config().get("log_files"), console=False)
+        setup_logging(self.__frame.config.get("log_files"), console=False)
         log.info(self.__SERVICE_LOG_STARTED)
 
         self.__scheduler = sched.scheduler(time.time, time.sleep)
@@ -91,12 +97,12 @@ class Service(Daemon):
             self.__web_thread.start()
 
     def __run_plugins(self):
-        for plug in self.__backend.get_plugins().with_hook("add_service_thread"):
+        for plug in self.__frame.plugins.with_hook("add_service_thread"):
             thread = Thread(
                 target=plug.add_service_thread,
                 args=(
                     self,
-                    self.__backend,
+                    self.__frame,
                 ),
             )
             self.__plugin_threads.append(thread)
@@ -107,10 +113,10 @@ class Service(Daemon):
             self.__scheduler.run()
 
     def stats_thread(self):
-        self.__stats_man = StatsManager(self.__backend)
+        self.__stats_man = StatsManager(self.__frame)
         while True:
-            self.__backend.refresh()
-            if self.__backend.is_web_enabled() and self.__backend.stats_enabled():
+            self.__frame.refresh()
+            if self.__frame.web_enabled and self.__frame.stats_enabled:
                 try:
                     self.__stats_man.feed_stats()
                 except Exception as exception:
@@ -121,11 +127,11 @@ class Service(Daemon):
 
     def web_thread(self):
         while True:
-            self.__backend.refresh()
-            if self.__backend.is_web_enabled():
+            self.__frame.refresh()
+            if self.__frame.web_enabled:
                 try:
                     log.info(self.__SERVICE_WEB_START)
-                    self.__web_man = WebUIManager(self.__backend)
+                    self.__web_man = WebUIManager(self.__frame)
                     self.__web_man.start()
                 except Exception as exception:
                     log.error(self.__ERROR_WEB.format(exception))
@@ -135,11 +141,11 @@ class Service(Daemon):
 
     def telebot_thread(self):
         while True:
-            self.__backend.refresh()
-            if self.__backend.is_telebot_enabled():
+            self.__frame.refresh()
+            if self.__frame.telegram_enabled:
                 try:
                     log.info(self.__SERVICE_TGBOT_START)
-                    self.__telebot = TelegramBot(self.__backend)
+                    self.__telebot = TelegramBot(self.__frame)
                     self.__telebot.start()
                 except Exception as e:
                     log.error(self.__ERROR_TELE_BOT.format(e))
@@ -147,27 +153,27 @@ class Service(Daemon):
 
             time.sleep(self.__WAIT_EVENT_TIME)
 
-    def event(self, params=None):
+    def event(self, trigger: Trigger):
         log.info(self.__SERVICE_TRIGGER)
         if self.__scheduler and self.__event:
             self.__scheduler.cancel(self.__event)
-        self.task(params)
+        self.task(trigger)
 
-    def task(self, params=None):
-        self.__backend.refresh()
+    def task(self, trigger: Trigger | None = None):
+        self.__frame.refresh()
         interval: int = -1
         sleep = False
 
-        if self.__backend.is_interval_mult_enabled():
+        if self.__frame.interval_enabled:
             interval = self.__control_interval(interval)
 
-        if interval < 0 or params:
-            sleep = self.__work(params, sleep)
+        if interval < 0 or trigger:
+            sleep = self.__work(trigger, sleep)
 
         frame_time = (
-            self.__backend.get_slide_interval() if not sleep else self.__WAIT_EVENT_TIME
+            self.__frame.slide_interval if not sleep else self.__WAIT_EVENT_TIME
         )
-        self.__backend.update_time()
+        self.__frame.schedule_next()
         self.__log_next(sleep)
         self.__event = self.__scheduler.enter(
             frame_time, self.__EVENT_PRIORITY, self.task
@@ -175,27 +181,25 @@ class Service(Daemon):
 
     def __log_next(self, sleep: bool):
         if not sleep:
-            log.info(self.__SERVICE_LOG_NEXT.format(self.__backend.next_time()))
+            next_task = datetime.now() + timedelta(seconds=self.__frame.slide_interval)
+            log.info(self.__SERVICE_LOG_NEXT.format(timestamp_text(next_task)))
 
-    def __work(self, params, sleep: bool) -> bool:
-        if self.__backend.should_i_work_now() or (
-            params and self.__backend.triggers_enabled()
-        ):
-            self.__do_work(params)
+    def __work(self, trigger: Trigger | None, sleep: bool) -> bool:
+        if self.__frame.working() or (trigger and self.__frame.triggers_enabled):
+            self.__do_work(trigger)
         else:
             sleep = self.__no_work()
         return sleep
 
-    def __do_work(self, params):
+    def __do_work(self, trigger: Trigger | None):
         self.__NUMBER_OF_NOTIF = 0
         log.info(self.__SERVICE_LOG_STARTING)
-        self.__backend.display_power_config(True)
-        par = params if params != self.__backend.get_empty_params() else str()
-        args = (self.__script + par.split()) if par else self.__script
-        subprocess.Popen(args)
+        self.__frame.power_display(True)
+        arguments = list(trigger.arguments) if trigger else []
+        subprocess.Popen(self.__script + arguments)
 
     def __no_work(self) -> bool:
-        self.__backend.display_power_config(False)
+        self.__frame.power_display(False)
         if self.__NUMBER_OF_NOTIF == 0:
             log.info(self.__SERVICE_LOG_SLEEPING)
         self.__NUMBER_OF_NOTIF = (self.__NUMBER_OF_NOTIF + 1) % 10
@@ -203,15 +207,15 @@ class Service(Daemon):
 
     def __control_interval(self, interval: int) -> int:
         try:
-            interval = self.__backend.get_interval()
+            interval = self.__frame.multiplier.read()
         except Exception:
             pass
         if interval > 0:
             interval -= 1
-            self.__backend.save_interval(interval)
+            self.__frame.multiplier.save(interval)
             log.info(self.__SERVICE_LOG_MULT)
         else:
-            self.__backend.remove_interval()
+            self.__frame.multiplier.remove()
             interval = -1
         return interval
 

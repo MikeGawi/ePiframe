@@ -3,8 +3,10 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
+from epiframe.core.system import fahrenheit
+
 if TYPE_CHECKING:
-    from modules.backendmanager import BackendManager
+    from epiframe.service.frame import Frame
 
 
 # stats sampling interval in seconds
@@ -32,22 +34,20 @@ class StatsManager:
         "temp": "/opt/vc/bin/vcgencmd measure_temp 2> /dev/null | awk -F \"[=']\" '{print $2}' 2> /dev/null",
     }
 
-    def __init__(self, backend: BackendManager):
-        self.__backend = backend
-        self.__tool = self.__backend.get_config().get("rrdtool_bin_path")
+    def __init__(self, frame: Frame):
+        self.__frame = frame
+        self.__tool = self.__frame.config.get("rrdtool_bin_path")
         self.__init_files()
 
     def __init_files(self):
-        if not os.path.exists(os.path.join(self.__backend.get_path(), self.__PATH)):
+        if not os.path.exists(os.path.join(self.__frame.root, self.__PATH)):
             os.makedirs(
-                os.path.dirname(os.path.join(self.__backend.get_path(), self.__PATH)),
+                os.path.dirname(os.path.join(self.__frame.root, self.__PATH)),
                 exist_ok=True,
             )
 
         for file in self.__FILES.keys():
-            path = os.path.join(
-                self.__backend.get_path(), self.__PATH, file + self.__EXTENSION
-            )
+            path = os.path.join(self.__frame.root, self.__PATH, file + self.__EXTENSION)
             if not os.path.exists(path):
                 self.__run_cmd(file, path)
 
@@ -67,9 +67,7 @@ class StatsManager:
 
     def feed_stats(self):
         for file in self.__CMDS.keys():
-            path = os.path.join(
-                self.__backend.get_path(), self.__PATH, file + self.__EXTENSION
-            )
+            path = os.path.join(self.__frame.root, self.__PATH, file + self.__EXTENSION)
             self.__feed(file, path)
 
     def __feed(self, file: str, path: str):
@@ -80,6 +78,13 @@ class StatsManager:
 
     def __get_output(self, file: str) -> list:
         out = os.popen(self.__CMDS[file]).read().strip().split()
-        if out and file == "temp" and not self.__backend.is_metric():
-            out = [self.__backend.calc_to_f("".join(out))]
+        if out and file == "temp" and not self.__frame.metric:
+            out = [to_fahrenheit("".join(out))]
         return out
+
+
+def to_fahrenheit(celsius: str) -> str:
+    try:
+        return str(round(fahrenheit(float(celsius)), 1))
+    except ValueError:
+        return "-"

@@ -303,8 +303,8 @@ def test_handle_photo(frame: FakeFrame, api: MagicMock, bot: TelegramBot) -> Non
 
     api.get_file.assert_called_once_with("big")
     api.download_file.assert_called_once_with("photos/file_1.jpg")
-    assert Path(frame.download + ".jpg").read_bytes() == b"JPEG"
-    assert frame.calls[-1] == ("refresh_frame",)
+    assert Path(f"{frame.download}.jpg").read_bytes() == b"JPEG"
+    assert frame.calls[-1] == ("redisplay",)
     api.send_message.assert_called_once_with(
         1, "Sending photo to display", parse_mode=""
     )
@@ -317,8 +317,8 @@ def test_handle_document(frame: FakeFrame, api: MagicMock, bot: TelegramBot) -> 
     bot.handle([message(document=document(mime_type="image/png"))])
 
     api.get_file.assert_called_once_with("doc")
-    assert Path(frame.download + ".png").read_bytes() == b"PNG"
-    assert frame.calls[-1] == ("refresh_frame",)
+    assert Path(f"{frame.download}.png").read_bytes() == b"PNG"
+    assert frame.calls[-1] == ("redisplay",)
 
 
 def test_handle_photo_busy(frame: FakeFrame, api: MagicMock, bot: TelegramBot) -> None:
@@ -327,7 +327,7 @@ def test_handle_photo_busy(frame: FakeFrame, api: MagicMock, bot: TelegramBot) -
     bot.handle([message(photo=photo_sizes("big"))])
 
     api.get_file.assert_not_called()
-    assert ("refresh_frame",) not in frame.calls
+    assert ("redisplay",) not in frame.calls
     api.send_message.assert_called_once_with(
         1, "Frame update already in progress\nTry again later", parse_mode=""
     )
@@ -341,7 +341,7 @@ def test_handle_photo_without_path(
     bot.handle([message(photo=photo_sizes("big"))])
 
     api.download_file.assert_not_called()
-    assert ("refresh_frame",) not in frame.calls
+    assert ("redisplay",) not in frame.calls
     api.send_message.assert_called_once_with(1, "Error", parse_mode="")
 
 
@@ -355,7 +355,7 @@ def test_handle_photo_download_error(
 
     bot.handle([message(photo=photo_sizes("big"))])
 
-    assert ("refresh_frame",) not in frame.calls
+    assert ("redisplay",) not in frame.calls
     api.send_message.assert_called_once_with(1, "Error", parse_mode="")
     assert f"Telegram bot error: url /file/bot{HIDDEN}/" in caplog.text
     assert TOKEN not in caplog.text

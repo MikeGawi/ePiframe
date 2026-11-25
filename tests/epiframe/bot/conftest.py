@@ -13,6 +13,20 @@ def message(chat_id: int = 1, **fields: Any) -> Message:
     return parsed
 
 
+class FakeMultiplier:
+    """:class:`epiframe.bot.commands.Multiplier` recording saves in ``calls``."""
+
+    def __init__(self, calls: list[tuple[Any, ...]]) -> None:
+        self.calls = calls
+        self.value = 0
+
+    def read(self) -> int:
+        return self.value
+
+    def save(self, multiplier: int) -> None:
+        self.calls.append(("save_multiplier", multiplier))
+
+
 class FakeFrame:
     """:class:`epiframe.bot.commands.Frame` recording the actions in ``calls``."""
 
@@ -21,58 +35,34 @@ class FakeFrame:
         self.token = "123456:SECRET-token"  # noqa: S105 (fake)
         self.chat_id = "1,-2"
         self.busy = False
-        self.download = str(tmp_path / "photo")
-        self.current: str | None = None
-        self.original: str | None = None
-        self.multiplication = True
-        self.interval = 0
-        self.max_interval = 5
         self.metric = True
+        self.interval_enabled = True
+        self.max_interval = 5
+        self.multiplier = FakeMultiplier(self.calls)
+        self.download = tmp_path / "photo"
+        self.current: Path | None = None
+        self.original: Path | None = None
 
     def refresh(self) -> None:
         self.calls.append(("refresh",))
 
-    def get_token(self) -> str:
-        return self.token
+    def next_photo(self) -> None:
+        self.calls.append(("next_photo",))
 
-    def get_chat_id(self) -> str:
-        return self.chat_id
+    def redisplay(self) -> None:
+        self.calls.append(("redisplay",))
 
-    def pid_file_exists(self) -> bool:
-        return self.busy
+    def download_file(self, extension: str) -> Path:
+        return Path(f"{self.download}.{extension}")
 
-    def fire_event(self) -> None:
-        self.calls.append(("fire_event",))
-
-    def refresh_frame(self) -> None:
-        self.calls.append(("refresh_frame",))
-
-    def get_download_file(self) -> str:
-        return self.download
-
-    def get_current_file(self) -> str | None:
+    def current_file(self) -> Path | None:
         return self.current
 
-    def get_original_file(self) -> str | None:
+    def original_file(self) -> Path | None:
         return self.original
 
-    def get_next_time(self) -> str:
+    def next_update_text(self) -> str:
         return "at 12:00:00\nin 5 mins 0 secs"
-
-    def is_interval_mult_enabled(self) -> bool:
-        return self.multiplication
-
-    def get_interval(self) -> int:
-        return self.interval
-
-    def get_max_interval(self) -> int:
-        return self.max_interval
-
-    def save_interval(self, number: int) -> None:
-        self.calls.append(("save_interval", number))
-
-    def is_metric(self) -> bool:
-        return self.metric
 
     def reboot(self) -> None:
         self.calls.append(("reboot",))

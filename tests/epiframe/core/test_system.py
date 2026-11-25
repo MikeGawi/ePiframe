@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -109,3 +112,110 @@ def test_temperature_missing(tmp_path: Path) -> None:
 def test_defaults() -> None:
     assert Path("/proc") == system.PROC_DIR
     assert Path("/sys/class/thermal/thermal_zone0/temp") == system.THERMAL_FILE
+
+
+# ------------------------------------------------------------------ commands
+
+
+@pytest.fixture
+def commands(monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
+    """Record the commands; they succeed."""
+    calls: list[list[str]] = []
+
+    def run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    return calls
+
+
+@pytest.fixture
+def root(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(os, "geteuid", lambda: 0)
+
+
+@pytest.fixture
+def user(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(os, "geteuid", lambda: 1000)
+
+
+def test_fahrenheit() -> None:
+    assert system.fahrenheit(0) == 32
+    assert system.fahrenheit(100) == 212
+    assert system.fahrenheit(-40) == -40
+
+
+def test_run() -> None:
+    assert system.run([sys.executable, "-c", "pass"]) is True
+
+
+def test_run_failure(caplog: pytest.LogCaptureFixture) -> None:
+    command = [sys.executable, "-c", "import sys; sys.exit('no permission')"]
+
+    assert system.run(command) is False
+    assert "failed: no permission" in caplog.text
+
+
+def test_run_failure_without_message(caplog: pytest.LogCaptureFixture) -> None:
+    assert system.run([sys.executable, "-c", "raise SystemExit(3)"]) is False
+    assert "failed: exit code 3" in caplog.text
+
+
+def test_run_missing_command(caplog: pytest.LogCaptureFixture, tmp_path: Path) -> None:
+    assert system.run([str(tmp_path / "missing"), "x"]) is False
+    assert f"Can't run {tmp_path / 'missing'} x" in caplog.text
+
+
+def test_run_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(system, "COMMAND_TIMEOUT", 0.01)
+
+    command = [sys.executable, "-c", "import time; time.sleep(5)"]
+
+    assert system.run(command) is False
+
+
+@pytest.mark.usefixtures("root")
+def test_commands_as_root(commands: list[list[str]]) -> None:
+    assert system.reboot() is True
+    assert system.power_off() is True
+    assert system.restart_service() is True
+
+    assert commands == [
+        ["systemctl", "reboot"],
+        ["systemctl", "poweroff"],
+        ["systemctl", "--no-block", "restart", "ePiframe.service"],
+    ]
+
+
+@pytest.mark.usefixtures("user")
+def test_commands_as_user(commands: list[list[str]]) -> None:
+    system.reboot()
+    system.restart_service("other.service")
+
+    assert commands == [
+        ["sudo", "-n", "systemctl", "reboot"],
+        ["sudo", "-n", "systemctl", "--no-block", "restart", "other.service"],
+    ]
+
+
+@pytest.mark.parametrize(("code", "running"), [(0, True), (3, False)])
+def test_service_running(
+    monkeypatch: pytest.MonkeyPatch, code: int, running: bool
+) -> None:
+    calls: list[list[str]] = []
+
+    def run(command: list[str], **_: object) -> subprocess.CompletedProcess[bytes]:
+        calls.append(command)
+        return subprocess.CompletedProcess(command, code)
+
+    monkeypatch.setattr(subprocess, "run", run)
+
+    assert system.service_running() is running
+    assert calls == [["systemctl", "is-active", "--quiet", "ePiframe.service"]]
+
+
+def test_service_running_without_systemctl(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(system, "SYSTEMCTL", "/nonexistent/systemctl")
+
+    assert system.service_running() is False

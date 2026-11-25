@@ -25,25 +25,65 @@ from wtforms import (
 from wtforms.widgets import NumberInput, PasswordInput
 from epiframe.users.model import User
 from epiframe.users.store import UserError, Users
-from typing import TYPE_CHECKING
 from epiframe.config.manager import ConfigManager
 from epiframe.config.property import PropertyType
 from epiframe.config import paths
+from epiframe.core import system
 from epiframe.core.media_types import EXTENSIONS, EXTENSION_TO_TYPE
+from epiframe.service.frame import Frame
 from epiframe.version import VERSION
 from werkzeug.utils import secure_filename
 from tempfile import mkstemp
 import re
 import os
-import glob
 import logging
 import base64
-
-if TYPE_CHECKING:
-    import modules.backendmanager as backend_manager
-
+from datetime import timedelta
+from pathlib import Path
 
 EPIFRAME_SECRET = "ePiframeSecretlyLovesYourPhotos"
+NOTHING = "-"
+
+
+def memory_text(memory: system.Memory | None) -> str:
+    return f"{memory.ram.percent}%" if memory else NOTHING
+
+
+def load_text(load: tuple[float, float, float] | None) -> str:
+    return " ".join(f"{value:.2f}" for value in load) if load else NOTHING
+
+
+UPTIME_UNITS = (("week", 604800), ("day", 86400), ("hour", 3600), ("minute", 60))
+
+
+def _counts(seconds: int) -> list[tuple[int, str]]:
+    counts = []
+    for unit, size in UPTIME_UNITS:
+        count, seconds = divmod(seconds, size)
+        counts.append((count, unit))
+    return counts
+
+
+def uptime_text(uptime: timedelta | None) -> str:
+    """As ``uptime --pretty`` (1.x): ``up 1 week, 1 day, 14 hours, 52 minutes``."""
+    if uptime is None:
+        return NOTHING
+    counts = _counts(int(uptime.total_seconds()))
+    parts = [f"{count} {unit}{'s' * (count > 1)}" for count, unit in counts if count]
+    return "up " + ", ".join(parts or ["0 minutes"])
+
+
+def power_state_text(on: bool | None) -> str:
+    """``"1"`` on, ``"0"`` off or unknown (as 1.x)."""
+    return "1" if on else "0"
+
+
+def temperature_text(celsius: float | None, metric: bool) -> str:
+    if celsius is None:
+        return NOTHING
+    if metric:
+        return f"{celsius:.1f}\N{DEGREE SIGN}C"
+    return f"{system.fahrenheit(celsius):.1f}\N{DEGREE SIGN}F"
 
 
 class WebUIManager:
@@ -112,11 +152,11 @@ class WebUIManager:
             self.icon = icon
             self.action = action
 
-    def __init__(self, backend: backend_manager.BackendManager):
-        self.__backend = backend
+    def __init__(self, frame: Frame):
+        self.__frame = frame
         self.__users_manager = Users(paths.USERS_DB_FILE)
 
-        self.app = Flask(__name__, root_path=backend.get_path())
+        self.app = Flask(__name__, root_path=str(frame.root))
         self.app.config["SECRET_KEY"] = EPIFRAME_SECRET
 
         self.__add_menu()
@@ -168,10 +208,8 @@ class WebUIManager:
         ]
         for site in self.WEBSITES:
             self.app.add_url_rule(site.url, methods=site.methods, view_func=site.func)
-        for plugin in self.__backend.get_plugins().with_hook("add_website"):
-            for website in plugin.add_website(
-                self, self.__users_manager, self.__backend
-            ):
+        for plugin in self.__frame.plugins.with_hook("add_website"):
+            for website in plugin.add_website(self, self.__users_manager, self.__frame):
                 self.app.register_blueprint(website, url_prefix="/")
 
     def __add_api(self):
@@ -185,8 +223,8 @@ class WebUIManager:
             self.SiteBind("/api/display_power=", self.display_control),
             self.SiteBind("/api/display_power=<action>", self.display_control),
         ]
-        for plugin in self.__backend.get_plugins().with_hook("extend_api"):
-            self.API += plugin.extend_api(self, self.__users_manager, self.__backend)
+        for plugin in self.__frame.plugins.with_hook("extend_api"):
+            self.API += plugin.extend_api(self, self.__users_manager, self.__frame)
         for api_site in self.API:
             self.app.add_url_rule(
                 api_site.url,
@@ -199,27 +237,27 @@ class WebUIManager:
         self.ACTIONS = {
             self.__NEXT_ACT: self.ActionEntry(
                 "Next Photo",
-                self.__backend.next_photo,
+                self.__frame.next_photo,
                 "bi bi-skip-end",
                 self.__NEXT_ACT,
             ),
             self.__RESTART_ACT: self.ActionEntry(
                 "Restart Service",
-                self.__backend.restart,
+                self.__frame.restart,
                 "bi bi-arrow-repeat",
                 self.__RESTART_ACT,
             ),
             self.__REBOOT_ACT: self.ActionEntry(
                 "Reboot",
-                self.__backend.reboot,
+                self.__frame.reboot,
                 "bi bi-arrow-counterclockwise",
                 self.__REBOOT_ACT,
             ),
         }
-        for plugin in self.__backend.get_plugins().with_hook("add_action"):
+        for plugin in self.__frame.plugins.with_hook("add_action"):
             self.ACTIONS = self.merge_dicts(
                 self.ACTIONS,
-                plugin.add_action(self, self.__users_manager, self.__backend),
+                plugin.add_action(self, self.__users_manager, self.__frame),
             )
 
     @staticmethod
@@ -259,7 +297,7 @@ class WebUIManager:
         )
 
     def config(self) -> ConfigManager:
-        return self.__backend.get_config()
+        return self.__frame.config
 
     @staticmethod
     def adapt_name(config: ConfigManager, name: str) -> str:
@@ -327,14 +365,11 @@ class WebUIManager:
     @login_required
     def get_image(self):
         thumb = self.__THUMB_IND if self.__THUMB_TAG in request.args else str()
-        filename = str()
 
         if self.__ORIGINAL_TAG in request.args:
-            filename = self.__get_original_thumb(filename, thumb)
+            filename = self.__get_original(thumb)
         else:
-            filename = self.__backend.get_filename_if_exists(
-                thumb + "photo_convert_filename"
-            )
+            filename = self.__frame.file(thumb + "photo_convert_filename")
 
         return (
             send_file(
@@ -345,34 +380,24 @@ class WebUIManager:
             else self.__NO_PHOTO_ERROR
         )
 
-    def __get_original_thumb(self, filename: str, thumb: str) -> str:
+    def __get_original(self, thumb: str) -> Path | None:
         if not thumb:
-            files = glob.glob(f"{self.__backend.get_download_file()}.*")
-            if files:
-                filename = max(files, key=os.path.getctime)
-        else:
-            filename = self.__backend.get_filename_if_exists(
-                "thumb_photo_download_name"
-            )
-        return filename
+            return self.__frame.original_file()
+        return self.__frame.file("thumb_photo_download_name")
 
     # @app.route('/_get_status')
     @login_required
     def get_status(self):
         return jsonify(
-            mem=self.__backend.get_mem() + "%",
-            load=self.__backend.get_load(),
-            uptime=self.__backend.get_uptime(),
-            state=self.__backend.get_state(),
-            temp=self.__backend.get_temp(),
-            update=self.__backend.get_next_time(),
-            service=self.__backend.get_service_state(),
-            original=self.__backend.get_filename_modification_time_if_exists(
-                "thumb_photo_download_name"
-            ),
-            converted=self.__backend.get_filename_modification_time_if_exists(
-                "thumb_photo_convert_filename"
-            ),
+            mem=memory_text(system.memory()),
+            load=load_text(system.load_average()),
+            uptime=uptime_text(system.uptime()),
+            state=self.__frame.state,
+            temp=temperature_text(system.temperature(), self.__frame.metric),
+            update=self.__frame.next_update_text(),
+            service="Running" if system.service_running() else "Not running!",
+            original=self.__frame.modified("thumb_photo_download_name"),
+            converted=self.__frame.modified("thumb_photo_convert_filename"),
             version=VERSION,
         )
 
@@ -397,10 +422,10 @@ class WebUIManager:
         extension = file.filename.rsplit(".")[-1].lower()
         if file and extension in EXTENSIONS:
             secure_filename(file.filename)
-            file.save(self.__backend.get_download_file() + "." + extension)
+            file.save(self.__frame.download_file(extension))
         else:
             result = jsonify(error="File unknown!")
-        self.__backend.refresh_frame()
+        self.__frame.redisplay()
         return result
 
     # @app.route('/_log_stream')
@@ -432,7 +457,7 @@ class WebUIManager:
                     temp_conf = ConfigManager(temp, paths.CONFIG_FILE_DEFAULT)
                     temp_conf.verify()
                     temp_conf.save(paths.CONFIG_FILE)
-                    self.__backend.refresh()
+                    self.__frame.refresh()
                     flash("File has been imported successfully!")
                 except Exception as exception:
                     flash(f"Error importing settings file: {str(exception)}")
@@ -449,7 +474,7 @@ class WebUIManager:
         if url == self.__PLUGINS_HTML.replace(
             self.__HTML_IND, str()
         ) or url == self.__SETTINGS_HTML.replace(self.__HTML_IND, str()):
-            self.__backend.refresh()
+            self.__frame.refresh()
 
         templates = {
             self.__TOOLS_HTML.replace(self.__HTML_IND, str()): render_template(
@@ -489,7 +514,7 @@ class WebUIManager:
                 if action in self.ACTIONS:
                     self.ACTIONS[action].function()
                 elif action == self.__POWER_OFF_ACT:
-                    self.__backend.power_off()
+                    self.__frame.power_off()
                 else:
                     result = jsonify(error="Action Unknown!")
             else:
@@ -504,13 +529,13 @@ class WebUIManager:
         if request.method == "GET":
             if action:
                 if action.lower() in ["0", "false", "off"]:
-                    self.__backend.display_power(False)
+                    self.__frame.hdmi.set(False)
                 elif action.lower() in ["1", "true", "on"]:
-                    self.__backend.display_power(True)
+                    self.__frame.hdmi.set(True)
                 else:
                     result = jsonify(error="Action Unknown!")
             else:
-                result = jsonify(state=self.__backend.get_display_power())
+                result = jsonify(state=power_state_text(self.__frame.hdmi.state()))
         else:
             result = jsonify(error="Method Not Allowed!")
         return result
@@ -756,7 +781,7 @@ class WebUIManager:
     # @app.route('/plugins', self.plugins, methods=['GET', 'POST'])
     @login_required
     def plugins(self):
-        if self.__backend.get_plugins().plugins:
+        if self.__frame.plugins.plugins:
             if not request.args.get("plugin") == self.__ORDER_LABEL:
                 curr_plugin = self.__get_current_plugin()
                 config = curr_plugin.config
@@ -782,7 +807,7 @@ class WebUIManager:
                     settings,
                 )
             else:
-                order = self.__backend.get_plugins().read_order()
+                order = self.__frame.plugins.read_order()
                 if request.method == "POST":
                     return self.__process_order(order)
                 return self.__order_template(order)
@@ -825,21 +850,19 @@ class WebUIManager:
         return (
             [
                 plugin
-                for plugin in self.__backend.get_plugins().plugins
+                for plugin in self.__frame.plugins.plugins
                 if plugin.name == request.args.get("plugin")
             ][0]
             if request.args.get("plugin")
-            else self.__backend.get_plugins().plugins[0]
+            else self.__frame.plugins.plugins[0]
         )
 
     def __process_order(self, order: list) -> Response:
         if request.form.get(self.__BUT_SAVE) == self.__BUT_SAVE:
-            self.__backend.get_plugins().save_order(
-                request.form.get("list_order").split(",")
-            )
+            self.__frame.plugins.save_order(request.form.get("list_order").split(","))
         elif request.form.get(self.__BUT_DEFAULTS) == self.__BUT_DEFAULTS:
             order.sort()
-            self.__backend.get_plugins().save_order(order)
+            self.__frame.plugins.save_order(order)
         return redirect("{}?plugin={}".format(request.base_url, self.__ORDER_LABEL))
 
     def __plugin_settings_template(
@@ -856,7 +879,7 @@ class WebUIManager:
             order="",
             plugin_name=curr_plugin.name,
             sett_name=settings,
-            plugins=[x.name for x in self.__backend.get_plugins().plugins]
+            plugins=[x.name for x in self.__frame.plugins.plugins]
             + [self.__ORDER_LABEL],
             form=self.__build_settings(config, properties),
             navlabels=config.get_sections(),
@@ -871,7 +894,7 @@ class WebUIManager:
             order=order,
             plugin_name=self.__ORDER_LABEL,
             sett_name="",
-            plugins=[plugin.name for plugin in self.__backend.get_plugins().plugins]
+            plugins=[plugin.name for plugin in self.__frame.plugins.plugins]
             + [self.__ORDER_LABEL],
             form=None,
             navlabels="",
