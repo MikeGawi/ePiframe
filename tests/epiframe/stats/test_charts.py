@@ -1,31 +1,23 @@
+from dataclasses import asdict
+
 import pytest
 
-from epiframe.stats.charts import Query, chart_data, parse_query
+from epiframe.stats.charts import ChartMetric, chart_data, metric_names
 from epiframe.stats.metrics import METRIC_NAMES
 from epiframe.stats.store import Period, Series
 
 
-def test_default_query() -> None:
-    assert parse_query({}) == Query(Period.DAY, METRIC_NAMES)
-    assert parse_query({"period": "", "metrics": " , "}) == Query(
-        Period.DAY, METRIC_NAMES
-    )
+def test_all_metrics_by_default() -> None:
+    assert metric_names([]) == METRIC_NAMES
 
 
-def test_query() -> None:
-    query = parse_query({"period": "year", "metrics": "cpu, load1,cpu"})
-
-    assert query == Query(Period.YEAR, ("cpu", "load1"))
-
-
-def test_unknown_period() -> None:
-    with pytest.raises(ValueError, match="Unknown period 'hour', use one of: day,"):
-        parse_query({"period": "hour"})
+def test_metric_names_without_duplicates() -> None:
+    assert metric_names(["cpu", "load1", "cpu"]) == ("cpu", "load1")
 
 
 def test_unknown_metrics() -> None:
     with pytest.raises(ValueError, match=r"Unknown metrics: a, b$"):
-        parse_query({"metrics": "load1,a,b"})
+        metric_names(["load1", "a", "b"])
 
 
 SERIES = Series(
@@ -36,7 +28,7 @@ SERIES = Series(
 
 
 def test_chart_data_metric() -> None:
-    assert chart_data(SERIES, Period.DAY, metric=True) == {
+    assert asdict(chart_data(SERIES, Period.DAY, metric=True)) == {
         "period": "day",
         "step": 10,
         "time": [100, 110],
@@ -60,18 +52,14 @@ def test_chart_data_metric() -> None:
 def test_chart_data_imperial() -> None:
     data = chart_data(SERIES, Period.WEEK, metric=False)
 
-    assert data["period"] == "week"
-    assert data["metrics"][0]["values"] == [0.12, None]
-    assert data["metrics"][1]["unit"] == "\N{DEGREE SIGN}F"
-    assert data["metrics"][1]["values"] == [122.0, 118.96]
+    assert data.period == Period.WEEK
+    assert data.metrics[0].values == [0.12, None]
+    assert data.metrics[1].unit == "\N{DEGREE SIGN}F"
+    assert data.metrics[1].values == [122.0, 118.96]
 
 
 def test_chart_data_empty() -> None:
     data = chart_data(Series(step=3600, values={"cpu": []}), Period.MONTH, True)
 
-    assert data == {
-        "period": "month",
-        "step": 3600,
-        "time": [],
-        "metrics": [{"name": "cpu", "label": "CPU usage", "unit": "%", "values": []}],
-    }
+    assert data.time == []
+    assert data.metrics == [ChartMetric("cpu", "CPU usage", "%", [])]

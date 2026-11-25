@@ -432,7 +432,7 @@ web_host=0.0.0.0
 
 # ePiframe WebUI port.
 # SOMETIMES YOU NEED TO OPEN IT IN YOUR FIREWALL SETTINGS!
-# Ports below 5000 need root privileges.
+# Ports below 1024 need root privileges (check them with --test-web).
 # Value in 1-65535 range.
 # Default: 80
 web_port=80

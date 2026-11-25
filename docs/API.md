@@ -17,6 +17,19 @@ e.g.:
 
 **_NOTE_** - Header authentication (basic) with API key (Base64 encoding allowed) is also possible.
 
+**_NOTE_** - A request without a valid API key (when there are users) returns HTTP status 401 with ```{"error": "Unauthorized"}```.
+Wrong parameters return HTTP status 400, unknown commands 404 and wrong methods 405, always with
+```{"error": "<error message>"}```.
+
+## OpenAPI document
+
+| Command | Type | Parameters |
+|--|--|--|
+| ```/api/openapi.json``` | GET | None |
+
+Returns the [OpenAPI](https://spec.openapis.org/oas/v3.1.0) 3.1 description of all commands (also those added by plugins),
+generated from the ePiframe code. It can be opened in any OpenAPI viewer or used to generate clients.
+
 ## Get Image
 
 | Command | Type | Parameters |
@@ -32,7 +45,9 @@ Returns image of displayed photo (by default). Can display thumbnail with ```thu
 * ```/api/get_image``` - displayed photo
 
 **Returns:**
-Image, MIME type according to the image type.
+Image, MIME type according to the image type. Without a photo: HTTP status 404 with ```{"error": "No photo!"}```.
+
+**_NOTE_** - ```thumb``` and ```original``` may have a value: ```1```/```true```/```yes```/```on``` (or empty) and ```0```/```false```/```no```/```off```.
 
 ## Get Status
 
@@ -115,7 +130,7 @@ e.g.
 }
 ```
 
-An unknown period or metric returns HTTP status 400 with ```{"error": "<message>"}```.
+An unknown period or metric returns HTTP status 400 with ```{"error": "<error message>"}```.
 
 ## Get Log
 
@@ -136,7 +151,7 @@ Real time ePiframe log file in text format with line breaks
 
 | Command | Type | Parameters |
 |--|--|--|
-| ```/api/action=<action>``` | GET | where ```<action>``` should be one of</br><ul><li>```next``` - trigger photo change</li><li>```restart``` - restart ePiframe service</li><li>```reboot``` - reboot ePiframe</li><li>```poweroff``` - power off ePiframe</li></ul> |
+| ```/api/action=<action>``` | GET | where ```<action>``` should be one of</br><ul><li>```next``` - trigger photo change</li><li>```restart``` - restart ePiframe service</li><li>```reboot``` - reboot ePiframe</li><li>```poweroff``` - power off ePiframe</li><li>an action added by a plugin</li></ul> |
 
 Performs action on ePiframe. **No confirmation is needed!**
 
@@ -160,14 +175,14 @@ Response or error in JSON format.
 { "error":"<error message>" }
 ```
 
-* ```Action Unknown!``` - when action value is unknown
-* ```No Action!``` - when no action value was provided
+* ```Unknown action '<action>'!``` (HTTP status 400) - when action value is unknown
+* ```Not Found``` (HTTP status 404) - when no action value was provided
 
 ## Control display power
 
 | Command | Type | Parameters |
 |--|--|--|
-| ```/api/display_power=<onoff>``` | GET | where ```<onoff>``` should be one of</br><ul><li>```0``` - power off display</li><li>```1``` - power on display</li><li>empty - show current display power state</li></ul> |
+| ```/api/display_power=<onoff>``` | GET | where ```<onoff>``` should be one of</br><ul><li>```0```, ```false```, ```off``` - power off display</li><li>```1```, ```true```, ```on``` - power on display</li><li>empty - show current display power state</li></ul> |
 
 Controls ePiframe display power - only for HDMI displays. **No confirmation is needed!**
 
@@ -198,13 +213,13 @@ For ```/api/display_power=```, e.g.:
 { "error":"<error message>" }
 ```
 
-* ```Action Unknown!``` - when action value is unknown
+* ```Wrong power '<onoff>', expected true or false``` (HTTP status 400) - when the value is unknown
 
 ## Upload Photo
 
 | Command | Type | Parameters |
 |--|--|--|
-| ```/api/upload_photo``` | POST | None |
+| ```/api/upload_photo``` | POST | ```file``` - the photo (```multipart/form-data```) |
 
 Upload photo target that will automatically convert and display uploaded image. The next update time will be reset.
 
@@ -225,6 +240,7 @@ Response or error in JSON format.
 { "error":"<error message>" }
 ```
 
-* ```File unknown!``` - when uploaded photo MIME type can't be recognized
+* ```Unknown file type '<file name>'!``` (HTTP status 400) - when the file extension isn't a known photo type
+* ```Missing parameter 'file'``` (HTTP status 400) - when no file was sent
 
 **_HINT_** ```curl -F "file=@photo.jpg" "http://<IP>:<PORT>/api/upload_photo?api_key=<API key value>"```

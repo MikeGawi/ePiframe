@@ -130,6 +130,7 @@ dmypy.json
 .idea/
 /pre_origphoto.*
 /misc/users.db
+/misc/secret.key
 /token.pickle
 /origphoto.*
 /index

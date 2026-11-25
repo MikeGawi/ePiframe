@@ -10,7 +10,7 @@
 	<script>
 		var scroll = 0;
 		function get_logs() {
-			$.get('{{ url_for('stream') }}', function(data) {
+			$.get('{{ url_for('get_log') }}', function(data) {
 				var output = document.getElementById('output');
 				if (data && data.length !== 0) { output.textContent = data; }
 			});

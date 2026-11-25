@@ -72,9 +72,9 @@ def test_default_hooks_do_nothing(folder: Path, tmp_path: Path) -> None:
         )
     plugin.preprocess_photo(photo)
     plugin.postprocess_photo(photo)
-    assert plugin.extend_api(None, None, None) == []
+    assert plugin.extend_api(None) == []  # type: ignore[arg-type]
     assert plugin.add_website(None, None, None) == []
-    assert plugin.add_action(None, None, None) == {}
+    assert plugin.add_action(None) == []  # type: ignore[arg-type]
     plugin.add_service_thread(None, None)
 
 

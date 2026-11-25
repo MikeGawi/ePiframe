@@ -1,11 +1,23 @@
 """Test plugin using every hook (Plugin API v2)."""
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from epiframe.photos.model import Photo
 from epiframe.plugins.base import PhotoFile
 from epiframe.plugins.base import Plugin as PluginBase
-from modules.webuimanager import WebUIManager
+from epiframe.web.api import api
+from epiframe.web.extensions import Action, MenuEntry, Route
+
+
+@dataclass(frozen=True)
+class TextPath:
+    text: str
+
+
+@dataclass(frozen=True)
+class Text:
+    text_label: str
 
 
 class Plugin(PluginBase):
@@ -29,27 +41,24 @@ class Plugin(PluginBase):
     def postprocess_photo(self, photo: PhotoFile) -> None:
         print("postprocess_photo")
 
-    @staticmethod
-    def get_text_func(text=str()):
-        from flask import jsonify
+    @api("Echo", path=TextPath, response=Text)
+    def get_text(self, path: TextPath) -> Text:
+        return Text(path.text)
 
-        return jsonify(text_label=text)
+    def undeclared(self):
+        return "not declared with @api"
 
     @staticmethod
     def dummy():
         print("I'm dummy")
 
-    def extend_api(
-        self,
-        web_manager,
-        users_manager,
-        backend,
-    ):
+    def extend_api(self, frame):
         print("extend_api")
-        new_api = [
-            WebUIManager.SiteBind("/api/get_text/<text>", self.get_text_func),
+        return [
+            Route("/api/get_text/<text>", self.get_text),
+            Route("/api/undeclared", self.undeclared),  # skipped
+            Route("/not_api/<text>", self.get_text),  # skipped
         ]
-        return new_api
 
     def add_website(
         self,
@@ -58,25 +67,15 @@ class Plugin(PluginBase):
         backend,
     ):
         menus = [
-            WebUIManager.MenuEntry("Server", "127.0.0.1", "server-menu", "bi bi-server")
+            MenuEntry("Server", "127.0.0.1", "server-menu", "bi bi-server")
         ]  # can be more than one
         web_manager.add_menu_entries(menus)
         print("add_website")
         return []
 
-    def add_action(
-        self,
-        web_manager,
-        users_manager,
-        backend,
-    ):
+    def add_action(self, frame):
         print("add_action")
-        new_action = {
-            "lightoff": WebUIManager.ActionEntry(
-                "Turn Light Off", self.dummy, "bi bi-lightbulb", "lightoff"
-            ),
-        }
-        return new_action
+        return [Action("lightoff", "Turn Light Off", self.dummy, "bi bi-lightbulb")]
 
     def add_service_thread(self, service, backend):
         print("add_service_thread")

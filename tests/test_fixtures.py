@@ -11,17 +11,3 @@ def test_fixture_request_mocker(requests_mocker):
     assert response
     assert response.status_code == HTTPStatus.OK
     assert response.json() == data
-
-
-def test_fixture_client(client):
-    assert client
-    response = client.get("/")
-    assert response.location == "/login?next=%2F"
-    assert response.status_code == HTTPStatus.FOUND
-
-
-def test_fixture_client_no_login(client_no_login):
-    assert client_no_login
-    response = client_no_login.get("/")
-    assert not response.location
-    assert response.status_code == HTTPStatus.OK
