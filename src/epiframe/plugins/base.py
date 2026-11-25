@@ -69,7 +69,7 @@ class PhotoFile:
     """The photo file a processing hook edits in place."""
 
     path: Path
-    photo: Photo | None  # None for --test-convert / --convert runs
+    photo: Photo | None  # None for the test-convert / convert commands
     width: int  # display size (image_width / image_height)
     height: int
     horizontal: bool  # False: vertical frame, the file is stored turned

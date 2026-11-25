@@ -35,6 +35,9 @@ dependencies = [
     "spidev>=3.6; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
 ]
 
+[project.scripts]
+epiframe = "epiframe.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/MikeGawi/ePiframe"
 Issues = "https://github.com/MikeGawi/ePiframe/issues"
@@ -101,9 +104,8 @@ max-complexity = 5
 "tests/**" = ["S101", "PLR0913", "PLR0915"]
 # smoke tests start ePiframe processes with fixed arguments
 "tests/smoke/**" = ["S603"]
-# 1.x code: only basic checks until each module is ported to src/epiframe (Phase 3).
-"ePiframe.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
-"{misc,modules,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
+# plugins installed by the user (1.x style code is skipped by the plugin manager)
+"plugins/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
 "tests/{test_*,conftest}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]
 "tests/{helpers,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]
 
@@ -113,6 +115,7 @@ python_version = "3.11"
 files = [
     "src/epiframe",
     "scripts",
+    "ePiframe.py",
     "ePiframe_service.py",
     "tests/epiframe",
     "tests/scripts",
@@ -126,12 +129,6 @@ explicit_package_bases = true
 [[tool.mypy.overrides]]
 module = ["genbadge.*", "radon.*", "flask_login.*", "flask_wtf.*", "wtforms.*", "fastjsonschema.*"]
 ignore_missing_imports = true
-
-# 1.x code imported by ported modules (e.g. epiframe.config.manager) until it is
-# ported too: not type checked, its names are Any.
-[[tool.mypy.overrides]]
-module = ["modules.*", "misc.*", "ePiframe"]
-follow_imports = "skip"
 
 # ------------------------------------------------------------------------ pytest
 [tool.pytest.ini_options]

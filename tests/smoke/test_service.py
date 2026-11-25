@@ -51,7 +51,7 @@ def test_service_changes_the_photo_on_request_and_stops(frame: Frame) -> None:
     log = (frame.directory / "logs" / "ePiframe.log").read_text()
     assert "ePiframe Service: STARTED" in log
     assert "ePiframe Service: Activity triggered" in log
-    # the lines of ePiframe.py are written by the service
+    # the lines of the update (epiframe) are written by the service
     assert "Sending to display..." in log
     assert log.rstrip().endswith("ePiframe Service: STOPPED")
 

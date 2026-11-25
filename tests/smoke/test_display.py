@@ -50,14 +50,14 @@ def test_photo_is_sent_to_display(frame: Frame) -> None:
     with Image.open(wait_for(shown)) as image:
         assert image.size == (800, 480)
     arguments = (frame.directory / "viewer.args").read_text().split()
-    assert arguments == ["-vt", "3", "-noverbose", "-a", "./photo.bmp"]
+    assert arguments == ["-vt", "3", "-noverbose", "-a", "photo.bmp"]
 
 
 def test_test_display_shows_given_file(frame: Frame) -> None:
     shown = fake_viewer(frame)
     image = frame.add_photo("ready.bmp", "blue", 1_600_000_000)
 
-    result = frame.run("--test-display", str(image))
+    result = frame.run("test-display", str(image))
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert wait_for(shown).read_bytes() == image.read_bytes()
@@ -69,7 +69,34 @@ def test_display_error_is_reported(frame: Frame) -> None:
     frame.configure(display_type="HDMI", fbi_bin_path=str(not_executable))
     image = frame.add_photo("ready.bmp", "blue", 1_600_000_000)
 
-    result = frame.run("--test-display", str(image))
+    result = frame.run("test-display", str(image))
 
     assert result.returncode != 0
     assert "Error sending photo to display: Can't start" in result.stdout
+
+
+@needs_imagemagick
+def test_redisplay_shows_the_uploaded_photo(frame: Frame) -> None:
+    shown = fake_viewer(frame)
+    # a photo uploaded in the WebUI is saved as the original photo
+    Image.new("RGB", (64, 48), "green").save(frame.directory / "origphoto.png")
+
+    result = frame.run("redisplay")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    with Image.open(wait_for(shown)) as image:
+        assert image.size == (800, 480)
+    assert not (frame.directory / "pid").exists()
+
+
+def test_photo_without_conversion_is_shown_as_is(frame: Frame) -> None:
+    shown = fake_viewer(frame)
+    # converted in advance (epiframe convert); 1.x never showed it
+    photo = frame.add_photo("ready.bmp", "blue", 1_600_000_000)
+    frame.configure(convert="0")
+
+    result = frame.run()
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Conversion disabled by the 'convert' setting" in result.stdout
+    assert wait_for(shown).read_bytes() == photo.read_bytes()

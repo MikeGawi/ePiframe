@@ -1,4 +1,4 @@
-"""Console management of the WebUI users (``ePiframe.py --users``).
+"""Console management of the WebUI users (``epiframe users``).
 
 Same menu as 1.x; Ctrl+C or the end of the input leave it cleanly.
 """

@@ -14,7 +14,7 @@ Both are tried; failures are ignored (the screen just stays on). The state comes
 from ``vcgencmd`` when it knows it, else it is the last state that was set.
 
 The commands run without ``sudo``: the frame service runs as root. A manual run
-(e.g. ``ePiframe.py --test-display``) needs ``sudo`` for ``fbi`` to take over
+(e.g. ``epiframe test-display``) needs ``sudo`` for ``fbi`` to take over
 the console.
 """
 

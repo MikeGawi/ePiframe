@@ -248,8 +248,8 @@ function install_service {
 function show_next_steps {
 	echo -e '\n\033[0;30mNext steps:\033[0m'
 	printf '\e[1;37m5. Configure ePiframe with config.cfg file\e[m\n'
-	printf '\e[1;37m6. Check configuration with ./ePiframe.py --check-config\e[m\n'
-	printf '\e[1;37m7. Do a test with ./ePiframe.py --test without sending photo to display\e[m\n'
+	printf '\e[1;37m6. Check configuration with ./ePiframe.py check-config\e[m\n'
+	printf '\e[1;37m7. Do a test with ./ePiframe.py test without sending photo to display\e[m\n'
 	printf '\e[1;37m8. Reboot ePiframe device to start enabled SPI support\e[m\n'
 	printf '\e[1;37m9. Enjoy Your ePiframe!\e[m\n'
 }

@@ -1,6 +1,6 @@
 """Google Drive source setup: the steps, the key file and a check of the access.
 
-Shared by the console setup (``ePiframe.py --setup-drive``), the WebUI wizard
+Shared by the console setup (``epiframe setup-drive``), the WebUI wizard
 and the installer. Replaces the 1.x ``activate.py`` (Google Photos OAuth); a
 service account needs no consent screen and no token, only a key file and the
 photo folders shared with its e-mail address.

@@ -87,7 +87,7 @@ def test_trigger_arguments(make_scheduler: MakeScheduler, starts: Starts) -> Non
 
     scheduler.task(Trigger.REDISPLAY)
 
-    assert starts == [("--test-convert", "--test-display")]
+    assert starts == [("redisplay",)]
 
 
 def test_off_hours(

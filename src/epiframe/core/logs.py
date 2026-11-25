@@ -10,7 +10,7 @@ Lines keep the 1.x format ``YYYY-mm-dd HH:MM:SS : message`` (WebUI log view, RES
 ``get_log``) on the console and in the file. The file rotates at midnight and the old
 files are gzipped (``<file>.<date>.gz``, 6 kept).
 
-One process owns the log file: the service starts ``ePiframe.py`` with
+One process owns the log file: the service starts the updates (``epiframe``) with
 :data:`CONSOLE_ONLY_ENV` set, so the script logs to stdout only, and the service
 writes those (already formatted) lines to the file with :func:`log_line`. Two
 processes rotating the same file at midnight would lose or misplace lines.
@@ -87,7 +87,7 @@ class LineFormatter(logging.Formatter):
 
 def log_line(logger: logging.Logger, line: str) -> None:
     """Log ``line`` without adding the time (it is a line logged by another
-    process, e.g. ``ePiframe.py`` run by the service)."""
+    process, e.g. an update run by the service)."""
     logger.info(line, extra={_RAW: True})
 
 

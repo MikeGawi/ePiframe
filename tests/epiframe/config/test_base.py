@@ -344,6 +344,34 @@ def test_verify_warnings_raises_first_warning_after_errors(
     assert not isinstance(error.value, ConfigWarning)
 
 
+def test_check_returns_warnings(config_file: Path, default_file: Path) -> None:
+    config = load(config_file, default_file)
+
+    warnings = config.check()
+
+    assert [str(warning) for warning in warnings] == [
+        "name configuration entry error: suspicious"
+    ]
+
+
+def test_check_without_warnings(config_file: Path, default_file: Path) -> None:
+    config = load(config_file, default_file)
+    config.set("flag", "0")
+
+    assert config.check() == []
+
+
+def test_check_raises_error_with_warnings(
+    config_file: Path, default_file: Path
+) -> None:
+    config = load(config_file, default_file)
+    config.set("number", "0")  # an error, and the "name" warning
+
+    with pytest.raises(ConfigError, match="number configuration entry") as error:
+        config.check()
+    assert not isinstance(error.value, ConfigWarning)
+
+
 def test_cross_check_reads_other_entries(config_file: Path, default_file: Path) -> None:
     received: list[list[str]] = []
 

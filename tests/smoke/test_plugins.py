@@ -73,7 +73,7 @@ def test_plugin_source_and_postprocessing(frame: Frame) -> None:
     add_plugin(frame, "smoke_source", SOURCE_PLUGIN)
     add_plugin(frame, "old_plugin", OLD_PLUGIN)
 
-    result = frame.run("--test", env=plugins_env(frame))
+    result = frame.run("test", env=plugins_env(frame))
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Error loading plugin 'old_plugin', skipped" in result.stdout
@@ -94,7 +94,7 @@ def test_check_config_with_plugins(frame: Frame) -> None:
         DEFAULT_CONFIG.replace("folder=plugin_photos", "folder=missing")
     )
 
-    result = frame.run("--check-config", env=plugins_env(frame))
+    result = frame.run("check-config", env=plugins_env(frame))
 
     assert result.returncode != 0
     assert (

@@ -3,7 +3,8 @@
 :class:`Frame` (was the 1.x ``BackendManager``) holds the configuration (reloaded
 when the file changes), the working hours and the display time multiplier, knows
 when the photo changes next and where the photo files are, and passes photo
-change requests (:class:`Trigger`) to the service, which runs ``ePiframe.py``.
+change requests (:class:`Trigger`) to the service, which runs an update
+(``epiframe``).
 The service's threads share one frame.
 """
 
@@ -36,11 +37,11 @@ class Trigger(Enum):
     """A photo change asked for from outside the schedule (WebUI, bot, API)."""
 
     NEXT_PHOTO = ()
-    REDISPLAY = ("--test-convert", "--test-display")  # the downloaded photo again
+    REDISPLAY = ("redisplay",)  # the downloaded photo again
 
     @property
     def arguments(self) -> tuple[str, ...]:
-        """``ePiframe.py`` arguments that do it."""
+        """``epiframe`` arguments that do it."""
         return tuple(self.value)
 
 
@@ -186,7 +187,7 @@ class Frame:
 
     @property
     def busy(self) -> bool:
-        """Whether ``ePiframe.py`` is changing the photo now (its PID file exists)."""
+        """Whether an update is changing the photo now (its PID file exists)."""
         return Path(self.config.get("pid_file")).exists()
 
     @property

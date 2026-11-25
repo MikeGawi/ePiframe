@@ -8,7 +8,7 @@ import requests
 
 from epiframe.stats.metrics import Sampler
 from epiframe.stats.store import MetricsStore
-from tests.smoke.conftest import REPOSITORY, Frame
+from tests.smoke.conftest import EPIFRAME, REPOSITORY, Frame
 
 # only the WebUI of the service (the whole service: test_service.py)
 WEB_SERVER = """
@@ -89,7 +89,7 @@ def test_test_web_serves_until_ctrl_c(frame: Frame) -> None:
     answers.write_text(f"127.0.0.1\n{port}\ny\n")
     with answers.open() as stdin:
         tool = subprocess.Popen(
-            [sys.executable, str(REPOSITORY / "ePiframe.py"), "--test-web"],
+            [str(EPIFRAME), "test-web"],
             cwd=frame.directory,
             env=frame.environment(),
             stdin=stdin,
@@ -117,7 +117,7 @@ def test_test_web_port_in_use(frame: Frame) -> None:
         taken.bind(("127.0.0.1", 0))
         taken.listen()
         port = taken.getsockname()[1]
-        result = frame.run("--test-web", answers=f"127.0.0.1\n{port}\n")
+        result = frame.run("test-web", answers=f"127.0.0.1\n{port}\n")
 
     assert result.returncode == 1
     assert f"Port {port} is already in use" in result.stdout

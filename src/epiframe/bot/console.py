@@ -1,4 +1,4 @@
-"""Telegram bot test (``ePiframe.py --test-telegram``).
+"""Telegram bot test (``epiframe test-telegram``).
 
 Checks the token and the connection, then listens: every chat that writes to the
 bot gets its chat id back. Works before the bot is configured and without the
