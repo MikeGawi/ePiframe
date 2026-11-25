@@ -10,8 +10,7 @@ from epiframe.stats.metrics import Sampler
 from epiframe.stats.store import MetricsStore
 from tests.smoke.conftest import REPOSITORY, Frame
 
-# the service's web thread without the daemon (ePiframe_service.py kills other
-# service processes on the machine, so it is not started here)
+# only the WebUI of the service (the whole service: test_service.py)
 WEB_SERVER = """
 import sys
 sys.path.insert(0, sys.argv[1])

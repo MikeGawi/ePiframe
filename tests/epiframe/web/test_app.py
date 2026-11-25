@@ -1,14 +1,18 @@
 import logging
+import socket
+import threading
 from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from flask import Blueprint, Flask
+import requests
+from flask import Blueprint
 
 from epiframe.config import paths
 from epiframe.service.frame import Frame
 from epiframe.users.store import Users
+from epiframe.web import app as app_module
 from epiframe.web.api import api
 from epiframe.web.app import MENU, WebUI, serve_test
 from epiframe.web.extensions import MenuEntry, Route
@@ -136,10 +140,22 @@ def test_start(web: WebUI, users: Users, has_user: bool, disabled: bool) -> None
     if has_user:
         users.add("x", PASSWORD)
 
-    with patch.object(Flask, "run") as run:
+    with (
+        patch.object(socket, "create_server") as create_server,
+        patch.object(app_module, "make_server") as make_server,
+    ):
         web.start()
 
-    run.assert_called_once_with(host="0.0.0.0", port=80, debug=False)  # noqa: S104
+    create_server.assert_called_once_with(("0.0.0.0", 80), family=socket.AF_INET)  # noqa: S104
+    listening = create_server.return_value.__enter__.return_value
+    make_server.assert_called_once_with(
+        "0.0.0.0",  # noqa: S104
+        80,
+        web.app,
+        threaded=True,
+        fd=listening.fileno.return_value,
+    )
+    make_server.return_value.serve_forever.assert_called_once_with()
     assert web.app.config["LOGIN_DISABLED"] is disabled
     assert logging.getLogger("werkzeug").level == logging.CRITICAL
 
@@ -177,10 +193,36 @@ def test_plugin_endpoint_name_taken(
 
 
 def test_start_on_another_address(web: WebUI) -> None:
-    with patch.object(Flask, "run") as run:
-        web.start("127.0.0.1", 8080)
+    with (
+        patch.object(socket, "create_server") as create_server,
+        patch.object(app_module, "make_server"),
+    ):
+        web.start("::1", 8080)
 
-    run.assert_called_once_with(host="127.0.0.1", port=8080, debug=False)
+    create_server.assert_called_once_with(("::1", 8080), family=socket.AF_INET6)
+
+
+def test_server_answers(web: WebUI) -> None:
+    server = web.server("127.0.0.1", 0)
+    thread = threading.Thread(target=server.serve_forever)
+    thread.start()
+    try:
+        port = server.socket.getsockname()[1]
+        answer = requests.get(f"http://127.0.0.1:{port}/api/get_status", timeout=5)
+    finally:
+        server.shutdown()
+        thread.join()
+        server.server_close()
+
+    assert answer.status_code == HTTPStatus.OK
+    assert answer.json()["state"] == "Idle"
+
+
+def test_server_address_in_use(web: WebUI) -> None:
+    with socket.create_server(("127.0.0.1", 0)) as taken:
+        port = taken.getsockname()[1]
+        with pytest.raises(OSError, match="in use"):
+            web.server("127.0.0.1", port)
 
 
 def test_serve_test(

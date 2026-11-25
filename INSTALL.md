@@ -414,21 +414,25 @@ sudo systemctl start ePiframe.service
 sudo systemctl restart ePiframe.service
 ```
 
-It is possible to start (for test purposes) only WebUI or TelegramBot thread from the service:
+The service runs in the foreground: systemd starts it as ```ePiframe_service.py``` and stops it with SIGTERM (it finishes cleanly: the last statistics are saved, the WebUI and the bot are stopped). The service writes its log and the log of every photo change into the configured ```log_files``` (one process writes and rotates the file).
+
+It is possible to run the whole service, or (for test purposes) only the WebUI or the Telegram bot, in a terminal; it shows the log there too and stops with Ctrl+C:
 ```
 cd <Your ePiframe path>
 #stop first if running
 sudo systemctl stop ePiframe.service
-#WebUI
-./ePiframe_service.py start web
-#or TelegramBot
-./ePiframe_service.py start telegram
+#whole service
+./ePiframe_service.py
+#WebUI only
+./ePiframe_service.py web
+#or Telegram bot only
+./ePiframe_service.py telegram
 ```
 
-**_❗ IMPORTANT ❗_** - These services must be enabled in the configuration file!
+**_❗ IMPORTANT ❗_** - These services must be enabled in the configuration file! When they are enabled later, the running service starts them within a minute.
 
-**_NOTE_** - Service daemon is suppressing all output and errors by default. To disable that function use ```--debug``` flag at the end.
+**_NOTE_** - With only the WebUI or the bot, the photo changes only on request (e.g. *Next Photo*), not by the schedule.
 
-**_NOTE_** - Service will not show any errors if the configuration is wrong or the thread cannot be started. Check [debugging section](#debugging).
+**_NOTE_** - Run the service from the ePiframe folder: relative paths in the configuration are relative to the current folder.
 
-**_NOTE_** - Keep in mind that any port number below 5000 needs root privilleges to be possible to assign (use ```sudo ./ePiframe_service.py ...```)
+**_NOTE_** - Ports below 1024 need root privileges (use ```sudo ./ePiframe_service.py ...```)

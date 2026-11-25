@@ -5,12 +5,12 @@ After=network.target network-online.target
 
 [Service]
 User=root
-ExecStart=EPIEPIEPIePiframe_service.py start
-ExecStop=EPIEPIEPIePiframe_service.py stop
-Type=forking
+# the service runs in the foreground and stops cleanly on SIGTERM
+Type=simple
+ExecStart=EPIEPIEPIePiframe_service.py
 WorkingDirectory=EPIEPIEPI
-PIDFile=/tmp/ePiframe-service.pid
-RemainAfterExit=no
+# the Telegram bot may take a long poll (20 s) to stop
+TimeoutStopSec=30
 Restart=on-failure
 RestartSec=5s
 

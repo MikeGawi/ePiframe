@@ -73,6 +73,36 @@ def test_no_file(log_file: str | None) -> None:
     assert logger.handlers == []
 
 
+def test_console_only_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv(logs.CONSOLE_ONLY_ENV, "1")
+    log_file = tmp_path / "ePiframe.log"
+
+    logger = setup_logging(log_file)
+    get_logger().info("Console only")
+
+    assert [type(handler) for handler in logger.handlers] == [StdoutHandler]
+    assert not log_file.exists()
+    assert _messages(capsys.readouterr().out) == ["Console only"]
+
+
+def test_log_line_is_kept_as_it_is(tmp_path: Path) -> None:
+    log_file = tmp_path / "ePiframe.log"
+    setup_logging(log_file, console=False)
+
+    logs.log_line(get_logger("service"), "2026-11-25 12:00:00 : From 100% child")
+    logs.log_line(get_logger(), "Traceback (most recent call last):")
+    get_logger().info("Own")
+
+    lines = log_file.read_text().splitlines()
+    assert lines[:2] == [
+        "2026-11-25 12:00:00 : From 100% child",
+        "Traceback (most recent call last):",
+    ]
+    assert _messages(lines[2]) == ["Own"]
+
+
 def test_setup_again_replaces_own_handlers_only(tmp_path: Path) -> None:
     logger = get_logger()
     foreign = logging.NullHandler()

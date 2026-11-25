@@ -1,4 +1,5 @@
 import logging
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -75,7 +76,7 @@ def test_default_hooks_do_nothing(folder: Path, tmp_path: Path) -> None:
     assert plugin.extend_api(None) == []  # type: ignore[arg-type]
     assert plugin.add_website(None, None, None) == []
     assert plugin.add_action(None) == []  # type: ignore[arg-type]
-    plugin.add_service_thread(None, None)
+    plugin.service_thread(None, threading.Event())  # type: ignore[arg-type]
 
 
 def test_hooks_and_settings(folder: Path, tmp_path: Path) -> None:

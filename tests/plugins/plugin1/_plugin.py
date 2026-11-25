@@ -77,5 +77,5 @@ class Plugin(PluginBase):
         print("add_action")
         return [Action("lightoff", "Turn Light Off", self.dummy, "bi bi-lightbulb")]
 
-    def add_service_thread(self, service, backend):
-        print("add_service_thread")
+    def service_thread(self, frame, stop):
+        print("service_thread")

@@ -10,13 +10,14 @@ the plugin overrides:
 - :meth:`Plugin.preprocess_photo` / :meth:`Plugin.postprocess_photo` — editing
   the photo before / after the conversion for the display;
 - :meth:`Plugin.extend_api` / :meth:`Plugin.add_action` — REST API endpoints and
-  WebUI tool buttons.
+  WebUI tool buttons;
+- :meth:`Plugin.service_thread` — work in the background of the ePiframe service.
 
-``add_website`` and ``add_service_thread`` keep their 1.x shape until the
-service (3.18) and the new UI (Phase 5) are ported.
+``add_website`` keeps its 1.x shape until the new UI (Phase 5).
 """
 
 import logging
+import threading
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,7 +43,7 @@ HOOKS = (
     "extend_api",
     "add_website",
     "add_action",
-    "add_service_thread",
+    "service_thread",
 )
 
 
@@ -188,7 +189,7 @@ class Plugin:
         """WebUI tool buttons, also run by ``/api/action=<id>``."""
         return []
 
-    # ------------------------------------------- 1.x shape until 3.18 / Phase 5
+    # ------------------------------------------------ 1.x shape until Phase 5
 
     def add_website(self, web_manager: Any, users: Any, backend: Any) -> list[Any]:
         """Flask blueprints of new WebUI pages; redesigned in Phase 5.
@@ -198,5 +199,13 @@ class Plugin:
         """
         return []
 
-    def add_service_thread(self, service: Any, backend: Any) -> None:
-        """Body of a thread of the ePiframe service; redesigned in 3.18."""
+    # ---------------------------------------------------------------- service
+
+    def service_thread(self, frame: "Frame", stop: threading.Event) -> None:
+        """Body of a thread of the ePiframe service (runs once, in the
+        background).
+
+        Return when ``stop`` is set (the service stops), e.g. loop with
+        ``while not stop.wait(60): ...``; the service doesn't wait long for it.
+        An exception is logged and ends the thread.
+        """
