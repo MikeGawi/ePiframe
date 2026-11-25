@@ -10,6 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from epiframe.config.base import ConfigBase
+from epiframe.core.console import Ask, Say, ask_yes
 from epiframe.sources.drive import Drive, DriveClient, folder_ids
 from epiframe.sources.drive_setup import (
     SHARE_STEP,
@@ -25,8 +26,6 @@ from epiframe.sources.drive_setup import (
     save_key,
 )
 
-Ask = Callable[[str], str]
-Say = Callable[[str], None]
 Connect = Callable[[str], Drive]
 
 # lines read when the JSON key is pasted (a key file has about 15)
@@ -72,13 +71,7 @@ class ConsoleSetup:
     # ---------------------------------------------------------------- dialogue
 
     def _yes(self, question: str, default: bool) -> bool:
-        choices = "[Y/n]" if default else "[y/N]"
-        while True:
-            answer = self.ask(f"{question} {choices} ").strip().lower()
-            if not answer:
-                return default
-            if answer in ("y", "yes", "n", "no"):
-                return answer.startswith("y")
+        return ask_yes(self.ask, question, default)
 
     def _show(self, number: int, step: Step, **values: str) -> None:
         self.say(f"\n{number}. {step.title}\n   {step.text.format(**values)}")

@@ -1,6 +1,7 @@
 import sqlite3
 from collections import Counter
 from collections.abc import Iterator
+from contextlib import closing
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -48,7 +49,8 @@ def test_schema_and_reopen(tmp_path: Path) -> None:
         index.replace_source("Local", PHOTOS)
     with PhotoIndex(str(path)) as index:
         assert index.count() == 4
-    with sqlite3.connect(path) as connection:
+    # the connection's own context manager commits but doesn't close it
+    with closing(sqlite3.connect(path)) as connection:
         assert connection.execute("PRAGMA user_version").fetchone() == (SCHEMA_VERSION,)
 
 

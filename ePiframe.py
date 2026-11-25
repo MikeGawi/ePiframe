@@ -18,6 +18,7 @@ from epiframe.photos.index import PhotoIndex
 from epiframe.photos.model import Photo
 from epiframe.photos.selection import Selection
 from epiframe.sources.drive import DRIVE_SOURCE, DriveClient, DriveSource, folder_ids
+from epiframe.bot.console import TelegramTest
 from epiframe.sources.drive_setup_console import ConsoleSetup
 from epiframe.sources.local import LOCAL_SOURCE, LocalSource
 from epiframe.core.logs import format_duration, get_logger, setup_logging
@@ -30,6 +31,7 @@ from epiframe.display.options import DisplayType
 from epiframe.display.system import spi_enabled
 from epiframe.users.console import USERS_ACTIONS_TAG, UsersConsole
 from epiframe.users.store import Users
+from epiframe.weather.console import WeatherTest
 from epiframe.weather.openweather import fetch_weather
 from epiframe.weather.stamp import StampSettings, draw_stamp
 from epiframe.processing.imagemagick import (
@@ -58,6 +60,7 @@ class EPiframe:
 
         setup_logging(self.config.get("log_files"))
         self.start_drive_setup()
+        self.start_connection_tests()
         log.info("Verifying configuration...")
         self.verify_config()
 
@@ -361,6 +364,13 @@ class EPiframe:
         if self.check_arguments("--setup-drive"):
             sys.exit(ConsoleSetup(self.config).run())
 
+    def start_connection_tests(self):
+        # before the verification: a missing token or API key must not block them
+        if self.check_arguments("--test-telegram"):
+            sys.exit(TelegramTest(self.config).run())
+        if self.check_arguments("--test-weather"):
+            sys.exit(WeatherTest(self.config).run())
+
     def check_config(self):
         if self.check_arguments("--check-config"):
             sys.exit(0)
@@ -389,6 +399,10 @@ class EPiframe:
             print(
                 "--setup-drive		set up the Google Drive source (service account)"
             )
+            print(
+                "--test-telegram		test the Telegram bot token and show chat ids"
+            )
+            print("--test-weather		test the OpenWeather API key and coordinates")
             print("--help			this help")
 
             sys.exit(0)

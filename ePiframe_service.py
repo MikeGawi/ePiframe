@@ -11,7 +11,7 @@ from epiframe.core.logs import get_logger, setup_logging
 from misc.daemon import Daemon
 from modules.statsmanager import STATS_STEP
 import modules.backendmanager as backend
-from modules.telebotmanager import TelebotManager
+from epiframe.bot.telegram import TelegramBot
 from modules.webuimanager import WebUIManager
 from modules.statsmanager import StatsManager
 
@@ -25,7 +25,7 @@ class Service(Daemon):
         os.path.join(os.path.dirname(os.path.realpath(__file__)), "ePiframe.py"),
     ]
 
-    __telebot: TelebotManager = None
+    __telebot: TelegramBot = None
     __web_man: WebUIManager = None
     __stats_man: StatsManager = None
     __telebot_thread: Thread = None
@@ -139,7 +139,7 @@ class Service(Daemon):
             if self.__backend.is_telebot_enabled():
                 try:
                     log.info(self.__SERVICE_TGBOT_START)
-                    self.__telebot = TelebotManager(self.__backend)
+                    self.__telebot = TelegramBot(self.__backend)
                     self.__telebot.start()
                 except Exception as e:
                     log.error(self.__ERROR_TELE_BOT.format(e))

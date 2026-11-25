@@ -1,5 +1,6 @@
 import shutil
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 from PIL import Image
@@ -36,6 +37,8 @@ def test_help(frame: Frame) -> None:
 
     assert result.returncode == 0
     assert "--check-config" in result.stdout
+    assert "--test-telegram" in result.stdout
+    assert "--test-weather" in result.stdout
 
 
 def test_check_config_creates_default_config(tmp_path: Path) -> None:
@@ -95,6 +98,48 @@ def test_check_config_reports_drive_errors(frame: Frame) -> None:
     assert "drive_folders configuration entry error" in result.stdout
 
 
+def test_check_config_with_telegram_offline(frame: Frame) -> None:
+    token = "123456:SECRET-token"  # noqa: S105 (fake)
+    frame.configure(use_telebot="1", token=token)
+
+    result = frame.run("--check-config", env=OFFLINE)
+
+    # no connection is a warning: the frame works, the bot starts when it can
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "token configuration entry error" in result.stdout
+    assert "SECRET" not in result.stdout + result.stderr
+
+
+def test_check_config_reports_malformed_telegram_token(frame: Frame) -> None:
+    frame.configure(use_telebot="1", token="no-colon")  # noqa: S106 (fake)
+
+    result = frame.run("--check-config", env=OFFLINE)
+
+    assert result.returncode != 0
+    assert "Token must contain a colon" in result.stdout
+
+
+def test_telegram_test_offline(frame: Frame) -> None:
+    token = "123456:SECRET-token"  # noqa: S105 (fake)
+
+    result = frame.run("--test-telegram", env=OFFLINE, answers=f"{token}\n")
+
+    assert result.returncode == 1
+    assert "Connecting to Telegram..." in result.stdout
+    assert "Error: " in result.stdout
+    assert "SECRET" not in result.stdout + result.stderr
+
+
+def test_weather_test_offline(frame: Frame) -> None:
+    result = frame.run(
+        "--test-weather", env=OFFLINE, answers="secret-api-key\n53.27\n7.77\n"
+    )
+
+    assert result.returncode == 1
+    assert "Error: No connection to the weather service" in result.stdout
+    assert "secret-api-key" not in result.stdout + result.stderr
+
+
 def test_setup_drive(frame: Frame) -> None:
     # an unfinished Drive configuration doesn't block the setup
     frame.configure(use_drive="1")
@@ -132,7 +177,7 @@ def test_full_chain_converts_photos_in_order(frame: Frame) -> None:
     converted = frame.directory / "photo.bmp"
     with Image.open(converted) as image:
         assert image.size == (800, 480)
-    with sqlite3.connect(frame.directory / "photos.db") as database:
+    with closing(sqlite3.connect(frame.directory / "photos.db")) as database:
         assert database.execute("SELECT COUNT(*) FROM photos").fetchone() == (3,)
 
 

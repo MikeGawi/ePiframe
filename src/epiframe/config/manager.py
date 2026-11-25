@@ -1,11 +1,11 @@
 """Settings of ePiframe itself (``config.cfg``).
 
-The option lists and validators still come from 1.x modules; the imports switch
-to ``epiframe.*`` as those modules are ported (Phase 3).
+The option lists and validators come from the modules that use the settings.
 """
 
 from typing import TypedDict
 
+from epiframe.bot import telegram
 from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
@@ -17,7 +17,6 @@ from epiframe.sources import drive
 from epiframe.sources.local import create_directory
 from epiframe.weather.openweather import Units
 from epiframe.weather.stamp import FontColor, Position
-from modules.telebotmanager import TelebotManager
 
 BOOLEAN = PropertyType.BOOLEAN
 INTEGER = PropertyType.INTEGER
@@ -185,9 +184,7 @@ def _weather_settings() -> list[ConfigProperty]:
 def _telegram_settings() -> list[ConfigProperty]:
     return [
         ConfigProperty("use_telebot", BOOLEAN, reset_needed=True),
-        ConfigProperty(
-            "token", dependency="use_telebot", check=TelebotManager.check_token
-        ),
+        ConfigProperty("token", dependency="use_telebot", check=telegram.check_token),
         ConfigProperty(
             "chat_id",
             PropertyType.INT_LIST,
