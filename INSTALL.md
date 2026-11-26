@@ -347,6 +347,7 @@ Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays, but
 
 * Enable SPI (display_type) in configuration and set screen width and height
 * Set e-Paper type to Waveshare (epaper_type) and color schema (epaper_color), e.g. BW, 7 colors, BW+Yellow, etc.
+* Waveshare panels whose driver has the 4-gray mode (e.g. ```epd7in5_V2``` sold after 2023-10-24, ```epd4in2_V2```, ```epd2in9_V3```, ```epd5in83_V2```) can show photos in black, white and two grays: set ```epaper_color``` to ```4 grays``` (the photo is dithered to four grays with the ```convert_option``` preset). The fast refresh and the partial refresh are not used in this mode: the status icons come with the next photo only.
 * Set Waveshare display package name (display) from [Waveshare codes](https://github.com/waveshare/e-Paper) that was previously tested (and worked), e.g. epd7in5_V2, epd5in65f, epd5in83bc, etc.
 * Test ePiframe from SSH with ```sudo ./ePiframe.py```
 * If all good then ePiframe service will work now with the display

@@ -85,6 +85,11 @@ def test_seven_colors_not_supported(library: Path, case: dict[str, Any]) -> None
         PimoroniDisplay.load(case["display"], ColorMode.C7, directory=library)
 
 
+def test_four_grays_not_supported(library: Path) -> None:
+    with pytest.raises(DisplayError, match="doesn't support 4 grays"):
+        PimoroniDisplay.load("what", ColorMode.GRAY4, directory=library)
+
+
 @pytest.mark.parametrize(
     ("color", "palette"),
     [

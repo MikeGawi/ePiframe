@@ -13,9 +13,19 @@ vendor examples. ePiframe always sends the whole frame (the window is the whole
 panel): only the changed pixels are refreshed, and the buggy window alignment
 of the vendor code is never used. Checked against waveshareteam/e-Paper
 ``d28b3c4``; only ``epd7in5_V2`` was tested on a real panel.
+
+The 4-gray mode (``epaper_color`` = ``4 grays``) uses ``init_4Gray`` and
+``display_4Gray``. The vendor ``getbuffer_4Gray`` is a Python loop over every
+pixel and ``display_4Gray`` sends every byte in its own SPI transfer (with three
+GPIO writes): seconds to half a minute on a Raspberry Pi Zero. ePiframe packs
+the buffer with Pillow (:func:`gray4_buffer`, the same bytes) and collects the
+single bytes into one transfer (:func:`batched_data`). The partial refresh is
+black and white only: in the 4-gray mode the display has none (status icons
+come with the next photo).
 """
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -41,6 +51,14 @@ NO_FAST_WITH_ICONS = (
     " refresh on this display"
 )
 NO_PARTIAL = "The display has no partial refresh!"
+NO_GRAY4 = (
+    "The display driver has no 4-gray mode: the photo is shown in black and white"
+)
+NO_FAST_WITH_GRAY4 = "The fast refresh is not used in the 4-gray mode"
+# 4-gray buffer: 2 bits per pixel, 0 black .. 3 white (evenly spaced grays)
+GRAY_LEVEL = [(value * 3 + 127) // 255 for value in range(256)]
+# vendor methods after which the collected bytes must be sent first
+FLUSHED_BY = ("send_command", "send_data2", "ReadBusy")
 
 log = get_logger("display")
 
@@ -238,6 +256,11 @@ class WaveshareDriver:
             raise DisplayError(f"The display driver has no {name} method!") from None
         return method(*arguments)
 
+    def batched(self) -> AbstractContextManager[None]:
+        """Send the single bytes of the driver in one transfer (see
+        :func:`batched_data`)."""
+        return batched_data(self._epd)
+
     def module_exit(self) -> None:
         """Release the GPIO/SPI resources (after an interrupted refresh)."""
         if self._module_exit is not None:
@@ -250,6 +273,86 @@ class Options(TypedDict, total=False):
     clear: bool
     fast: bool
     icons: bool
+
+
+def gray4_buffer(image: Image.Image, width: int, height: int) -> bytes:
+    """The ``getbuffer_4Gray`` bytes of ``image`` for a ``width`` x ``height``
+    panel (rows of 4 pixels per byte, the first one in the high bits; an image
+    of the turned size is turned like the vendor code does)."""
+    gray = image.convert("L")
+    if gray.size == (height, width):
+        gray = gray.rotate(90, expand=True)
+    if gray.size != (width, height):
+        raise DisplayError(
+            f"Wrong image size {gray.width}x{gray.height}:"
+            f" the display needs {width}x{height}!"
+        )
+    return gray.point(GRAY_LEVEL).tobytes("raw", "L;2")
+
+
+class _Batch:
+    """Bytes of ``send_data`` waiting for one ``send_data2`` transfer."""
+
+    def __init__(self, send_data2: Callable[[list[int]], object]) -> None:
+        self.send_data2 = send_data2
+        self.pending: list[int] = []
+
+    def flush(self) -> None:
+        if self.pending:
+            self.send_data2(self.pending.copy())
+            self.pending.clear()
+
+    def flushing(self, method: Callable[..., object]) -> Callable[..., object]:
+        def call(*arguments: object) -> object:
+            self.flush()
+            return method(*arguments)
+
+        return call
+
+    def replacements(self, epd: object) -> dict[str, object]:
+        """The driver methods to shadow while batching."""
+        methods = {
+            name: getattr(epd, name) for name in FLUSHED_BY if hasattr(epd, name)
+        }
+        flushing = {name: self.flushing(method) for name, method in methods.items()}
+        return {"send_data": self.pending.append, **flushing}
+
+
+@contextmanager
+def batched_data(epd: object) -> Iterator[None]:
+    """Collect the bytes the driver sends one by one (``send_data``) and send
+    them in one transfer (``send_data2``) before its next command, bulk data or
+    busy wait, and at the end. Drivers without ``send_data2`` stay as they are."""
+    send_data2 = getattr(epd, "send_data2", None)
+    if not callable(send_data2) or not hasattr(epd, "send_data"):
+        yield
+        return
+    batch = _Batch(send_data2)
+    with _attributes(epd, batch.replacements(epd)):
+        yield
+        batch.flush()
+
+
+@contextmanager
+def _attributes(target: object, values: dict[str, object]) -> Iterator[None]:
+    """Set instance attributes of ``target`` for a while (methods are shadowed)."""
+    own = vars(target)
+    before = {name: own[name] for name in values if name in own}
+    for name, value in values.items():
+        setattr(target, name, value)
+    try:
+        yield
+    finally:
+        _restore(target, values, before)
+
+
+def _restore(
+    target: object, values: dict[str, object], before: dict[str, object]
+) -> None:
+    for name in values:
+        delattr(target, name)
+    for name, value in before.items():
+        setattr(target, name, value)
 
 
 def _load_image(path: Path | str) -> Image.Image:
@@ -281,14 +384,26 @@ class WaveshareDisplay:
         self._color = color
         self._clear = clear
         recipe = driver.partial
-        self._base = icons and recipe is not None and recipe.base
+        self._gray4 = self._use_gray4(color)
+        self._base = icons and recipe is not None and recipe.base and not self._gray4
         self._fast = self._use_fast(fast)
+
+    def _use_gray4(self, color: ColorMode) -> bool:
+        if color != ColorMode.GRAY4:
+            return False
+        if Capability.GRAY4 not in self._driver.capabilities:
+            log.warning(NO_GRAY4)
+            return False
+        return True
 
     def _use_fast(self, fast: bool) -> bool:
         if not fast:
             return False
         if Capability.FAST_FULL not in self._driver.capabilities:
             log.warning(NO_FAST)
+            return False
+        if self._gray4:
+            log.warning(NO_FAST_WITH_GRAY4)
             return False
         if self._base:
             log.warning(NO_FAST_WITH_ICONS)
@@ -309,6 +424,8 @@ class WaveshareDisplay:
 
     @property
     def capabilities(self) -> frozenset[Capability]:
+        if self._gray4:  # the partial refresh is black and white only
+            return self._driver.capabilities - {Capability.PARTIAL}
         return self._driver.capabilities
 
     def show(self, path: Path | str) -> None:
@@ -333,6 +450,9 @@ class WaveshareDisplay:
             raise
 
     def _refresh(self, image: Image.Image) -> None:
+        if self._gray4:
+            self._refresh_gray4(image)
+            return
         # the panel sleeps between refreshes: every refresh starts with an init
         if self._fast:
             self._init("init_fast", *self._driver.fast_init_arguments)
@@ -341,6 +461,15 @@ class WaveshareDisplay:
         if self._clear:
             self._driver.call("clear")
         self._driver.call(self._display_method(), *self._buffers(image))
+        self._driver.call("sleep")
+
+    def _refresh_gray4(self, image: Image.Image) -> None:
+        self._init("init_gray4")
+        if self._clear:
+            self._driver.call("clear")
+        buffer = gray4_buffer(image, *self._driver.size)
+        with self._driver.batched():
+            self._driver.call("display_gray4", buffer)
         self._driver.call("sleep")
 
     def _partial(

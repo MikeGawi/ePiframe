@@ -16,6 +16,7 @@ class ColorMode(_Option):
     BW = "BW"
     BWR = "BW+Red"
     BWY = "BW+Yellow"
+    GRAY4 = "4 grays"  # black, white and 2 grays (Waveshare panels with 4-gray mode)
     C4 = "4 colors"
     C7 = "7 colors"
     OTHER = "Other"

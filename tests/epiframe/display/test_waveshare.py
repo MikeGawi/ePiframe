@@ -1,3 +1,4 @@
+import hashlib
 import importlib
 import json
 import logging
@@ -13,16 +14,21 @@ from epiframe.display.base import Capability, DisplayError
 from epiframe.display.options import ColorMode
 from epiframe.display.waveshare import (
     ALIASES,
+    GRAY_LEVEL,
     INIT_ARGUMENTS,
     INIT_FAILED,
     NO_FAST,
+    NO_FAST_WITH_GRAY4,
     NO_FAST_WITH_ICONS,
+    NO_GRAY4,
     NO_PARTIAL,
     PARTIAL_DRIVERS,
     PartialRecipe,
     Style,
     WaveshareDisplay,
     WaveshareDriver,
+    batched_data,
+    gray4_buffer,
 )
 from tests.epiframe.display.helpers import ASSETS
 
@@ -630,12 +636,13 @@ class RecordedEpd:
 
 
 def recorded_display(
-    name: str, **options: bool
+    name: str, color: ColorMode | None = None, **options: bool
 ) -> tuple[WaveshareDisplay, RecordedEpd]:
     epd = RecordedEpd(name)
-    # 3-color panels take two planes (black, color)
-    planes = RECORDED[name]["methods"]["display"]["required"]
-    color = ColorMode.BWR if planes == 2 else ColorMode.BW
+    if color is None:
+        # 3-color panels take two planes (black, color)
+        planes = RECORDED[name]["methods"]["display"]["required"]
+        color = ColorMode.BWR if planes == 2 else ColorMode.BW
     return WaveshareDisplay(WaveshareDriver(epd, name=name), color, **options), epd
 
 
@@ -690,3 +697,233 @@ def test_partial_refresh_of_real_drivers(
     base = {"display_Base", "displayPartBaseImage"} & set(methods)
     assert bool(base) == recipe.base
     assert set(methods) & set(ALIASES["display_partial"])
+
+
+@pytest.mark.parametrize(
+    "name",
+    sorted(
+        name
+        for name in RECORDED
+        if Capability.GRAY4
+        in WaveshareDriver(RecordedEpd(name), name=name).capabilities
+    ),
+)
+def test_gray4_refresh_of_real_drivers(name: str, photo: Path) -> None:
+    display, epd = recorded_display(name, ColorMode.GRAY4, icons=True)
+
+    display.show(photo)  # every call fits the real signature
+
+    methods = [call[0] for call in epd.calls]
+    assert methods[0] in ALIASES["init_gray4"]
+    assert methods[1] in ALIASES["display_gray4"]
+    assert Capability.PARTIAL not in display.capabilities
+
+
+# ------------------------------------------------------------------ 4 grays
+
+RECORDED_GRAY4: dict[str, Any] = json.loads(
+    (ASSETS / "waveshare_gray4.json").read_text()
+)["drivers"]
+
+
+def gray4_test_image(width: int, height: int) -> Image.Image:
+    """The image recorded with the vendor ``getbuffer_4Gray`` (4 even grays)."""
+    image = Image.new("L", (width, height))
+    image.putdata(
+        [((x * 7 + y * 13) % 256) for y in range(height) for x in range(width)]
+    )
+    return image.point([level * 85 for level in GRAY_LEVEL])
+
+
+@pytest.mark.parametrize("name", sorted(RECORDED_GRAY4))
+def test_gray4_buffer_matches_the_vendor_one(name: str) -> None:
+    record = RECORDED_GRAY4[name]
+    width, height = record["width"], record["height"]
+
+    buffer = gray4_buffer(gray4_test_image(width, height), width, height)
+
+    assert hashlib.sha256(buffer).hexdigest() == record["sha256"]
+
+
+def test_every_gray4_driver_is_recorded() -> None:
+    gray4 = {
+        name
+        for name in RECORDED
+        if set(ALIASES["getbuffer_gray4"]) & set(RECORDED[name]["methods"])
+    }
+
+    assert gray4 == set(RECORDED_GRAY4)
+
+
+def test_gray4_levels() -> None:
+    image = Image.new("L", (8, 1))
+    image.putdata([0, 42, 43, 127, 128, 212, 213, 255])
+
+    # 2 bits per pixel, the first pixel in the high bits: 00 00 01 01 | 10 10 11 11
+    assert gray4_buffer(image, 8, 1) == bytes([0b00000101, 0b10101111])
+
+
+def test_gray4_buffer_of_a_turned_image() -> None:
+    image = gray4_test_image(4, 8)
+
+    turned = gray4_buffer(image, 8, 4)
+
+    assert turned == gray4_buffer(image.rotate(90, expand=True), 8, 4)
+
+
+def test_gray4_buffer_of_a_wrong_size() -> None:
+    with pytest.raises(
+        DisplayError, match="Wrong image size 4x4: the display needs 8x2"
+    ):
+        gray4_buffer(Image.new("L", (4, 4)), 8, 2)
+
+
+class SpiEpd:
+    """Records what reaches the SPI bus (``send_data2`` is one transfer)."""
+
+    def __init__(self) -> None:
+        self.bus: list[tuple[str, object]] = []
+
+    def send_command(self, command: int) -> None:
+        self.bus.append(("command", command))
+
+    def send_data(self, data: int) -> None:
+        self.bus.append(("data", [data]))
+
+    def send_data2(self, data: list[int]) -> None:
+        self.bus.append(("data", list(data)))
+
+    def ReadBusy(self) -> None:
+        self.bus.append(("busy", None))
+
+    def display_4Gray(self, buffer: bytes) -> None:
+        self.send_command(0x10)
+        for value in buffer:
+            self.send_data(value)
+        self.send_data2([9, 9])
+        self.send_data(1)
+        self.ReadBusy()
+        self.send_command(0x12)
+        self.send_data(2)
+
+
+def test_batched_data_keeps_the_order() -> None:
+    epd = SpiEpd()
+
+    with batched_data(epd):
+        epd.display_4Gray(bytes([1, 2, 3]))
+
+    assert epd.bus == [
+        ("command", 0x10),
+        ("data", [1, 2, 3]),  # one transfer
+        ("data", [9, 9]),
+        ("data", [1]),
+        ("busy", None),
+        ("command", 0x12),
+        ("data", [2]),  # sent at the end
+    ]
+
+
+def test_batched_data_restores_the_methods() -> None:
+    epd = SpiEpd()
+    own = lambda command: None  # noqa: E731 - an instance attribute before
+    epd.send_command = own  # type: ignore[method-assign]
+
+    with batched_data(epd):
+        assert epd.send_data != SpiEpd.send_data.__get__(epd)
+
+    assert "send_data" not in vars(epd)
+    assert "ReadBusy" not in vars(epd)
+    assert epd.send_command is own
+
+
+def test_batched_data_stops_on_error() -> None:
+    epd = SpiEpd()
+
+    def interrupted() -> None:
+        with batched_data(epd):
+            epd.send_data(1)
+            raise OSError("SPI")
+
+    with pytest.raises(OSError, match="SPI"):
+        interrupted()
+
+    assert epd.bus == []  # nothing half sent
+    assert "send_data" not in vars(epd)
+
+
+def test_batched_data_without_bulk_transfer() -> None:
+    epd = FakeEpd()
+
+    with batched_data(epd):
+        assert "send_data" not in vars(epd)
+
+
+class Gray4Epd(PartialEpd):
+    """4-gray mode like epd7in5_V2."""
+
+    width = 8
+    height = 2
+
+    def init_4Gray(self) -> int:
+        self.calls.append("init_4Gray")
+        return self.init_result
+
+    def getbuffer_4Gray(self, image: Image.Image) -> str:
+        raise AssertionError("the slow vendor buffer is never used")
+
+    def display_4Gray(self, buffer: bytes) -> None:
+        self.calls.append(("display_4Gray", buffer))
+
+
+def test_gray4_refresh(photo: Path) -> None:
+    epd = Gray4Epd()
+
+    display = WaveshareDisplay(WaveshareDriver(epd), ColorMode.GRAY4, clear=True)
+    display.show(photo)
+
+    with Image.open(photo) as image:
+        buffer = gray4_buffer(image, 8, 2)
+    assert epd.calls == ["init_4Gray", "Clear", ("display_4Gray", buffer), "sleep"]
+
+
+def test_gray4_failed_init(photo: Path) -> None:
+    epd = Gray4Epd()
+    epd.init_result = INIT_FAILED
+
+    with pytest.raises(DisplayError, match="initialization failed"):
+        WaveshareDisplay(WaveshareDriver(epd), ColorMode.GRAY4).show(photo)
+
+
+def test_gray4_has_no_partial_refresh(
+    partial_driver: Callable[..., WaveshareDriver], photo: Path
+) -> None:
+    epd = Gray4Epd()
+    driver = partial_driver(PartialRecipe(Style.FRAME, base=True), epd)
+    assert Capability.PARTIAL in driver.capabilities
+
+    display = WaveshareDisplay(driver, ColorMode.GRAY4, icons=True)
+    display.show(photo)
+
+    assert Capability.PARTIAL not in display.capabilities
+    assert epd.calls[0] == "init_4Gray"  # no display_Base
+
+
+def test_gray4_without_fast_refresh(
+    photo: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    epd = Gray4Epd()
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.GRAY4, fast=True).show(photo)
+
+    assert epd.calls[0] == "init_4Gray"
+    assert caplog.messages == [NO_FAST_WITH_GRAY4]
+
+
+def test_gray4_not_supported(photo: Path, caplog: pytest.LogCaptureFixture) -> None:
+    epd = FakeEpd()
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.GRAY4).show(photo)
+
+    assert epd.calls == ["init", ("display", "buffer-RGB-(255, 0, 0)"), "sleep"]
+    assert caplog.messages == [NO_GRAY4]

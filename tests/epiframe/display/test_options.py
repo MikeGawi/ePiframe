@@ -8,6 +8,7 @@ def test_color_mode_values_in_webui_order() -> None:
         "BW",
         "BW+Red",
         "BW+Yellow",
+        "4 grays",
         "4 colors",
         "7 colors",
         "Other",

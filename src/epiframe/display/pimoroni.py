@@ -79,8 +79,8 @@ def palette_for(inky: Any, color: ColorMode) -> list[colors.Color]:
     attributes of the display class (``inky.phat`` / ``inky.what`` have no
     module-level constants), the second color is 2.
     """
-    if color == ColorMode.C7:
-        raise DisplayError("The display doesn't support 7 colors!")
+    if color in (ColorMode.C7, ColorMode.GRAY4):
+        raise DisplayError(f"The display doesn't support {color}!")
     palette = [colors.BLACK, colors.BLACK]
     palette[inky.WHITE] = colors.WHITE
     palette[inky.BLACK] = colors.BLACK

@@ -1,0 +1,65 @@
+{
+ "_source": "waveshareteam/e-Paper d28b3c4, EPD.getbuffer_4Gray of the test image",
+ "drivers": {
+  "epd13in3k": {
+   "height": 680,
+   "sha256": "b47487eec23f287a85a3fbfc3c55f1f1e99ee8dadc91921c83ebdaabace8671f",
+   "width": 960
+  },
+  "epd2in7": {
+   "height": 264,
+   "sha256": "0c223d5f3754e4255d5832ecf3259062f2fa63dd9381194e9beb088acd977dae",
+   "width": 176
+  },
+  "epd2in7_V2": {
+   "height": 264,
+   "sha256": "0c223d5f3754e4255d5832ecf3259062f2fa63dd9381194e9beb088acd977dae",
+   "width": 176
+  },
+  "epd2in9_V2": {
+   "height": 296,
+   "sha256": "a1fbe5379ee87b65ec9f62969f837e311d52d6df934417d84ea70548f034f187",
+   "width": 128
+  },
+  "epd2in9_V3": {
+   "height": 296,
+   "sha256": "a1fbe5379ee87b65ec9f62969f837e311d52d6df934417d84ea70548f034f187",
+   "width": 128
+  },
+  "epd3in7": {
+   "height": 480,
+   "sha256": "9846e0eeb07060db9e7c2ae54afdc3efc98d7c311b1c624d8ff55d5e08cfcb03",
+   "width": 280
+  },
+  "epd4in2": {
+   "height": 300,
+   "sha256": "748a39ee9dcdfd47e13ac682c781896582c7a2526842bc35483f04f961b5cd25",
+   "width": 400
+  },
+  "epd4in26": {
+   "height": 480,
+   "sha256": "4063ca8119e8ddf45816799bb047d283e372cdf7c7e59365d092322e84043585",
+   "width": 800
+  },
+  "epd4in2_V2": {
+   "height": 300,
+   "sha256": "748a39ee9dcdfd47e13ac682c781896582c7a2526842bc35483f04f961b5cd25",
+   "width": 400
+  },
+  "epd5in79": {
+   "height": 272,
+   "sha256": "20f559ebf447869e34335aa281819b4a448a87f222ef5e7193dadd1276faee1c",
+   "width": 792
+  },
+  "epd5in83_V2": {
+   "height": 480,
+   "sha256": "15d9a0bc4f914fb99cdae85ae545ffbf82dfc74f1639a37378c43aae57299827",
+   "width": 648
+  },
+  "epd7in5_V2": {
+   "height": 480,
+   "sha256": "4063ca8119e8ddf45816799bb047d283e372cdf7c7e59365d092322e84043585",
+   "width": 800
+  }
+ }
+}

@@ -119,6 +119,21 @@ def test_prepare_converts_without_showing(frame: Frame) -> None:
 
 
 @needs_imagemagick
+def test_prepare_for_four_grays(frame: Frame) -> None:
+    frame.add_photo("a.jpg", "gray", 1_600_000_000)
+    frame.configure(display_type="SPI", epaper_color="4 grays")
+
+    result = frame.run("prepare")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    with Image.open(frame.directory / "photo.bmp") as image:
+        assert image.size == (800, 480)
+        levels = set(image.convert("L").tobytes())
+    # gray (128) dithered between two of the four grays; white bars at the sides
+    assert levels == {85, 170, 255}
+
+
+@needs_imagemagick
 def test_prepare_again_converts_the_original(frame: Frame) -> None:
     fake_viewer(frame)
     Image.new("RGB", (64, 48), "green").save(frame.directory / "origphoto.png")
