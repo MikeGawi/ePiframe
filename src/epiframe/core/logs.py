@@ -9,6 +9,11 @@ point calls :func:`setup_logging` once it knows the log file, then modules just 
 Lines keep the 1.x format ``YYYY-mm-dd HH:MM:SS : message`` (WebUI log view, REST
 ``get_log``) on the console and in the file. The file rotates at midnight and the old
 files are gzipped (``<file>.<date>.gz``, 6 kept).
+
+One process owns the log file: the service starts ``ePiframe.py`` with
+:data:`CONSOLE_ONLY_ENV` set, so the script logs to stdout only, and the service
+writes those (already formatted) lines to the file with :func:`log_line`. Two
+processes rotating the same file at midnight would lose or misplace lines.
 """
 
 import gzip
@@ -25,7 +30,11 @@ LINE_FORMAT = "%(asctime)s : %(message)s"
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 BACKUP_COUNT = 6
 
+# set (non-empty) in the environment: setup_logging() ignores the log file
+CONSOLE_ONLY_ENV = "EPIFRAME_LOG_CONSOLE_ONLY"
+
 _OWN_HANDLER = "_epiframe_handler"
+_RAW = "epiframe_raw"
 
 
 class StdoutHandler(logging.StreamHandler[TextIO]):
@@ -64,6 +73,24 @@ class GzipTimedRotatingFileHandler(TimedRotatingFileHandler):
         os.remove(source)
 
 
+class LineFormatter(logging.Formatter):
+    """The 1.x line format; a line logged by :func:`log_line` is kept as it is."""
+
+    def __init__(self) -> None:
+        super().__init__(LINE_FORMAT, TIME_FORMAT)
+
+    def format(self, record: logging.LogRecord) -> str:
+        if getattr(record, _RAW, False):
+            return record.getMessage()
+        return super().format(record)
+
+
+def log_line(logger: logging.Logger, line: str) -> None:
+    """Log ``line`` without adding the time (it is a line logged by another
+    process, e.g. ``ePiframe.py`` run by the service)."""
+    logger.info(line, extra={_RAW: True})
+
+
 def get_logger(name: str = "") -> logging.Logger:
     """Return the ``epiframe`` logger, or its ``epiframe.<name>`` child."""
     return logging.getLogger(f"{LOGGER_NAME}.{name}" if name else LOGGER_NAME)
@@ -77,7 +104,7 @@ def _remove_own_handlers(logger: logging.Logger) -> None:
 
 
 def _add_handler(logger: logging.Logger, handler: logging.Handler) -> None:
-    handler.setFormatter(logging.Formatter(LINE_FORMAT, TIME_FORMAT))
+    handler.setFormatter(LineFormatter())
     setattr(handler, _OWN_HANDLER, True)
     logger.addHandler(handler)
 
@@ -88,7 +115,8 @@ def setup_logging(
     """Configure the ``epiframe`` logger and return it.
 
     Logs to ``log_file`` (parent directories are created; empty or ``None`` means no
-    file) and, if ``console`` is set, to stdout. Calling it again replaces the
+    file, as does :data:`CONSOLE_ONLY_ENV` in the environment) and, if ``console``
+    is set, to stdout. Calling it again replaces the
     handlers set up before, so it is safe to call first without a file and again
     once the configuration is loaded.
     """
@@ -97,7 +125,7 @@ def setup_logging(
     _remove_own_handlers(logger)
     if console:
         _add_handler(logger, StdoutHandler())
-    if log_file:
+    if log_file and not os.environ.get(CONSOLE_ONLY_ENV):
         Path(log_file).parent.mkdir(parents=True, exist_ok=True)
         _add_handler(logger, GzipTimedRotatingFileHandler(log_file))
     return logger

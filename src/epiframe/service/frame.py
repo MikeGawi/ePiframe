@@ -4,10 +4,12 @@
 when the file changes), the working hours and the display time multiplier, knows
 when the photo changes next and where the photo files are, and passes photo
 change requests (:class:`Trigger`) to the service, which runs ``ePiframe.py``.
+The service's threads share one frame.
 """
 
 import glob
 import os
+import threading
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from enum import Enum
@@ -97,6 +99,7 @@ class Frame:
         self.config_file = Path(config_file)
         self.root = Path(root)
         self.hdmi = hdmi or HdmiPower()
+        self._refresh_lock = threading.Lock()  # the service's threads refresh
         self._load()
         # a multiplier left by the previous run belongs to a photo shown long ago
         self.multiplier.remove()
@@ -124,9 +127,10 @@ class Frame:
 
     def refresh(self) -> None:
         """Reload the configuration if the file changed (or can't be checked)."""
-        modified = last_modified(self.config_file)
-        if modified is None or modified != self._config_time:
-            self._load()
+        with self._refresh_lock:
+            modified = last_modified(self.config_file)
+            if modified is None or modified != self._config_time:
+                self._load()
 
     def _enabled(self, name: str) -> bool:
         return bool(self.config.getint(name))

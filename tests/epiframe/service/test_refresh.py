@@ -1,0 +1,124 @@
+import logging
+import subprocess
+import sys
+import threading
+from pathlib import Path
+from typing import ClassVar
+
+import pytest
+
+from epiframe.core.logs import CONSOLE_ONLY_ENV
+from epiframe.service import refresh
+from epiframe.service.refresh import Refresher, copy_output
+
+SCRIPT = f"""
+import os, sys
+print("2026-11-25 12:00:00 : Getting next photo...")
+print("console only:", os.environ.get("{CONSOLE_ONLY_ENV}"))
+print("arguments:", sys.argv[1:])
+print("Traceback (most recent call last):", file=sys.stderr)
+sys.exit(int(os.environ.get("EXIT_CODE", "0")))
+"""
+
+
+@pytest.fixture
+def script(tmp_path: Path) -> Path:
+    path = tmp_path / "ePiframe.py"
+    path.write_text(SCRIPT)
+    return path
+
+
+@pytest.fixture(autouse=True)
+def info(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.INFO, logger="epiframe")
+
+
+class RecordedThread(threading.Thread):
+    started: ClassVar[list[threading.Thread]] = []
+
+    def start(self) -> None:
+        RecordedThread.started.append(self)
+        super().start()
+
+
+@pytest.fixture(autouse=True)
+def threads(monkeypatch: pytest.MonkeyPatch) -> list[threading.Thread]:
+    RecordedThread.started = []
+    monkeypatch.setattr(refresh, "Thread", RecordedThread)
+    return RecordedThread.started
+
+
+def wait_for_end(
+    process: subprocess.Popen[str] | None, threads: list[threading.Thread]
+) -> None:
+    """Wait until the output thread has logged everything."""
+    assert process is not None
+    (thread,) = threads
+    thread.join(timeout=30)
+    assert not thread.is_alive()
+    assert thread.daemon
+
+
+def test_default_script() -> None:
+    assert refresh.SCRIPT.name == "ePiframe.py"
+    assert refresh.SCRIPT.is_file()
+    assert Refresher().python == sys.executable
+
+
+def test_command(script: Path) -> None:
+    refresher = Refresher(script, "python3")
+
+    assert refresher.command(("--test-convert", "--test-display")) == [
+        "python3",
+        str(script),
+        "--test-convert",
+        "--test-display",
+    ]
+
+
+def test_output_goes_to_the_log(
+    script: Path, caplog: pytest.LogCaptureFixture, threads: list[threading.Thread]
+) -> None:
+    process = Refresher(script).start(["--test-display"])
+    wait_for_end(process, threads)
+
+    messages = [record.getMessage() for record in caplog.records]
+    assert messages == [
+        "2026-11-25 12:00:00 : Getting next photo...",
+        "console only: 1",
+        "arguments: ['--test-display']",
+        "Traceback (most recent call last):",
+    ]
+    assert {record.name for record in caplog.records} == {"epiframe.service"}
+
+
+def test_exit_code_is_logged(
+    script: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    threads: list[threading.Thread],
+) -> None:
+    monkeypatch.setenv("EXIT_CODE", "3")
+
+    wait_for_end(Refresher(script).start(), threads)
+
+    assert caplog.records[-1].levelno == logging.WARNING
+    assert caplog.records[-1].getMessage() == "ePiframe script ended with exit code 3"
+
+
+def test_start_failure(script: Path, caplog: pytest.LogCaptureFixture) -> None:
+    process = Refresher(script, str(script.parent / "no-python")).start()
+
+    assert process is None
+    assert f"Can't start {script}" in caplog.text
+
+
+def test_copy_output_without_pipe(caplog: pytest.LogCaptureFixture) -> None:
+    process = subprocess.Popen(
+        [sys.executable, "-c", "pass"], stdout=subprocess.DEVNULL, text=True
+    )
+
+    copy_output(process)
+
+    assert process.returncode == 0
+    assert caplog.records == []

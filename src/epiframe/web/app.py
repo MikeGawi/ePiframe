@@ -2,12 +2,14 @@
 
 import logging
 import os
+import socket
 from collections.abc import Iterable
 from typing import Any
 
 from flask import Flask, request
 from flask_login import LoginManager
 from werkzeug.exceptions import HTTPException
+from werkzeug.serving import BaseWSGIServer, make_server
 
 from epiframe.config import paths
 from epiframe.core.logs import get_logger
@@ -149,17 +151,29 @@ class WebUI:
             menu = [entry for entry in menu if entry.url != STATS_MENU]
         return {"dark_theme": bool(config.getint("dark_theme")), "menu": menu}
 
-    def start(self, host: str | None = None, port: int | None = None) -> None:
-        """Serve until the process ends or Ctrl+C (the login is needed if there
-        are users); ``host``/``port`` replace the configured ones."""
+    def server(
+        self, host: str | None = None, port: int | None = None
+    ) -> BaseWSGIServer:
+        """A server of the WebUI bound to ``host``/``port`` (they replace the
+        configured ones); the login is needed if there are users.
+
+        Raises ``OSError`` if the address can't be used (werkzeug would call
+        ``sys.exit``, which silently ends the service's WebUI thread).
+        """
         logging.getLogger("werkzeug").setLevel(logging.CRITICAL)
         self.app.config["LOGIN_DISABLED"] = not self.users.login_needed()
-        config = self.frame.config
-        self.app.run(
-            host=host or config.get("web_host"),
-            port=port or config.getint("web_port"),
-            debug=False,
-        )
+        host = host or self.frame.config.get("web_host")
+        port = self.frame.config.getint("web_port") if port is None else port
+        family = socket.AF_INET6 if ":" in host else socket.AF_INET
+        with socket.create_server((host, port), family=family) as listening:
+            # werkzeug serves a duplicate of the bound socket
+            return make_server(
+                host, port, self.app, threaded=True, fd=listening.fileno()
+            )
+
+    def start(self, host: str | None = None, port: int | None = None) -> None:
+        """Serve until Ctrl+C (see :meth:`server`)."""
+        self.server(host, port).serve_forever()
 
 
 def serve_test(host: str, port: int) -> None:
