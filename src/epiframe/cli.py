@@ -1,8 +1,9 @@
 """The ``epiframe`` command (also ``ePiframe.py`` and ``python -m epiframe``).
 
-Without a command it changes the photo now (the service runs it for every
-change). The other commands test or set up parts of the frame, convert files
-and run the service; ``epiframe <command> --help`` describes each.
+Without a command it changes the photo now. The service runs ``epiframe
+prepare`` for every change and shows the prepared photo itself. The other
+commands test or set up parts of the frame, convert files and run the service;
+``epiframe <command> --help`` describes each.
 """
 
 import argparse
@@ -17,6 +18,7 @@ from epiframe.config.base import ConfigBase
 from epiframe.config.manager import ConfigManager
 from epiframe.config.property import ConfigError
 from epiframe.core.logs import format_duration, get_logger, setup_logging
+from epiframe.display.base import DisplayError
 from epiframe.plugins.manager import PluginManager
 from epiframe.processing.imagemagick import ImageMagick
 from epiframe.service import daemon
@@ -147,8 +149,18 @@ def update(
 ) -> None:
     mode = Mode.SHOW
     if arguments.command == "test":
-        mode = Mode.NO_SKIP if arguments.no_skip else Mode.TEST
+        mode = Mode.NO_SKIP if arguments.no_skip else Mode.PREPARE
     PhotoUpdate(config, plugins, pipeline(config, plugins), mode).run()
+
+
+def prepare(
+    arguments: argparse.Namespace, config: ConfigManager, plugins: PluginManager
+) -> None:
+    """The photo change of the service, without showing the photo."""
+    if arguments.again:
+        FileCommands(pipeline(config, plugins)).test_convert()
+        return
+    PhotoUpdate(config, plugins, pipeline(config, plugins), Mode.PREPARE).run()
 
 
 def frame_command(action: Action, locked: bool, arguments: argparse.Namespace) -> int:
@@ -196,6 +208,17 @@ def _frame_parsers(
         help="keep the current photo (don't mark it shown, no display time multiplier)",
     )
     test.set_defaults(handler=partial(frame_command, update, True))
+    service_update = commands.add_parser(
+        "prepare",
+        help="get and convert the next photo, don't show it (the service runs it "
+        "and shows the photo)",
+    )
+    service_update.add_argument(
+        "--again",
+        action="store_true",
+        help="convert the original photo again instead (e.g. a new one uploaded)",
+    )
+    service_update.set_defaults(handler=partial(frame_command, prepare, True))
     for name, help_text in (
         ("test-convert", "convert FILE (default: the original photo) for the display"),
         ("test-display", "show FILE (default: the converted photo) on the display"),
@@ -261,7 +284,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
     handler: Handler = namespace.handler
     try:
         return handler(namespace)
-    except (ConfigError, UpdateError) as error:
+    except (ConfigError, UpdateError, DisplayError) as error:
         log.error(str(error))
     except KeyboardInterrupt:
         return INTERRUPTED

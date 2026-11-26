@@ -4,7 +4,9 @@ The directories can be set with environment variables (the DEB package uses the
 FHS layout: ``EPIFRAME_CONFIG_DIR=/etc/epiframe``,
 ``EPIFRAME_DATA_DIR=/var/lib/epiframe``). Without them the 1.x layout is used:
 ``config.cfg`` in the ePiframe directory, ``misc/users.db`` and
-``misc/secret.key`` (the WebUI session key). The display
+``misc/secret.key`` (the WebUI session key), ``misc/display.lock`` (taken by
+whoever drives the display) and ``misc/display.json`` (refresh counter), see
+:mod:`epiframe.display.controller`. The display
 libraries (Waveshare ``waveshare_epd``, Pimoroni ``inky``) are looked up in
 ``EPIFRAME_LIBRARY_DIR``, by default in ``lib`` of the ePiframe directory, the
 plugins in ``EPIFRAME_PLUGINS_DIR`` (default ``plugins`` there). The
@@ -39,5 +41,7 @@ CONFIG_FILE = str(_directory(CONFIG_DIR_ENV, LEGACY_CONFIG_DIR) / "config.cfg")
 CONFIG_FILE_DEFAULT = str(Path(__file__).with_name("config.default"))
 USERS_DB_FILE = str(_directory(DATA_DIR_ENV, LEGACY_DATA_DIR) / "users.db")
 SECRET_KEY_FILE = str(_directory(DATA_DIR_ENV, LEGACY_DATA_DIR) / "secret.key")
+DISPLAY_LOCK_FILE = str(_directory(DATA_DIR_ENV, LEGACY_DATA_DIR) / "display.lock")
+DISPLAY_STATE_FILE = str(_directory(DATA_DIR_ENV, LEGACY_DATA_DIR) / "display.json")
 LIBRARY_DIR = str(_directory(LIBRARY_DIR_ENV, LEGACY_LIBRARY_DIR))
 PLUGINS_DIR = str(_directory(PLUGINS_DIR_ENV, LEGACY_PLUGINS_DIR))

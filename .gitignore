@@ -131,6 +131,8 @@ dmypy.json
 /pre_origphoto.*
 /misc/users.db
 /misc/secret.key
+/misc/display.lock
+/misc/display.json
 /token.pickle
 /origphoto.*
 /index

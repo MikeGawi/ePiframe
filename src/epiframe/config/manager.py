@@ -75,6 +75,10 @@ def _display_settings() -> list[ConfigProperty]:
         ConfigProperty("epaper_color", possible=ColorMode.values(), **spi),
         ConfigProperty("display", **spi),
         ConfigProperty("clear_display", BOOLEAN, **spi),
+        ConfigProperty("fast_refresh", BOOLEAN, **spi),
+        ConfigProperty(
+            "full_refresh_every", INTEGER, dependency="fast_refresh", min_value=1
+        ),
         ConfigProperty("tty", INTEGER, min_value=0, **hdmi),
         ConfigProperty("slide_interval", INTEGER, min_value=180),
         ConfigProperty("interval_mult", BOOLEAN),

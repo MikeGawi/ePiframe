@@ -4,7 +4,7 @@
 when the file changes), the working hours and the display time multiplier, knows
 when the photo changes next and where the photo files are, and passes photo
 change requests (:class:`Trigger`) to the service, which runs an update
-(``epiframe``).
+(``epiframe prepare``) and shows the photo.
 The service's threads share one frame.
 """
 
@@ -36,8 +36,8 @@ NEVER = "never (no start time is set in start_times)"
 class Trigger(Enum):
     """A photo change asked for from outside the schedule (WebUI, bot, API)."""
 
-    NEXT_PHOTO = ()
-    REDISPLAY = ("redisplay",)  # the downloaded photo again
+    NEXT_PHOTO = ("prepare",)
+    REDISPLAY = ("prepare", "--again")  # the downloaded photo again
 
     @property
     def arguments(self) -> tuple[str, ...]:

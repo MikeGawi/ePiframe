@@ -4,7 +4,10 @@ It runs in the foreground (systemd ``Type=simple``, or a terminal for tests) and
 stops cleanly on SIGTERM or Ctrl+C. Its threads:
 
 - the photo scheduler (:mod:`epiframe.service.scheduler`), which runs
-  an update (``epiframe``) for every photo change (:mod:`epiframe.service.refresh`);
+  an update (``epiframe prepare``) for every photo change
+  (:mod:`epiframe.service.refresh`); the service shows the prepared photo
+  (:mod:`epiframe.display.controller`: the service owns the display, the update
+  process never touches it);
 - the WebUI / REST API server and the statistics recorder;
 - the Telegram bot;
 - the service threads of the plugins (``Plugin.service_thread``).
@@ -22,7 +25,7 @@ import signal
 import sys
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from types import FrameType
@@ -31,6 +34,7 @@ from epiframe.bot.telegram import TelegramBot
 from epiframe.config import paths
 from epiframe.config.property import ConfigError
 from epiframe.core.logs import get_logger, setup_logging
+from epiframe.display.controller import DisplayController
 from epiframe.plugins.base import Plugin
 from epiframe.service.frame import Frame, Trigger
 from epiframe.service.refresh import Refresher
@@ -79,6 +83,7 @@ class Service:
         config_file: str | Path | None = None,
         *,
         refresher: Refresher | None = None,
+        display: DisplayController | None = None,
         frame_factory: FrameFactory = Frame,
     ) -> None:
         self.parts = parts
@@ -86,14 +91,36 @@ class Service:
         self.frame = frame_factory(
             self.trigger, paths.CONFIG_FILE if config_file is None else config_file
         )
+        self.refresher = refresher or Refresher()
+        self.display = display or DisplayController(lambda: self.frame.config)
         self.scheduler = PhotoScheduler(
-            self.frame, (refresher or Refresher()).start, scheduled=parts.schedule
+            self.frame, self.start_update, scheduled=parts.schedule
         )
         self.threads: list[threading.Thread] = []
         self.bot: TelegramBot | None = None
 
     def trigger(self, trigger: Trigger) -> None:
         self.scheduler.trigger(trigger)
+
+    # ------------------------------------------------------------ photo change
+
+    def start_update(self, arguments: Sequence[str]) -> None:
+        """Run the update (``epiframe prepare``) with ``arguments`` and show the
+        photo; an update that hangs is stopped after the slide interval."""
+        self.updated(self.refresher.run(arguments, self.frame.slide_interval))
+
+    def updated(self, code: int | None) -> None:
+        """Show the photo prepared by the update that ended with exit ``code``."""
+        if code != 0:
+            return  # not started, failed or stopped (logged)
+        photo = self.frame.current_file()
+        if photo is None:
+            log.error("Error sending photo to display: no converted photo!")
+            return
+        try:
+            self.display.show(photo)
+        except Exception as error:  # a vendor driver must not end the service
+            log.error(f"Error sending photo to display: {error}")
 
     # ----------------------------------------------------------- start / stop
 
@@ -122,6 +149,7 @@ class Service:
         """Stop the threads; wait :data:`STOP_TIMEOUT` seconds at most."""
         self.stopping.set()
         self.scheduler.stop()
+        self.refresher.stop()  # the scheduler may wait for it
         if self.bot is not None:
             self.bot.stop()
         running = self._join()

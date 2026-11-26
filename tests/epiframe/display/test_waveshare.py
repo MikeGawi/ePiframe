@@ -1,4 +1,5 @@
 import importlib
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,7 @@ from epiframe.display.base import Capability, DisplayError
 from epiframe.display.options import ColorMode
 from epiframe.display.waveshare import (
     INIT_FAILED,
+    NO_FAST,
     WaveshareDisplay,
     WaveshareDriver,
 )
@@ -244,3 +246,103 @@ def test_load_interrupted_uses_epdconfig(library: Path, photo: Path) -> None:
 def test_load_unknown_driver(library: Path) -> None:
     with pytest.raises(DisplayError, match="epd_unknown"):
         WaveshareDisplay.load("epd_unknown", ColorMode.BW, directory=library)
+
+
+# ------------------------------------------------------------- fast refresh
+
+
+class FastEpd(FakeEpd):
+    """``init_fast`` + the usual ``display`` (epd7in5_V2)."""
+
+    def init_fast(self) -> int:
+        self.calls.append("init_fast")
+        return self.init_result
+
+
+class FastDisplayEpd(FakeEpd):
+    """``init_Fast`` + ``display_Fast`` (epd2in9_V3)."""
+
+    def init_Fast(self) -> int:
+        self.calls.append("init_Fast")
+        return 0
+
+    def display_Fast(self, *buffers: str) -> None:
+        self.calls.append(("display_Fast", *buffers))
+
+
+class FastModeEpd(FastDisplayEpd):
+    """``init_fast(mode)`` with the mode attributes (epd4in2_V2)."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.Seconds_1_5S = 0
+        self.Seconds_1S = 1
+
+    def init_fast(self, mode: int) -> int:
+        self.calls.append(("init_fast", mode))
+        return 0
+
+
+def test_fast_refresh(photo: Path) -> None:
+    epd = FastEpd()
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.BW, fast=True).show(photo)
+
+    assert epd.calls == ["init_fast", ("display", "buffer-RGB-(255, 0, 0)"), "sleep"]
+
+
+def test_fast_refresh_with_own_display_method(photo: Path) -> None:
+    epd = FastDisplayEpd()
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.BW, True, fast=True).show(photo)
+
+    assert epd.calls == [
+        "init_Fast",
+        "Clear",
+        ("display_Fast", "buffer-RGB-(255, 0, 0)"),
+        "sleep",
+    ]
+
+
+def test_fast_refresh_mode(photo: Path) -> None:
+    epd = FastModeEpd()
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.BW, fast=True).show(photo)
+
+    assert epd.calls[0] == ("init_fast", 0)  # Seconds_1_5S
+
+
+def test_failed_fast_init(photo: Path) -> None:
+    epd = FastEpd()
+    epd.init_result = INIT_FAILED
+
+    with pytest.raises(DisplayError, match="initialization failed"):
+        WaveshareDisplay(WaveshareDriver(epd), ColorMode.BW, fast=True).show(photo)
+
+
+def test_fast_refresh_not_supported(
+    photo: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    epd = FakeEpd()
+    caplog.set_level(logging.INFO, logger="epiframe")
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.BW, fast=True).show(photo)
+
+    assert epd.calls[0] == "init"
+    assert caplog.messages == [NO_FAST]
+
+
+def test_full_refresh_on_a_fast_panel(photo: Path) -> None:
+    epd = FastEpd()
+
+    WaveshareDisplay(WaveshareDriver(epd), ColorMode.BW).show(photo)
+
+    assert epd.calls[0] == "init"
+
+
+def test_load_fast(library: Path, photo: Path) -> None:
+    display = WaveshareDisplay.load(
+        "epdfake", ColorMode.BW, directory=library, fast=True
+    )
+
+    assert display._fast is False  # the fake driver has no init_fast

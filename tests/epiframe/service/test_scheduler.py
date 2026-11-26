@@ -75,7 +75,7 @@ def test_task_changes_the_photo(
 
     assert scheduler.task() == 300
 
-    assert starts == [()]
+    assert starts == [("prepare",)]
     hdmi(scheduler.frame).set.assert_called_once_with(True)
     assert STARTING in messages(caplog)
     assert scheduler.frame.next_update is not None
@@ -87,7 +87,7 @@ def test_trigger_arguments(make_scheduler: MakeScheduler, starts: Starts) -> Non
 
     scheduler.task(Trigger.REDISPLAY)
 
-    assert starts == [("redisplay",)]
+    assert starts == [("prepare", "--again")]
 
 
 def test_off_hours(
@@ -116,7 +116,7 @@ def test_sleep_notice_starts_again_after_work(
     assert messages(caplog).count(SLEEPING) == 2
 
 
-@pytest.mark.parametrize(("allowed", "expected"), [("1", [()]), ("0", [])])
+@pytest.mark.parametrize(("allowed", "expected"), [("1", [("prepare",)]), ("0", [])])
 def test_trigger_off_hours(
     make_scheduler: MakeScheduler,
     starts: Starts,
@@ -140,7 +140,7 @@ def test_trigger_without_working_hours(
 
     scheduler.task(Trigger.NEXT_PHOTO)
 
-    assert starts == [()]
+    assert starts == [("prepare",)]
     assert scheduler.frame.next_update is None
     assert messages(caplog)[-1] == NO_NEXT
 
@@ -155,7 +155,7 @@ def test_multiplier_keeps_the_photo(
     assert scheduler.task() == 300
     assert scheduler.task() == 300
 
-    assert starts == [()]  # after two more intervals
+    assert starts == [("prepare",)]  # after two more intervals
     assert messages(caplog).count(MULTIPLIED) == 2
     assert scheduler.frame.multiplier.read() == 0
     assert not scheduler.frame.multiplier.path.exists()
@@ -167,7 +167,7 @@ def test_multiplier_disabled(make_scheduler: MakeScheduler, starts: Starts) -> N
 
     scheduler.task()
 
-    assert starts == [()]
+    assert starts == [("prepare",)]
     assert scheduler.frame.multiplier.read() == 2
 
 
@@ -179,7 +179,7 @@ def test_trigger_skips_the_multiplier(
 
     scheduler.task(Trigger.NEXT_PHOTO)
 
-    assert starts == [()]
+    assert starts == [("prepare",)]
 
 
 def test_safe_task_logs_errors(
@@ -231,7 +231,7 @@ def test_run_starts_after_the_initial_delay(
     assert starts.event.wait(10)
     stop(scheduler, thread)
 
-    assert starts == [()]
+    assert starts == [("prepare",)]
 
 
 def test_run_unscheduled_waits_for_triggers(
@@ -246,7 +246,7 @@ def test_run_unscheduled_waits_for_triggers(
     assert starts.event.wait(10)
     stop(scheduler, thread)
 
-    assert starts == [()]
+    assert starts == [("prepare",)]
 
 
 def test_stop_before_run(make_scheduler: MakeScheduler, starts: Starts) -> None:
@@ -256,3 +256,32 @@ def test_stop_before_run(make_scheduler: MakeScheduler, starts: Starts) -> None:
     scheduler.run()
 
     assert starts == []
+
+
+def test_trigger_during_an_update_runs_after_it(make_frame: MakeFrame) -> None:
+    frame = make_frame(**HDMI)
+    frame.working = lambda now=None: False  # type: ignore[method-assign]
+    running = threading.Event()
+    finish = threading.Event()
+    calls: list[tuple[str, ...]] = []
+
+    def update(arguments: Sequence[str]) -> None:
+        calls.append(tuple(arguments))
+        running.set()
+        assert finish.wait(10)  # the update runs (the scheduler waits for it)
+
+    scheduler = PhotoScheduler(frame, update, scheduled=False)
+    thread = run_in_thread(scheduler)
+    scheduler.trigger(Trigger.NEXT_PHOTO)
+    assert running.wait(10)
+    running.clear()
+    scheduler.trigger(Trigger.REDISPLAY)  # queued, the running one goes on
+    scheduler.trigger(Trigger.REDISPLAY)
+
+    assert calls == [("prepare",)]
+    finish.set()
+    assert running.wait(10)
+    stop(scheduler, thread)
+
+    # the queued requests ran right after it, once
+    assert calls == [("prepare",), ("prepare", "--again")]

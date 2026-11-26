@@ -73,7 +73,7 @@ def test_update_shows_the_next_photo(
 def test_test_mode_doesnt_show(
     make_update: MakeUpdate, display: MagicMock, tmp_path: Path
 ) -> None:
-    make_update(Mode.TEST, sorting="asc").run()
+    make_update(Mode.PREPARE, sorting="asc").run()
 
     assert shown(tmp_path) == ["a.jpg"]
     assert Path("photo.bmp").exists()
@@ -176,7 +176,7 @@ def test_no_photo_retrieved(
 def test_multiplier_from_comment(make_update: MakeUpdate, magick: MagicMock) -> None:
     magick.comment.return_value = "Frame 3"
 
-    make_update(Mode.TEST).run()
+    make_update(Mode.PREPARE).run()
 
     assert IntervalMultiplier("time").read() == 3
     magick.comment.assert_called_once_with("origphoto.jpg")
@@ -187,7 +187,7 @@ def test_old_multiplier_is_removed(make_update: MakeUpdate, magick: MagicMock) -
     IntervalMultiplier("time").save(4)
     magick.comment.side_effect = ImageMagickError("no comment")
 
-    make_update(Mode.TEST).run()
+    make_update(Mode.PREPARE).run()
 
     assert IntervalMultiplier("time").read() == 0
 
@@ -196,7 +196,7 @@ def test_old_multiplier_is_removed(make_update: MakeUpdate, magick: MagicMock) -
 def test_multiplier_disabled(make_update: MakeUpdate, magick: MagicMock) -> None:
     IntervalMultiplier("time").save(4)
 
-    make_update(Mode.TEST, interval_mult="0").run()
+    make_update(Mode.PREPARE, interval_mult="0").run()
 
     assert IntervalMultiplier("time").read() == 4
     magick.comment.assert_not_called()
@@ -215,7 +215,7 @@ def test_drive_photo(
         return DriveSource(drive, ["root"], True, ["jpg"])
 
     monkeypatch.setattr(flow_module, "drive_source", drive_source)
-    update = make_update(Mode.TEST, use_local="0", use_drive="1")
+    update = make_update(Mode.PREPARE, use_local="0", use_drive="1")
     update.sources.sync = lambda index: None  # type: ignore[method-assign]
     with PhotoIndex("photos.db") as index:
         index.add_photos([Photo("p1", DRIVE_SOURCE, datetime(2024, 5, 1))])

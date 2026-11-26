@@ -370,7 +370,7 @@ Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays, but
 
 ## Command line
 
-ePiframe is controlled with the ```epiframe``` command (```./ePiframe.py``` in the ePiframe folder, or ```python3 -m epiframe```). Without a command it changes the photo now (the service runs it for every photo change). The other commands help with the setup, tests and debugging:
+ePiframe is controlled with the ```epiframe``` command (```./ePiframe.py``` in the ePiframe folder, or ```python3 -m epiframe```). Without a command it changes the photo now. The service runs ```prepare``` for every photo change and shows the prepared photo itself. The other commands help with the setup, tests and debugging:
 
 Syntax: ```./ePiframe.py [command] [arguments]``` (```./ePiframe.py <command> --help``` describes a command)
 * (no command) - changes the photo now: gets, converts and shows the next photo
@@ -378,7 +378,8 @@ Syntax: ```./ePiframe.py [command] [arguments]``` (```./ePiframe.py <command> --
 * ```test [--no-skip]``` - tests the whole chain: gets and converts the photo **but without** sending it to the display. Used to test configuration, photo filtering, etc. With ```--no-skip``` the photo is not marked as shown (the next run gets the same photo) and the display time multiplier is not changed
 * ```test-display [file]``` - displays the photo ```file``` on the attached display with the current configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```test-convert``` for that
 * ```test-convert [file]``` - converts the photo ```file``` to the configured ```photo_convert_filename``` with the current configuration; the file becomes the original photo. If no file is provided the original photo (```photo_download_name```) is converted again
-* ```redisplay``` - converts and shows the original photo again (the WebUI and the bot use it after a photo upload)
+* ```redisplay``` - converts and shows the original photo again
+* ```prepare [--again]``` - gets and converts the next photo **without** showing it (with ```--again```: converts the original photo again, e.g. after a photo upload in the WebUI or the bot). The service runs it for every photo change and then shows the photo itself
 * ```convert <source file> <target file or folder>``` - converts the photo ```source file``` to a BMP file (in a folder: with the source file name) with the current configuration. Just convert: no thumbnails, the source file is not changed. Used to [pre-process photos](#pre-process-photos)
 * ```users``` - manage users for the WebUI: add, change passwords, delete, etc.
 * ```setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
@@ -390,7 +391,7 @@ Syntax: ```./ePiframe.py [command] [arguments]``` (```./ePiframe.py <command> --
 
 **_NOTE_** - ePiframe 1.x options (```--test```, ```--check-config```, ...) are commands now: ```./ePiframe.py test```, ```./ePiframe.py check-config```, ...
 
-**_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
+**_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands. The display is never driven by two programs at once: a command that shows a photo waits until the service finishes its refresh (and the other way round).
 
 ## Debugging
 
@@ -418,7 +419,7 @@ sudo systemctl start ePiframe.service
 sudo systemctl restart ePiframe.service
 ```
 
-The service runs in the foreground: systemd starts it as ```ePiframe_service.py``` (the same as ```epiframe service```) and stops it with SIGTERM (it finishes cleanly: the last statistics are saved, the WebUI and the bot are stopped). The service writes its log and the log of every photo change into the configured ```log_files``` (one process writes and rotates the file).
+The service runs in the foreground: systemd starts it as ```ePiframe_service.py``` (the same as ```epiframe service```) and stops it with SIGTERM (it finishes cleanly: the last statistics are saved, the WebUI and the bot are stopped). The service writes its log and the log of every photo change into the configured ```log_files``` (one process writes and rotates the file). The service owns the display: every photo change runs ```epiframe prepare``` as a separate process, which only gets and converts the photo, and the service then shows it (with the fast refresh if ```fast_refresh``` is enabled and the panel supports it; every ```full_refresh_every```-th photo then gets the standard full refresh to clear the ghosting). Photo changes run one at a time: a request (e.g. *Next Photo* in the WebUI or the bot) that comes during a change waits and runs right after it. A photo change that hangs is stopped after the ```slide_interval```; the display is never left in the middle of a refresh.
 
 It is possible to run the whole service, or (for test purposes) only the WebUI or the Telegram bot, in a terminal; it shows the log there too and stops with Ctrl+C:
 ```

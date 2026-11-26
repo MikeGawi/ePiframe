@@ -8,8 +8,9 @@ from epiframe.display.pimoroni import PimoroniDisplay
 from epiframe.display.waveshare import WaveshareDisplay
 
 
-def create_display(config: ValueSource) -> Display:
-    """Return the display of ``display_type`` / ``epaper_type`` (driver loaded)."""
+def create_display(config: ValueSource, fast: bool = False) -> Display:
+    """Return the display of ``display_type`` / ``epaper_type`` (driver loaded);
+    ``fast``: use the fast full refresh (if the display has it)."""
     if DisplayType.is_hdmi(config.get("display_type")):
         return HdmiDisplay(config.get("fbi_bin_path"), config.getint("tty"))
     name = config.get("display")
@@ -23,4 +24,4 @@ def create_display(config: ValueSource) -> Display:
             clear=clear,
             saturation=float(config.get("pimoroni_saturation")),
         )
-    return WaveshareDisplay.load(name, color, clear)
+    return WaveshareDisplay.load(name, color, clear, fast=fast)

@@ -100,3 +100,41 @@ def test_photo_without_conversion_is_shown_as_is(frame: Frame) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Conversion disabled by the 'convert' setting" in result.stdout
     assert wait_for(shown).read_bytes() == photo.read_bytes()
+
+
+@needs_imagemagick
+def test_prepare_converts_without_showing(frame: Frame) -> None:
+    shown = fake_viewer(frame)
+    frame.add_photo("a.jpg", "red", 1_600_000_000)
+
+    result = frame.run("prepare")
+
+    # the service shows the photo of its update: the update never touches the display
+    assert result.returncode == 0, result.stdout + result.stderr
+    with Image.open(frame.directory / "photo.bmp") as image:
+        assert image.size == (800, 480)
+    assert "Sending to display..." not in result.stdout
+    time.sleep(1)  # a detached viewer would have copied the image by now
+    assert not shown.exists()
+
+
+@needs_imagemagick
+def test_prepare_again_converts_the_original(frame: Frame) -> None:
+    fake_viewer(frame)
+    Image.new("RGB", (64, 48), "green").save(frame.directory / "origphoto.png")
+
+    result = frame.run("prepare", "--again")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (frame.directory / "photo.bmp").exists()
+    assert "Sending to display..." not in result.stdout
+
+
+def test_display_lock_is_in_the_data_folder(frame: Frame) -> None:
+    fake_viewer(frame)
+    image = frame.add_photo("ready.bmp", "blue", 1_600_000_000)
+
+    result = frame.run("test-display", str(image))
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (frame.directory / "display.lock").exists()
