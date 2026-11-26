@@ -270,6 +270,20 @@ class ConfigBase(ABC):
         for prop in self._settings.values():
             prop.validate(self)
 
+    def check(self) -> list[ConfigWarning]:
+        """Validate every entry once; raise the first error, return the warnings.
+
+        Unlike :meth:`verify`, a warning doesn't hide the errors of later entries
+        (and checks that use the network run once).
+        """
+        warnings = []
+        for prop in self._settings.values():
+            try:
+                prop.validate(self)
+            except ConfigWarning as warning:
+                warnings.append(warning)
+        return warnings
+
     def verify_exceptions(self) -> None:
         """Validate all entries; raise the first error, ignore warnings."""
         for prop in self._settings.values():

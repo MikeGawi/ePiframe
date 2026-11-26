@@ -145,10 +145,7 @@ dmypy.json
 /origphoto_thumb.*
 /photo.bmp
 /photo_thumb.jpg
-/gen_cc_badge.py
-/webtest.py
 /list.pickle
-/gen_black_badge.py
 /HANDOFF.md
 /junit.xml
 /badges/

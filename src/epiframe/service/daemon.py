@@ -1,29 +1,28 @@
-"""The ePiframe service (``ePiframe_service.py``).
+"""The ePiframe service (``epiframe service``, ``ePiframe_service.py``).
 
 It runs in the foreground (systemd ``Type=simple``, or a terminal for tests) and
 stops cleanly on SIGTERM or Ctrl+C. Its threads:
 
 - the photo scheduler (:mod:`epiframe.service.scheduler`), which runs
-  ``ePiframe.py`` for every photo change (:mod:`epiframe.service.refresh`);
+  an update (``epiframe``) for every photo change (:mod:`epiframe.service.refresh`);
 - the WebUI / REST API server and the statistics recorder;
 - the Telegram bot;
 - the service threads of the plugins (``Plugin.service_thread``).
 
 The WebUI, statistics and bot threads check the configuration every minute: they
 start once enabled, and a failed start (e.g. the port is taken) is tried again a
-minute later. ``ePiframe_service.py web`` / ``telegram`` runs only the WebUI or
+minute later. ``epiframe service web`` / ``telegram`` runs only the WebUI or
 the bot (photo changes then only on request).
 
 1.x was a forking daemon with a fixed ``/tmp`` PID file that killed every other
 ``ePiframe_service.py`` process on the machine when it started.
 """
 
-import argparse
 import signal
 import sys
 import threading
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from types import FrameType
@@ -212,23 +211,6 @@ class Service:
 # --------------------------------------------------------------------- command
 
 
-def parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="ePiframe_service.py",
-        description="The ePiframe service: photo changes, WebUI, Telegram bot. "
-        "Runs in the foreground until Ctrl+C or SIGTERM; as a system service it is "
-        "controlled with systemctl (start, stop, restart, status).",
-    )
-    parser.add_argument(
-        "part",
-        nargs="?",
-        choices=[part for part in PARTS if part],
-        help="run only the WebUI or the Telegram bot (it must be enabled in the "
-        "configuration); photos then change only on request",
-    )
-    return parser
-
-
 def handle_signals(service: Service) -> None:
     def stop(signal_number: int, frame: FrameType | None) -> None:
         service.stop()
@@ -237,8 +219,9 @@ def handle_signals(service: Service) -> None:
     signal.signal(signal.SIGINT, stop)
 
 
-def main(arguments: Sequence[str] | None = None) -> int:
-    part = parser().parse_args(arguments).part
+def run(part: str | None = None) -> int:
+    """Run the service (all of it, or the ``"web"`` / ``"telegram"`` part) until
+    SIGTERM or Ctrl+C; return the exit code."""
     setup_logging()  # the console until the log file is known
     try:
         service = Service(PARTS[part])

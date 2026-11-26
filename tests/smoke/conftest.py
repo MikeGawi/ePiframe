@@ -1,7 +1,8 @@
 """Smoke tests: run the real ePiframe entry points as processes.
 
-They check that the modules work together (CLI flow, config migration, photo
-index, ImageMagick conversion, WebUI start) in an isolated folder: the
+They check that the modules work together (``epiframe`` commands, config
+migration, photo index, ImageMagick conversion, WebUI start) in an isolated
+folder: the
 configuration and data directories point to ``tmp_path`` and the processes run
 there, so nothing in the repository or on the machine is touched.
 
@@ -23,6 +24,8 @@ from PIL import Image
 from epiframe.config import paths
 
 REPOSITORY = Path(__file__).resolve().parents[2]
+# the console script installed with the package (uv sync)
+EPIFRAME = Path(sys.executable).with_name("epiframe")
 DEFAULT_CONFIG = Path(paths.CONFIG_FILE_DEFAULT)
 CONVERT = shutil.which("convert")
 TIMEOUT = 180
@@ -74,9 +77,17 @@ class Frame:
         env: dict[str, str] | None = None,
         answers: str | None = None,
     ) -> subprocess.CompletedProcess[str]:
-        """Run ``ePiframe.py`` with ``arguments`` (+ ``env``, stdin ``answers``)."""
+        """Run ``epiframe`` with ``arguments`` (+ ``env``, stdin ``answers``)."""
+        return self.run_command([str(EPIFRAME), *arguments], env, answers)
+
+    def run_command(
+        self,
+        command: list[str],
+        env: dict[str, str] | None = None,
+        answers: str | None = None,
+    ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            [sys.executable, str(REPOSITORY / "ePiframe.py"), *arguments],
+            command,
             cwd=self.directory,
             env=self.environment() | (env or {}),
             input=answers,

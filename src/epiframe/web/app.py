@@ -177,7 +177,7 @@ class WebUI:
 
 
 def serve_test(host: str, port: int) -> None:
-    """The WebUI of ``--test-web``: the frame of the configuration, no service."""
+    """The WebUI of ``epiframe test-web``: the frame of the config, no service."""
 
     def on_trigger(trigger: Trigger) -> None:
         log.warning("%s requested: only the ePiframe service changes photos", trigger)

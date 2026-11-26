@@ -56,7 +56,7 @@ repos:
         name: xenon (cyclomatic complexity grade A)
         entry: >-
           uv run --frozen xenon --max-absolute A --max-modules A --max-average A
-          src scripts ePiframe.py ePiframe_service.py misc modules
+          src scripts ePiframe.py ePiframe_service.py
         language: system
         types: [python]
         pass_filenames: false

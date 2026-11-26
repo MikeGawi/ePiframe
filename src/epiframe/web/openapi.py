@@ -49,7 +49,7 @@ SECURITY_SCHEMES = {
         "type": "apiKey",
         "in": "query",
         "name": "api_key",
-        "description": "The API key of a WebUI user (see `--users`).",
+        "description": "The API key of a WebUI user (see `epiframe users`).",
     },
     "authorization": {
         "type": "apiKey",

@@ -1,4 +1,4 @@
-"""WebUI test (``ePiframe.py --test-web``).
+"""WebUI test (``epiframe test-web``).
 
 Checks the WebUI address and port (valid, free, allowed for this user), offers
 to save them and then serves the real WebUI of the frame until Ctrl+C, so the
@@ -145,7 +145,7 @@ class WebTest:
     def _serve(self, host: str, port: int, login_needed: bool) -> None:
         if not login_needed:
             self.say("No WebUI users: everybody who can open it controls the frame")
-            self.say("(add users with --users).")
+            self.say("(add users with: epiframe users).")
         self.say("Open " + " or ".join(self._urls(host, port)))
         self.say("The API description: /api/openapi.json. Ctrl+C stops the WebUI.")
         self.serve(host, port)

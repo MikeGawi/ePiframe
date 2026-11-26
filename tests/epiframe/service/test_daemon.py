@@ -30,8 +30,7 @@ from epiframe.service.daemon import (
     Parts,
     Service,
     handle_signals,
-    main,
-    parser,
+    run,
 )
 from epiframe.service.frame import Frame, Trigger
 from epiframe.service.refresh import Refresher
@@ -359,13 +358,6 @@ def test_stuck_thread_is_reported(
 # --------------------------------------------------------------------- command
 
 
-def test_parser() -> None:
-    assert parser().parse_args([]).part is None
-    assert parser().parse_args(["web"]).part == "web"
-    with pytest.raises(SystemExit):
-        parser().parse_args(["start"])
-
-
 def test_handle_signals(monkeypatch: pytest.MonkeyPatch) -> None:
     handlers: dict[int, Callable[[int, FrameType | None], None]] = {}
     monkeypatch.setattr(
@@ -388,7 +380,7 @@ def clean_logger() -> Iterator[None]:
 
 
 @pytest.mark.usefixtures("clean_logger")
-def test_main(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     service = MagicMock()
     service.frame.config.get.return_value = str(tmp_path / "logs" / "service.log")
     created: list[Parts] = []
@@ -400,7 +392,7 @@ def test_main(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(daemon, "Service", make)
     monkeypatch.setattr(daemon, "handle_signals", lambda served: served.handled())
 
-    assert main(["telegram"]) == 0
+    assert run("telegram") == 0
 
     assert created == [PARTS["telegram"]]
     service.frame.config.get.assert_called_with("log_files")
@@ -411,13 +403,13 @@ def test_main(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
 
 @pytest.mark.usefixtures("clean_logger")
-def test_main_with_a_broken_config(
+def test_run_with_a_broken_config(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     config = tmp_path / "config.cfg"
     config.write_text("not an ini file")
     monkeypatch.setattr(paths, "CONFIG_FILE", str(config))
 
-    assert main([]) == 1
+    assert run() == 1
 
     assert f"Error loading {config} configuration file!" in capsys.readouterr().out

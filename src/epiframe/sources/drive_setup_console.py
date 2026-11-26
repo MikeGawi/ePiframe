@@ -1,4 +1,4 @@
-"""Console setup of the Google Drive source (``ePiframe.py --setup-drive``).
+"""Console setup of the Google Drive source (``epiframe setup-drive``).
 
 Works over SSH: shows the steps with links, takes the service account key (a
 file path or the pasted JSON), the photo folders, checks the access until it
@@ -64,7 +64,7 @@ class ConsoleSetup:
         save_config(self.config, self.key_file, folders)
         self.say(
             f"Saved to {self.config.path}: Google Drive source enabled. Test it with"
-            " ./ePiframe.py --test"
+            " ./ePiframe.py test"
         )
         return 0
 

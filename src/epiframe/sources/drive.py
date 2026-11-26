@@ -150,6 +150,8 @@ def is_photo(file: DriveFile, extensions: Collection[str]) -> bool:
 class Drive(Protocol):
     """The Drive API calls used by the source (``DriveClient``)."""
 
+    account: str  # the signed-in (service account) e-mail
+
     def file(self, file_id: str, fields: str) -> dict[str, Any]: ...
 
     def children(self, folder_ids: Sequence[str]) -> Iterator[DriveFile]: ...

@@ -1,4 +1,4 @@
-"""Weather test (``ePiframe.py --test-weather``).
+"""Weather test (``epiframe test-weather``).
 
 Checks the OpenWeather API key and the coordinates with the same request the frame
 makes, before the weather stamp is configured; at the end it offers to save them.

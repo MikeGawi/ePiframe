@@ -124,9 +124,9 @@ Move to [next steps](#next-steps)
 * Connect display to Raspberry Pi
 * Put photos into the [local source](#local-source) folder (or use a plugin source)
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path
-* Check configuration with ```./ePiframe.py --check-config```
-* Do a test with ```./ePiframe.py --test``` without sending photo to display
-* Do a test with ```./ePiframe.py --test-display``` to test display
+* Check configuration with ```./ePiframe.py check-config```
+* Do a test with ```./ePiframe.py test``` without sending photo to display
+* Do a test with ```./ePiframe.py test-display``` to test display
 * Reboot ePiframe device to automatically run frame
 * Enjoy your ePiframe!
 
@@ -151,7 +151,7 @@ It is possible to download photos to a local storage (and use them by ePiframe) 
 
 ### Pre-process photos
 
-If you want photos to be pre-processed and ready for display in the frame (to save resources during conversion or to convert them earlier, on another device), this is possible using the `--convert` option command in [ePiframe commands](#command-line) and disabling conversion in [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) by switching the `convert` flag off.
+If you want photos to be pre-processed and ready for display in the frame (to save resources during conversion or to convert them earlier, on another device), this is possible using the `convert` command in [ePiframe commands](#command-line) and disabling conversion in [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) by switching the `convert` flag off.
 
 ## Google Drive Source
 
@@ -162,7 +162,7 @@ ePiframe can show photos from Google Drive folders (and their subfolders). The f
 The easiest way is the setup tool, which shows the steps below with direct links, stores the key file (readable only by its owner), checks that every folder can be read (explaining what is wrong if not) and saves the configuration:
 
 ```
-./ePiframe.py --setup-drive
+./ePiframe.py setup-drive
 ```
 
 Manual setup:
@@ -171,7 +171,7 @@ Manual setup:
 2. In *IAM & Admin → Service Accounts* create a service account (no roles needed), open it, go to *Keys → Add key → Create new key → JSON* and download the key file.
 3. Copy the key file to the frame, e.g. as `drive_key.json` in the ePiframe folder. Keep it private: anyone with this file can read the folders shared with the service account.
 4. In Google Drive share each photo folder with the service account e-mail (`...@<project>.iam.gserviceaccount.com`, it is in the key file as `client_email`) with *Viewer* access.
-5. In [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) set `use_drive=1`, `drive_folders` to the folder link (or ID; several folders separated with commas) and `drive_key_file` to the key file path, then run `./ePiframe.py --check-config`.
+5. In [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) set `use_drive=1`, `drive_folders` to the folder link (or ID; several folders separated with commas) and `drive_key_file` to the key file path, then run `./ePiframe.py check-config`.
 
 Photos are recognized by their type (or extension, for RAW files) and sorted/filtered by the time they were taken (EXIF), or by their modification time when it is unknown. Changes in Drive are picked up incrementally (Drive Changes API), so a large library is not listed again on every refresh. The [interval multiplication](#configuration) hot word can be put in the file description in Drive (*File information → Details → Description*).
 
@@ -193,7 +193,7 @@ To get the needed values:
 * Enable ```[Weather]->show_weather=1``` flag in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file and set other weather stamp parameters like size, position and color
 * Now the weather stamp will appear on the photo after next frame update
 
-**_NOTE_** - ```./ePiframe.py --test-weather``` [command](#command-line) checks the API key and the coordinates with the same request the frame makes (also before they are in the configuration) and offers to save them and enable the weather stamp. A new OpenWeather key can take a few hours to become active.
+**_NOTE_** - ```./ePiframe.py test-weather``` [command](#command-line) checks the API key and the coordinates with the same request the frame makes (also before they are in the configuration) and offers to save them and enable the weather stamp. A new OpenWeather key can take a few hours to become active.
 
 ### Telegram Bot
 
@@ -207,7 +207,7 @@ To get the needed values:
 * Create a new bot with ```/newbot``` command, set name ```ePiframeBot``` and username ```ePiframeBot``` (add some numbers at the end to make it unique or use other username)
 * BotFather will present _HTTP API token_, copy it and put in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file under ```[Telegram bot]->token```
 * You can set other bot options with _BotFather_ (i.e. description, image, if bot can be in group, etc.). The list of commands is registered by ePiframe itself when the bot starts and appears in the Telegram App menu
-* Run ```./ePiframe.py --test-telegram``` [command](#command-line) and enter the token: it checks the token and the connection, then search in Telegram App for the username set in _BotFather_ and write anything to the bot (from each chat that should control the frame, e.g. a private chat and a group). The bot answers with the id of the chat. Stop the test with Ctrl+C and let it save the token and the chat ids (it also enables the bot)
+* Run ```./ePiframe.py test-telegram``` [command](#command-line) and enter the token: it checks the token and the connection, then search in Telegram App for the username set in _BotFather_ and write anything to the bot (from each chat that should control the frame, e.g. a private chat and a group). The bot answers with the id of the chat. Stop the test with Ctrl+C and let it save the token and the chat ids (it also enables the bot)
 * Or do it by hand: put the token in ```[Telegram bot]->token```, enable ```[Telegram bot]->use_telebot=1``` and put the chat ids in ```[Telegram bot]->chat_id``` (comma separated) in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Without chat ids the running bot answers every chat with its id
 * [Restart](#service-control) ePiframe service and from now on the commands sent from the allowed chats control the frame
 
@@ -227,7 +227,7 @@ longer - Display current photo # times longer
 ```
 A photo sent to the bot is displayed on the frame. Send it as a file to keep the original quality (Telegram compresses photos).
 
-**_NOTE_** - ```./ePiframe.py --check-config``` checks the bot token and the connection to Telegram; ```./ePiframe.py --test-telegram``` also shows the chat ids. Stop the ePiframe service before the test when the bot is already enabled: Telegram allows only one connection per bot.
+**_NOTE_** - ```./ePiframe.py check-config``` checks the bot token and the connection to Telegram; ```./ePiframe.py test-telegram``` also shows the chat ids. Stop the ePiframe service before the test when the bot is already enabled: Telegram allows only one connection per bot.
 
 **_❗ IMPORTANT ❗_** - All bots are public and anybody can find them, so only the chats listed in ```[Telegram bot]->chat_id``` can control the frame. With an empty list nobody can (the bot only answers with the chat id); this is a change from ePiframe 1.x, where an empty list allowed everybody.
 
@@ -243,19 +243,19 @@ To configure:
 * Set port in ```[Web interface]->web_port``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set port value between 1-65535 that You want to have WebUI hosted under. Sometimes it is needed to [have this port open in the Firewall](https://pimylifeup.com/raspberry-pi-ufw/).
 * [Restart](#service-control) ePiframe service and from now on under given IP address and port (*http://[ip]:[port]/*), You'll be able to control the frame.
 
-**_NOTE_** - ```./ePiframe.py --test-web``` [command](#command-line) checks the address and the port (valid, free, allowed), offers to save them and enable the WebUI, and then serves the real WebUI until Ctrl+C - to troubleshoot the address, the port and the connectivity before the service runs it. Stop the ePiframe service first when the WebUI is already enabled (the port is taken by it).
+**_NOTE_** - ```./ePiframe.py test-web``` [command](#command-line) checks the address and the port (valid, free, allowed), offers to save them and enable the WebUI, and then serves the real WebUI until Ctrl+C - to troubleshoot the address, the port and the connectivity before the service runs it. Stop the ePiframe service first when the WebUI is already enabled (the port is taken by it).
 
 **_NOTE_** - Keep in mind that any port number below 1024 needs root privileges to be possible to assign.
 
 #### WebUI Users
 
-It is possible to secure Web User Interface of ePiframe with usernames and passwords. You need to create a user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line).
+It is possible to secure Web User Interface of ePiframe with usernames and passwords. You need to create a user (multiple possible) with ```./ePiframe.py users``` [command](#command-line).
 
 **_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successful authentication. Deleting all users will unblock it for everyone.
 
 #### API
 
-It is possible to control ePiframe from a simple API and even secure it with authentication keys. It is not needed to have the key but in case You need to secure API calls create a user (multiple possible) with ```./ePiframe.py --users``` [command](#command-line). Every user has an API key generated automatically which You then get in the same command tool.
+It is possible to control ePiframe from a simple API and even secure it with authentication keys. It is not needed to have the key but in case You need to secure API calls create a user (multiple possible) with ```./ePiframe.py users``` [command](#command-line). Every user has an API key generated automatically which You then get in the same command tool.
 
 **_NOTE_** - Keep in mind that even one account added to the ePiframe users will block the Web Interface until successful authentication or API key authentication. Deleting all users will unblock it for everyone.
 
@@ -335,7 +335,7 @@ Move to [next steps](#next-steps-1)
 ## Configuration
 
 * Configure ePiframe with [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) file inside installation path. Just one file and with lots of descriptions. The service restart is needed only for all service related features (i.e. WebUI, Telegram Bot, etc.) and it's indicated in the config file, the other settings are loaded per run/refresh
-* **__ALWAYS__** check configuration with ```./ePiframe.py --check-config```
+* **__ALWAYS__** check configuration with ```./ePiframe.py check-config```
 
 **_NOTE_** - Interval multiplication option can prolong the photo display time. It uses a *hot word* (i.e. *hotword #*, where # is interval multiplicator value) in the photo comment. The comment (i.e. *hotword #*, where # is interval multiplicator value) can be added with ImageMagick tool by ```convert <photo_name> -set comment <comment> <photo_name>``` and checked with ```convert <photo_name> -format "%c" info:```
 
@@ -370,21 +370,25 @@ Initially ePiframe was meant to be used with Waveshare e-Paper SPI displays, but
 
 ## Command line
 
-Main ePiframe script *ePiframe.py* is written in Python and can work from CLI, the ePiframe service daemon *ePiframe_service.py* just runs it without any arguments. But here are additional available commands helpful for tests and debugging:
+ePiframe is controlled with the ```epiframe``` command (```./ePiframe.py``` in the ePiframe folder, or ```python3 -m epiframe```). Without a command it changes the photo now (the service runs it for every photo change). The other commands help with the setup, tests and debugging:
 
-Syntax: ```ePiframe.py [option]```
-* ```--check-config``` - checks configuration file syntax
-* ```--test``` - tests whole chain: gets and converts the photo **but without** sending it to the display. Used to test configuration, photo filtering, etc
-* ```--test-display [file]``` - displays the photo ```file``` on attached display with current ePiframe configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```--test-convert``` for that
-* ```--test-convert [file]``` - converts the photo ```file``` to configured ```photo_convert_filename``` with current ePiframe configuration. If no file is provided the ```photo_download_name``` from the configuration is used
-* ```--convert [source file] [target file or location]``` - converts the photo ```source file``` to target file or under specified location with current ePiframe configuration. Just convert, no thumbnails, no pre file. Used just to convert file to ePiframe quality.
-* ```--no-skip``` - like ```--test``` but is not skipping to another photo, not marking photo as showed, etc.
-* ```--users``` - manage users for the WebUI: add, change passwords, delete, etc.
-* ```--setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
-* ```--test-telegram``` - test the [Telegram Bot](#telegram-bot) token and connection; the bot answers every chat that writes to it with the chat id; offers to save the token and the chat ids
-* ```--test-weather``` - test the [Weather Stamp](#weather-stamp) OpenWeather API key and coordinates; offers to save them
-* ```--test-web``` - check the [WebUI](#web-user-interface) address and port, offer to save them, then serve the WebUI until Ctrl+C
-* ```--help``` - show help
+Syntax: ```./ePiframe.py [command] [arguments]``` (```./ePiframe.py <command> --help``` describes a command)
+* (no command) - changes the photo now: gets, converts and shows the next photo
+* ```check-config``` - checks the configuration file (and the configuration of the plugins)
+* ```test [--no-skip]``` - tests the whole chain: gets and converts the photo **but without** sending it to the display. Used to test configuration, photo filtering, etc. With ```--no-skip``` the photo is not marked as shown (the next run gets the same photo) and the display time multiplier is not changed
+* ```test-display [file]``` - displays the photo ```file``` on the attached display with the current configuration. If no file is provided the ```photo_convert_filename``` from the configuration is used. __Only__ converted photos should be put on display! Use ```test-convert``` for that
+* ```test-convert [file]``` - converts the photo ```file``` to the configured ```photo_convert_filename``` with the current configuration; the file becomes the original photo. If no file is provided the original photo (```photo_download_name```) is converted again
+* ```redisplay``` - converts and shows the original photo again (the WebUI and the bot use it after a photo upload)
+* ```convert <source file> <target file or folder>``` - converts the photo ```source file``` to a BMP file (in a folder: with the source file name) with the current configuration. Just convert: no thumbnails, the source file is not changed. Used to [pre-process photos](#pre-process-photos)
+* ```users``` - manage users for the WebUI: add, change passwords, delete, etc.
+* ```setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
+* ```test-telegram``` - test the [Telegram Bot](#telegram-bot) token and connection; the bot answers every chat that writes to it with the chat id; offers to save the token and the chat ids
+* ```test-weather``` - test the [Weather Stamp](#weather-stamp) OpenWeather API key and coordinates; offers to save them
+* ```test-web``` - check the [WebUI](#web-user-interface) address and port, offer to save them, then serve the WebUI until Ctrl+C
+* ```service [web|telegram]``` - run the [service](#service-control) in the terminal
+* ```--help``` - show help, ```--version``` - show the version
+
+**_NOTE_** - ePiframe 1.x options (```--test```, ```--check-config```, ...) are commands now: ```./ePiframe.py test```, ```./ePiframe.py check-config```, ...
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.
 
@@ -393,7 +397,7 @@ Syntax: ```ePiframe.py [option]```
 When ePiframe is not refreshing, it's a tragedy indeed. Check your wiring with display, check power supply, check internet connection and try to reboot the device. If that doesn't help:
 * Check logs for service and ePiframe script that are stored in configured ```log_files``` location
 * [Check configuration](#configuration)
-* Do a test with ```./ePiframe.py --test``` without sending photo to display and get detailed log on what is happening
+* Do a test with ```./ePiframe.py test``` without sending photo to display and get detailed log on what is happening
 * Make sure that configured photo filtering is not narrowing too much, i.e. only one or no photos at all are filtered (test that in the step above)
 * Check ePiframe service status: ```sudo systemctl status ePiframe.service``` and [restart](#service-control) if not running
 * Sometimes changing a color preset can fix black screen problem as some photos react strange to image processing
@@ -414,7 +418,7 @@ sudo systemctl start ePiframe.service
 sudo systemctl restart ePiframe.service
 ```
 
-The service runs in the foreground: systemd starts it as ```ePiframe_service.py``` and stops it with SIGTERM (it finishes cleanly: the last statistics are saved, the WebUI and the bot are stopped). The service writes its log and the log of every photo change into the configured ```log_files``` (one process writes and rotates the file).
+The service runs in the foreground: systemd starts it as ```ePiframe_service.py``` (the same as ```epiframe service```) and stops it with SIGTERM (it finishes cleanly: the last statistics are saved, the WebUI and the bot are stopped). The service writes its log and the log of every photo change into the configured ```log_files``` (one process writes and rotates the file).
 
 It is possible to run the whole service, or (for test purposes) only the WebUI or the Telegram bot, in a terminal; it shows the log there too and stops with Ctrl+C:
 ```

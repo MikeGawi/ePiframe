@@ -21,10 +21,15 @@ sys.exit(int(os.environ.get("EXIT_CODE", "0")))
 """
 
 
-@pytest.fixture
-def script(tmp_path: Path) -> Path:
-    path = tmp_path / "ePiframe.py"
+MODULE = "fake_update"
+
+
+@pytest.fixture(autouse=True)
+def script(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """The module ``MODULE`` (importable by the child process)."""
+    path = tmp_path / f"{MODULE}.py"
     path.write_text(SCRIPT)
+    monkeypatch.setenv("PYTHONPATH", str(tmp_path))
     return path
 
 
@@ -59,58 +64,60 @@ def wait_for_end(
     assert thread.daemon
 
 
-def test_default_script() -> None:
-    assert refresh.SCRIPT.name == "ePiframe.py"
-    assert refresh.SCRIPT.is_file()
-    assert Refresher().python == sys.executable
+def test_defaults() -> None:
+    refresher = Refresher()
+
+    assert refresher.module == refresh.MODULE == "epiframe"
+    assert refresher.python == sys.executable
 
 
-def test_command(script: Path) -> None:
-    refresher = Refresher(script, "python3")
+def test_command() -> None:
+    refresher = Refresher("python3")
 
-    assert refresher.command(("--test-convert", "--test-display")) == [
+    # -P: the working directory is not on the import path
+    assert refresher.command(("redisplay",)) == [
         "python3",
-        str(script),
-        "--test-convert",
-        "--test-display",
+        "-P",
+        "-m",
+        "epiframe",
+        "redisplay",
     ]
 
 
 def test_output_goes_to_the_log(
-    script: Path, caplog: pytest.LogCaptureFixture, threads: list[threading.Thread]
+    caplog: pytest.LogCaptureFixture, threads: list[threading.Thread]
 ) -> None:
-    process = Refresher(script).start(["--test-display"])
+    process = Refresher(module=MODULE).start(["redisplay"])
     wait_for_end(process, threads)
 
     messages = [record.getMessage() for record in caplog.records]
     assert messages == [
         "2026-11-25 12:00:00 : Getting next photo...",
         "console only: 1",
-        "arguments: ['--test-display']",
+        "arguments: ['redisplay']",
         "Traceback (most recent call last):",
     ]
     assert {record.name for record in caplog.records} == {"epiframe.service"}
 
 
 def test_exit_code_is_logged(
-    script: Path,
     monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
     threads: list[threading.Thread],
 ) -> None:
     monkeypatch.setenv("EXIT_CODE", "3")
 
-    wait_for_end(Refresher(script).start(), threads)
+    wait_for_end(Refresher(module=MODULE).start(), threads)
 
     assert caplog.records[-1].levelno == logging.WARNING
-    assert caplog.records[-1].getMessage() == "ePiframe script ended with exit code 3"
+    assert caplog.records[-1].getMessage() == "ePiframe update ended with exit code 3"
 
 
-def test_start_failure(script: Path, caplog: pytest.LogCaptureFixture) -> None:
-    process = Refresher(script, str(script.parent / "no-python")).start()
+def test_start_failure(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    process = Refresher(str(tmp_path / "no-python")).start()
 
     assert process is None
-    assert f"Can't start {script}" in caplog.text
+    assert "Can't start the ePiframe update: " in caplog.text
 
 
 def test_copy_output_without_pipe(caplog: pytest.LogCaptureFixture) -> None:
