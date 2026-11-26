@@ -31,8 +31,19 @@ dependencies = [
     # Direct dependencies only so that ARM gets them from piwheels (needed by google-auth).
     "cryptography>=46",
     "cffi>=2",
-    # SPI access for e-Paper displays, only needed (and buildable) on the Raspberry Pi.
+    # Python packages of the vendor display libraries that the installer copies into lib/
+    # (pinned commits, see install.sh), only needed (and buildable) on the Raspberry Pi.
+    # SPI access for e-Paper displays (Waveshare and Pimoroni).
     "spidev>=3.6; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+    # Waveshare waveshare_epd: GPIO pins through gpiozero, with the lgpio pin factory (the
+    # only one that works on the Pi 5 and the default on Raspberry Pi OS Bookworm).
+    "gpiozero>=2.0.1; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+    "lgpio>=0.2.2; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+    # Pimoroni inky: EEPROM detection over I2C and GPIO through gpiodevice (libgpiod v2).
+    "smbus2>=0.5; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+    "gpiodevice>=0.1.0; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+    # Direct dependency only so that ARM gets it from piwheels (needed by gpiodevice).
+    "gpiod>=2.1; platform_machine == 'armv6l' or platform_machine == 'armv7l' or platform_machine == 'aarch64'",
 ]
 
 [project.scripts]
@@ -79,6 +90,8 @@ explicit = true
 [tool.uv.sources]
 cffi = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 cryptography = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+gpiod = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
+lgpio = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 numpy = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 pillow = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
 spidev = { index = "piwheels", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" }
