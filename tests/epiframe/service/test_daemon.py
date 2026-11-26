@@ -110,6 +110,11 @@ def free_port() -> int:
         return int(probe.getsockname()[1])
 
 
+def listening(port: int) -> bool:
+    with socket.socket() as probe:
+        return probe.connect_ex(("127.0.0.1", port)) == 0
+
+
 def wait_until(condition: Callable[[], object], timeout: float = 10) -> None:
     deadline = time.monotonic() + timeout
     while not condition():
@@ -323,7 +328,8 @@ def test_run_serves_the_webui_until_stopped(
     runner = threading.Thread(target=service.run)
     runner.start()
     try:
-        wait_until(lambda: WEB_START in messages(caplog))
+        # WEB_START is logged before the server binds its socket: wait for the port
+        wait_until(lambda: listening(port))
         answer = requests.get(f"http://127.0.0.1:{port}/api/action=next", timeout=10)
         wait_until(lambda: refresher.run.called)
     finally:
@@ -335,6 +341,7 @@ def test_run_serves_the_webui_until_stopped(
     refresher.run.assert_called_once_with(("prepare",), service.frame.slide_interval)
     refresher.stop.assert_called_once_with()  # at the stop
     assert messages(caplog)[0] == STARTED
+    assert WEB_START in messages(caplog)
     assert messages(caplog)[-1] == STOPPED
     assert [thread.name for thread in service.threads] == [
         "scheduler",
