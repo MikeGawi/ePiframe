@@ -149,6 +149,11 @@ dmypy.json
 /photo_thumb.jpg
 /list.pickle
 /HANDOFF.md
+
+# the frame's own files (install.sh creates config.cfg from
+# src/epiframe/config/config.default, --update keeps backups)
+/config.cfg
+/backup/
 /junit.xml
 /badges/
 /logs/

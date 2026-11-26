@@ -3,12 +3,15 @@ Description=ePiframe Daemon
 Wants=network-online.target
 After=network.target network-online.target
 
+; install.sh fills in the user who installed ePiframe (member of the video, tty,
+; spi, gpio and i2c groups) and the installation folder
 [Service]
-User=root
+User=@USER@
 # the service runs in the foreground and stops cleanly on SIGTERM
 Type=simple
-ExecStart=EPIEPIEPIePiframe_service.py
-WorkingDirectory=EPIEPIEPI
+ExecStart=@DIR@/.venv/bin/epiframe service
+# the configuration and data paths are relative to the installation folder
+WorkingDirectory=@DIR@
 # the Telegram bot may take a long poll (20 s) to stop
 TimeoutStopSec=30
 Restart=on-failure
