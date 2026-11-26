@@ -8,23 +8,28 @@ the plugin overrides:
 - :meth:`Plugin.settings` — the validated configuration entries;
 - :meth:`Plugin.source_photos` / :meth:`Plugin.fetch_photo` — a photo source;
 - :meth:`Plugin.preprocess_photo` / :meth:`Plugin.postprocess_photo` — editing
-  the photo before / after the conversion for the display.
+  the photo before / after the conversion for the display;
+- :meth:`Plugin.extend_api` / :meth:`Plugin.add_action` — REST API endpoints and
+  WebUI tool buttons.
 
-The web and service hooks (``extend_api``, ``add_website``, ``add_action``,
-``add_service_thread``) keep their 1.x shape until the WebUI (3.17), the service
-(3.18) and the new UI (Phase 5) are ported.
+``add_website`` and ``add_service_thread`` keep their 1.x shape until the
+service (3.18) and the new UI (Phase 5) are ported.
 """
 
 import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, ClassVar, Protocol
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol
 
 from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigError, ConfigProperty, PropertyType
 from epiframe.photos.model import Photo
 from epiframe.processing.imagemagick import ImageMagick
+from epiframe.web.extensions import Action, Route
+
+if TYPE_CHECKING:
+    from epiframe.service.frame import Frame
 
 CONFIG_FILE = "config.cfg"
 DEFAULT_CONFIG_FILE = "default/config.default"
@@ -168,19 +173,30 @@ class Plugin:
     def postprocess_photo(self, photo: PhotoFile) -> None:
         """Edit the converted photo (just before it is shown)."""
 
-    # --------------------------------------- web and service (1.x shape for now)
+    # ------------------------------------------------------------------ WebUI
 
-    def extend_api(self, web_manager: Any, users: Any, backend: Any) -> list[Any]:
-        """WebUI API endpoints (``WebUIManager.SiteBind``); redesigned in 3.17."""
+    def extend_api(self, frame: "Frame") -> list[Route]:
+        """REST API endpoints: ``Route("/api/...", view)``.
+
+        The views must be declared with ``epiframe.web.api.api`` (login,
+        validation of the parameters and the OpenAPI document come from it);
+        routes outside ``/api/`` or undeclared views are skipped.
+        """
         return []
+
+    def add_action(self, frame: "Frame") -> list[Action]:
+        """WebUI tool buttons, also run by ``/api/action=<id>``."""
+        return []
+
+    # ------------------------------------------- 1.x shape until 3.18 / Phase 5
 
     def add_website(self, web_manager: Any, users: Any, backend: Any) -> list[Any]:
-        """Flask blueprints of new WebUI pages; redesigned in Phase 5."""
-        return []
+        """Flask blueprints of new WebUI pages; redesigned in Phase 5.
 
-    def add_action(self, web_manager: Any, users: Any, backend: Any) -> dict[str, Any]:
-        """WebUI tool buttons (``WebUIManager.ActionEntry``); redesigned in 3.17."""
-        return {}
+        ``web_manager`` is the ``epiframe.web.app.WebUI`` (``add_menu_entries``
+        with ``epiframe.web.extensions.MenuEntry``).
+        """
+        return []
 
     def add_service_thread(self, service: Any, backend: Any) -> None:
         """Body of a thread of the ePiframe service; redesigned in 3.18."""

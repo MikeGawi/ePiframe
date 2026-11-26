@@ -62,14 +62,14 @@
 		</div>
 		<div class="d-flex justify-content-center px-2 mt-4">
 			<div class="col-2 d-none d-md-block px-3" style="width: 230px;">
-				<form action="{{ url_for('upload_photo') }}" class="dropzone border border-5 rounded-3" id="dropzone">
+				<form action="{{ url_for('upload_photo_page') }}" class="dropzone border border-5 rounded-3" id="dropzone">
 					<div class="dz-message">Drop photo here to upload!</div>
 				</form>
 			</div>
 			<div class="col-auto mt-2 px-3">
 				<div class="row px-1 col-auto mx-auto d-none d-md-block">Or</div>
 				<div class="row px-1 col-auto mx-auto">
-					<form action="{{ url_for('upload_photo') }}" class="px-0" method="POST" enctype="multipart/form-data">
+					<form action="{{ url_for('upload_photo_page') }}" class="px-0" method="POST" enctype="multipart/form-data">
 						<button class="btn btn-primary btn-file px-0 form-control" type="button" id="upload">
 							<input type="file" onchange="this.form.submit();" name="file"><i class="bi bi-upload px-2"></i>Upload Photo
 						</button>
@@ -103,7 +103,7 @@
             e.preventDefault()
 			if (confirm('Are you sure you want to show next photo?')) {
 				var xmlHttp = new XMLHttpRequest();
-    			xmlHttp.open( "GET", "{{ url_for('tools_functions') }}next", false );
+    			xmlHttp.open( "GET", "{{ url_for('action', action='next') }}", false );
     			xmlHttp.send( null )
 			}
 			return false;

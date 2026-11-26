@@ -72,7 +72,7 @@
 		function act() {
 			$('#load-img').show();
 			$("#graph").html("");
-			$.getJSON("/get_stats", {
+			$.getJSON("{{ url_for('get_stats') }}", {
 				metrics: $("#dropdown").val(),
 				period: $("#period").val()
 			}, draw);

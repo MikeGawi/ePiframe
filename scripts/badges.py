@@ -36,7 +36,6 @@ CC_PATHS = (
     "ePiframe_service.py",
     "misc",
     "modules",
-    "tools",
 )
 CC_COLORS = {
     "A": "brightgreen",

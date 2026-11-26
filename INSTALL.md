@@ -243,9 +243,9 @@ To configure:
 * Set port in ```[Web interface]->web_port``` option in the [*config.cfg*](https://github.com/MikeGawi/ePiframe/blob/master/config.cfg) configuration file. Set port value between 1-65535 that You want to have WebUI hosted under. Sometimes it is needed to [have this port open in the Firewall](https://pimylifeup.com/raspberry-pi-ufw/).
 * [Restart](#service-control) ePiframe service and from now on under given IP address and port (*http://[ip]:[port]/*), You'll be able to control the frame.
 
-**_NOTE_** - To troubleshoot WebUI IP, port issues and connectivity check the [tools/testWebUI.py](https://github.com/MikeGawi/ePiframe/blob/master/tools/testWebUI.py) tool.
+**_NOTE_** - ```./ePiframe.py --test-web``` [command](#command-line) checks the address and the port (valid, free, allowed), offers to save them and enable the WebUI, and then serves the real WebUI until Ctrl+C - to troubleshoot the address, the port and the connectivity before the service runs it. Stop the ePiframe service first when the WebUI is already enabled (the port is taken by it).
 
-**_NOTE_** - Keep in mind that any port number below 5000 needs root privilleges to be possible to assign.
+**_NOTE_** - Keep in mind that any port number below 1024 needs root privileges to be possible to assign.
 
 #### WebUI Users
 
@@ -383,6 +383,7 @@ Syntax: ```ePiframe.py [option]```
 * ```--setup-drive``` - set up the [Google Drive Source](#google-drive-source): shows the steps, stores the service account key, checks the access to the folders and saves the configuration
 * ```--test-telegram``` - test the [Telegram Bot](#telegram-bot) token and connection; the bot answers every chat that writes to it with the chat id; offers to save the token and the chat ids
 * ```--test-weather``` - test the [Weather Stamp](#weather-stamp) OpenWeather API key and coordinates; offers to save them
+* ```--test-web``` - check the [WebUI](#web-user-interface) address and port, offer to save them, then serve the WebUI until Ctrl+C
 * ```--help``` - show help
 
 **_NOTE_** - To not interfere with working ePiframe thread it's better to [stop](#service-control) the service before using commands.

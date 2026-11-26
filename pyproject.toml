@@ -41,6 +41,7 @@ Issues = "https://github.com/MikeGawi/ePiframe/issues"
 
 [dependency-groups]
 test = [
+    "fastjsonschema>=2.22.3",
     "pytest>=9",
     "pytest-cov>=7",
     "pytest-mock>=3.14",
@@ -102,7 +103,7 @@ max-complexity = 5
 "tests/smoke/**" = ["S603"]
 # 1.x code: only basic checks until each module is ported to src/epiframe (Phase 3).
 "{ePiframe,ePiframe_service}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
-"{misc,modules,tools,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
+"{misc,modules,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
 "tests/{test_*,conftest}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]
 "tests/{helpers,plugins}/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]
 
@@ -116,7 +117,7 @@ mypy_path = "src"
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = ["genbadge.*", "radon.*", "flask_login.*"]
+module = ["genbadge.*", "radon.*", "flask_login.*", "flask_wtf.*", "wtforms.*", "fastjsonschema.*"]
 ignore_missing_imports = true
 
 # 1.x code imported by ported modules (e.g. epiframe.config.manager) until it is

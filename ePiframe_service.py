@@ -16,7 +16,7 @@ from epiframe.bot.telegram import TelegramBot
 from epiframe.stats.metrics import SAMPLE_INTERVAL, Sampler
 from epiframe.stats.recorder import Recorder
 from epiframe.stats.store import MetricsStore
-from modules.webuimanager import WebUIManager
+from epiframe.web.app import WebUI
 
 log = get_logger("service")
 
@@ -29,7 +29,7 @@ class Service(Daemon):
     ]
 
     __telebot: TelegramBot = None
-    __web_man: WebUIManager = None
+    __web_man: WebUI = None
     __telebot_thread: Thread = None
     __web_thread: Thread = None
     __stats_thread: Thread = None
@@ -131,7 +131,7 @@ class Service(Daemon):
             if self.__frame.web_enabled:
                 try:
                     log.info(self.__SERVICE_WEB_START)
-                    self.__web_man = WebUIManager(self.__frame)
+                    self.__web_man = WebUI(self.__frame)
                     self.__web_man.start()
                 except Exception as exception:
                     log.error(self.__ERROR_WEB.format(exception))

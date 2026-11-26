@@ -2,82 +2,16 @@ import glob
 import os
 import shutil
 
-from unittest.mock import patch
 import pytest
 import requests_mock
-from epiframe.config.paths import CONFIG_FILE_DEFAULT
-from epiframe.config import manager as configmanager
-from epiframe.service import frame as frame_module
-from epiframe.service.frame import Frame
-from modules.webuimanager import WebUIManager
-from tests.helpers.config import Config
-from tests.helpers.frame import event_mock
 from tests.helpers.helpers import remove_file
-from tests.helpers.plugins import ORDER_FILE, plugin_manager_for_tests
+from tests.helpers.plugins import ORDER_FILE
 
 
 @pytest.fixture(scope="module")
 def requests_mocker():
     with requests_mock.mock(real_http=True) as mocker:
         yield mocker
-
-
-@pytest.fixture()
-@patch("epiframe.config.paths.CONFIG_FILE", CONFIG_FILE_DEFAULT)
-@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
-def app_no_login():
-    with patch.object(frame_module, "PluginManager", plugin_manager_for_tests):
-        frame = Frame(event_mock, CONFIG_FILE_DEFAULT, "")
-        web_manager = WebUIManager(frame)
-    app = web_manager.app
-    app.config.update(
-        {
-            "LOGIN_DISABLED": True,
-            "TESTING": True,
-        }
-    )
-    return app
-
-
-@pytest.fixture()
-@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
-def app_no_config():
-    with patch.object(configmanager, "ConfigManager", Config):
-        frame = Frame(event_mock, ".", ".")
-        web_manager = WebUIManager(frame)
-    app = web_manager.app
-    app.config.update(
-        {
-            "LOGIN_DISABLED": True,
-            "TESTING": True,
-        }
-    )
-    return app
-
-
-@pytest.fixture()
-@patch("epiframe.config.paths.CONFIG_FILE", CONFIG_FILE_DEFAULT)
-@patch("epiframe.config.paths.USERS_DB_FILE", "test_users.db")
-def app():
-    frame = Frame(event_mock, CONFIG_FILE_DEFAULT, ".")
-    web_manager = WebUIManager(frame)
-    app = web_manager.app
-    app.config.update(
-        {
-            "TESTING": True,
-        }
-    )
-    return app
-
-
-@pytest.fixture()
-def client(app):
-    return app.test_client()
-
-
-@pytest.fixture()
-def client_no_login(app_no_login):
-    return app_no_login.test_client()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -109,8 +43,6 @@ def get_first(items):
         if item.name
         in [
             "test_fixture_request_mocker",
-            "test_fixture_client",
-            "test_fixture_client_no_login",
         ]
     ]
     return first

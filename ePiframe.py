@@ -32,6 +32,8 @@ from epiframe.display.system import spi_enabled
 from epiframe.users.console import USERS_ACTIONS_TAG, UsersConsole
 from epiframe.users.store import Users
 from epiframe.weather.console import WeatherTest
+from epiframe.web.app import serve_test
+from epiframe.web.console import WebTest
 from epiframe.weather.openweather import fetch_weather
 from epiframe.weather.stamp import StampSettings, draw_stamp
 from epiframe.processing.imagemagick import (
@@ -370,6 +372,9 @@ class EPiframe:
             sys.exit(TelegramTest(self.config).run())
         if self.check_arguments("--test-weather"):
             sys.exit(WeatherTest(self.config).run())
+        if self.check_arguments("--test-web"):
+            login_needed = Users(paths.USERS_DB_FILE).login_needed()
+            sys.exit(WebTest(self.config, serve_test).run(login_needed))
 
     def check_config(self):
         if self.check_arguments("--check-config"):
@@ -403,6 +408,9 @@ class EPiframe:
                 "--test-telegram		test the Telegram bot token and show chat ids"
             )
             print("--test-weather		test the OpenWeather API key and coordinates")
+            print(
+                "--test-web		check the WebUI address and port, then serve the WebUI"
+            )
             print("--help			this help")
 
             sys.exit(0)
