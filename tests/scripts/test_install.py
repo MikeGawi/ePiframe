@@ -575,3 +575,133 @@ def test_pinned_display_libraries_are_full_commits(bash: Bash) -> None:
     commits = bash('echo "$WAVESHARE_COMMIT $INKY_COMMIT"').stdout.split()
 
     assert [len(commit) for commit in commits] == [40, 40]
+
+
+def test_parse_arguments_plugins(bash: Bash) -> None:
+    assert bash('parse_arguments --plugins; echo "$ACTION"').stdout == "plugins\n"
+
+
+def test_try_step_returns_the_result(bash: Bash, tmp_path: Path) -> None:
+    log = tmp_path / "install.log"
+
+    result = bash(
+        f"LOG={log}; try_step 'Failing' false; echo \"rc=$?\";"
+        " try_step 'Setting' eval 'VALUE=set'; echo \"$VALUE\""
+    )
+
+    assert result.returncode == 0
+    assert "error!" in result.stdout
+    assert "rc=1" in result.stdout
+    # the command runs in this shell (enable_interface sets REBOOT_NEEDED)
+    assert result.stdout.endswith("check!\nset\n")
+
+
+@pytest.fixture
+def frame(tmp_path: Path) -> Path:
+    """An installation folder with two plugins, one of them with requirements."""
+    folder = tmp_path / "frame"
+    (folder / "plugins" / "weather_extra").mkdir(parents=True)
+    (folder / "plugins" / "weather_extra" / "requirements.txt").write_text("six\n")
+    (folder / "plugins" / "plain").mkdir()
+    (folder / "plugins" / "README.md").write_text("plugins")
+    return folder
+
+
+def test_plugin_requirements(bash: Bash, frame: Path, tmp_path: Path) -> None:
+    assert bash(f"INSTALL_DIR={frame}; plugin_requirements").stdout == (
+        f"{frame}/plugins/weather_extra/requirements.txt\n"
+    )
+    assert bash(f"INSTALL_DIR={tmp_path / 'none'}; plugin_requirements").stdout == ""
+
+
+@pytest.mark.parametrize(
+    ("machine", "piwheels"),
+    [("armv6l", True), ("armv7l", True), ("aarch64", False), ("x86_64", False)],
+)
+def test_plugin_index_options(bash: Bash, machine: str, piwheels: bool) -> None:
+    options = bash(f"function machine {{ echo {machine}; }}; plugin_index_options")
+
+    assert options.returncode == 0
+    assert ("--extra-index-url https://www.piwheels.org/simple" in options.stdout) is (
+        piwheels
+    )
+
+
+FAKE_UV = """#!/bin/sh
+# records its arguments; export writes a constraint, pip shows it
+echo "$*" >> "$CALLS"
+for argument; do
+    case $previous in
+        --output-file)
+            echo "pillow==13.0.0" > "$argument"
+            echo "$argument" > "$CALLS.path"
+            ;;
+        --constraint) cat "$argument" >> "$CALLS" ;;
+    esac
+    previous=$argument
+done
+exit "${FAIL:-0}"
+"""
+
+
+@pytest.fixture
+def fake_uv(tmp_path: Path) -> Path:
+    uv = tmp_path / "uv"
+    uv.write_text(FAKE_UV)
+    uv.chmod(0o755)
+    return uv
+
+
+def test_install_plugin_packages(bash: Bash, frame: Path, fake_uv: Path) -> None:
+    calls = frame / "calls"
+
+    result = bash(
+        f"{AS_USER} function machine {{ echo armv6l; }}; INSTALL_DIR={frame};"
+        f" UV={fake_uv}; install_plugin_packages",
+        env={"CALLS": str(calls)},
+    )
+
+    assert result.returncode == 0
+    export, install, constraint = calls.read_text().splitlines()
+    assert export.startswith(f"export --directory {frame} --frozen --no-dev")
+    assert install.startswith(f"pip install --python {frame}/.venv/bin/python")
+    assert "--extra-index-url https://www.piwheels.org/simple" in install
+    assert install.endswith(
+        f"--requirement {frame}/plugins/weather_extra/requirements.txt"
+    )
+    assert constraint == "pillow==13.0.0"
+
+
+def test_install_plugin_packages_failure(
+    bash: Bash, frame: Path, fake_uv: Path, tmp_path: Path
+) -> None:
+    result = bash(
+        f"{AS_USER} function machine {{ echo x86_64; }}; INSTALL_DIR={frame};"
+        f" UV={fake_uv}; install_plugin_packages",
+        env={"CALLS": str(tmp_path / "calls"), "FAIL": "1"},
+    )
+
+    assert result.returncode == 1
+    assert "--extra-index-url" not in (tmp_path / "calls").read_text()
+    constraints = Path((tmp_path / "calls.path").read_text().strip())
+    assert constraints.name.startswith("tmp")
+    assert not constraints.exists()
+
+
+def test_install_plugin_packages_without_requirements(
+    bash: Bash, tmp_path: Path, fake_uv: Path
+) -> None:
+    result = bash(
+        f"{AS_USER} INSTALL_DIR={tmp_path}; UV={fake_uv}; install_plugin_packages",
+        env={"CALLS": str(tmp_path / "calls")},
+    )
+
+    assert result.returncode == 0
+    assert not (tmp_path / "calls").exists()
+
+
+def test_run_plugins_without_requirements(bash: Bash, checkout: Path) -> None:
+    result = bash(f"{NO_SERVICE} INSTALL_DIR={checkout}; run_plugins")
+
+    assert result.returncode == 0
+    assert "No plugin has a requirements.txt" in result.stdout

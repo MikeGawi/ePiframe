@@ -27,6 +27,7 @@ DEFAULT_CONFIG="src/epiframe/config/config.default"
 # uv (Python package and project manager) release used when no recent uv is installed
 UV_VERSION="0.11.19"
 UV_RELEASES="https://github.com/astral-sh/uv/releases/download"
+PIWHEELS_INDEX="https://www.piwheels.org/simple"
 
 # vendor display libraries, pinned to the versions ePiframe was checked against
 WAVESHARE_REPO="https://github.com/waveshareteam/e-Paper.git"
@@ -114,8 +115,9 @@ function die {
 	exit 1
 }
 
-# step LABEL COMMAND...: run COMMAND with its output in the log, stop on failure
-function step {
+# try_step LABEL COMMAND...: run COMMAND (in this shell) with its output in the log,
+# return its result
+function try_step {
 	local label=$1
 	shift
 	printf '%s%-36s%s' "$BOLD" "$label:" "$RESET"
@@ -124,6 +126,13 @@ function step {
 		return 0
 	fi
 	printf '%serror!%s\n' "$RED" "$RESET"
+	return 1
+}
+
+# step LABEL COMMAND...: try_step, stop on failure
+function step {
+	local label=$1
+	try_step "$@" && return 0
 	if [[ -f $LOG ]]; then
 		tail -n 20 "$LOG" >&2
 		die "$label failed, the full output is in $LOG"
@@ -156,6 +165,8 @@ Usage: sudo ./install.sh [option]...
   (no action)       install ePiframe
   --update          update an installation to the latest release (or its branch)
   --uninstall       remove the service (the ePiframe folder stays)
+  --plugins         install the Python packages of the plugins (requirements.txt
+                    in a plugin folder), e.g. after adding a plugin
   --next-steps      show the steps after the installation
   --help            this help
 
@@ -177,6 +188,7 @@ function parse_arguments {
 		case $1 in
 			--update) ACTION="update" ;;
 			--uninstall) ACTION="uninstall" ;;
+			--plugins) ACTION="plugins" ;;
 			--next-steps) ACTION="next-steps" ;;
 			--help | -h) ACTION="help" ;;
 			# internal: the second half of --update, run by the updated script
@@ -393,6 +405,51 @@ function install_wheel_libraries {
 	step "Installing libraries for piwheels" apt_install "${list[@]}"
 }
 
+# the requirements.txt files of the installed plugins
+function plugin_requirements {
+	local file
+	for file in "$INSTALL_DIR"/plugins/*/requirements.txt; do
+		[[ -f $file ]] && echo "$file"
+	done
+	return 0
+}
+
+# piwheels next to PyPI on 32-bit ARM (the best wheel of both wins)
+function plugin_index_options {
+	case $(machine) in
+		armv6l | armv7l) echo "--extra-index-url $PIWHEELS_INDEX --index-strategy unsafe-best-match" ;;
+	esac
+	return 0
+}
+
+# the plugins' Python packages, constrained to the versions of uv.lock so that a
+# plugin can't change the packages ePiframe was tested with; uv sync removes them,
+# so they are installed again after every sync
+function install_plugin_packages {
+	local requirements=() file options constraints
+	while IFS= read -r file; do
+		requirements+=(--requirement "$file")
+	done < <(plugin_requirements)
+	(( ${#requirements[@]} )) || return 0
+	read -r -a options <<< "$(plugin_index_options)"
+	constraints=$(as_user mktemp) || return 1
+	as_user "$UV" export --directory "$INSTALL_DIR" --frozen --no-dev --no-hashes \
+		--no-emit-project --quiet --output-file "$constraints" \
+		&& as_user env UV_PYTHON_DOWNLOADS=never UV_COMPILE_BYTECODE=1 \
+			"$UV" pip install --python "$INSTALL_DIR/.venv/bin/python" \
+			--constraint "$constraints" "${options[@]}" "${requirements[@]}"
+	local result=$?
+	rm -f "$constraints"
+	return $result
+}
+
+function install_wheel_libraries_on_arm32 {
+	case $(machine) in
+		armv6l | armv7l) install_wheel_libraries ;;
+	esac
+	return 0
+}
+
 function python_modules {
 	local modules=("${PYTHON_MODULES[@]}")
 	(( HARDWARE )) && modules+=("${PYTHON_PI_MODULES[@]}")
@@ -410,9 +467,11 @@ function check_python_modules {
 function install_python_environment {
 	header "Installing the Python environment (this takes a while on a Pi Zero)"
 	step "Installing Python packages" sync_venv
-	case $(machine) in
-		armv6l | armv7l) install_wheel_libraries ;;
-	esac
+	if [[ -n $(plugin_requirements) ]]; then
+		try_step "Installing plugin packages" install_plugin_packages \
+			|| warn "The Python packages of the plugins can't be installed (see $LOG), ePiframe will skip the plugins that need them"
+	fi
+	install_wheel_libraries_on_arm32
 	step "Checking Python packages" check_python_modules
 }
 
@@ -464,16 +523,10 @@ function enable_interfaces {
 		warn "There is no raspi-config, enable SPI (and I2C for Pimoroni Inky) by hand"
 		return 0
 	fi
-	# not through step: REBOOT_NEEDED must be set in this shell
 	local name
 	for name in spi i2c; do
-		printf '%s%-36s%s' "$BOLD" "Enabling ${name^^}:" "$RESET"
-		if enable_interface "$name" >> "$LOG" 2>&1; then
-			printf '%scheck!%s\n' "$GREEN" "$RESET"
-		else
-			printf '%serror!%s\n' "$RED" "$RESET"
-			warn "Can't enable ${name^^}, enable it in raspi-config by hand"
-		fi
+		try_step "Enabling ${name^^}" enable_interface "$name" \
+			|| warn "Can't enable ${name^^}, enable it in raspi-config by hand"
 	done
 }
 
@@ -783,6 +836,20 @@ function run_resume_update {
 	info "ePiframe was updated to $(git_user describe --tags --always)"
 }
 
+function run_plugins {
+	find_install_dir
+	check_install_dir "$INSTALL_DIR"
+	header "Installing the Python packages of the plugins in $INSTALL_DIR"
+	if [[ -z $(plugin_requirements) ]]; then
+		info "No plugin has a requirements.txt"
+		return 0
+	fi
+	install_uv
+	step "Installing plugin packages" install_plugin_packages
+	install_wheel_libraries_on_arm32
+	info "Restart ePiframe to use them: sudo systemctl restart ePiframe"
+}
+
 function run_uninstall {
 	INSTALL_DIR=${INSTALL_DIR:-$(installed_service_dir)}
 	if service_enabled || [[ -f $UNIT_FILE ]]; then
@@ -815,6 +882,7 @@ function main {
 		update) run_update ;;
 		resume-update) run_resume_update ;;
 		uninstall) run_uninstall ;;
+		plugins) run_plugins ;;
 	esac
 	echo "${DIM}Ended $(date)${RESET}"
 	rm -f "$LOG"
