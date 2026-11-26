@@ -3,6 +3,7 @@
 from epiframe.config.property import ValueSource
 from epiframe.display.base import Display
 from epiframe.display.hdmi import HdmiDisplay
+from epiframe.display.icons import enabled_icons
 from epiframe.display.options import ColorMode, DisplayType, EpaperType
 from epiframe.display.pimoroni import PimoroniDisplay
 from epiframe.display.waveshare import WaveshareDisplay
@@ -10,7 +11,8 @@ from epiframe.display.waveshare import WaveshareDisplay
 
 def create_display(config: ValueSource, fast: bool = False) -> Display:
     """Return the display of ``display_type`` / ``epaper_type`` (driver loaded);
-    ``fast``: use the fast full refresh (if the display has it)."""
+    ``fast``: use the fast full refresh (if the display has it). With status
+    icons on, Waveshare panels prepare every full refresh for the partial one."""
     if DisplayType.is_hdmi(config.get("display_type")):
         return HdmiDisplay(config.get("fbi_bin_path"), config.getint("tty"))
     name = config.get("display")
@@ -24,4 +26,6 @@ def create_display(config: ValueSource, fast: bool = False) -> Display:
             clear=clear,
             saturation=float(config.get("pimoroni_saturation")),
         )
-    return WaveshareDisplay.load(name, color, clear, fast=fast)
+    return WaveshareDisplay.load(
+        name, color, clear=clear, fast=fast, icons=bool(enabled_icons(config))
+    )

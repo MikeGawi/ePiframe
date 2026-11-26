@@ -10,13 +10,15 @@ from epiframe.config.base import ConfigBase, LegacyEntry
 from epiframe.config.property import ConfigProperty, CrossCheck, PropertyType
 from epiframe.core import schedule
 from epiframe.core.network import validate_ip
+from epiframe.display import icons
 from epiframe.display.options import Background, ColorMode, DisplayType, EpaperType
 from epiframe.photos import selection
 from epiframe.processing import imagemagick
+from epiframe.processing.orientation import Position
 from epiframe.sources import drive
 from epiframe.sources.local import create_directory
 from epiframe.weather.openweather import Units
-from epiframe.weather.stamp import FontColor, Position
+from epiframe.weather.stamp import FontColor
 
 BOOLEAN = PropertyType.BOOLEAN
 INTEGER = PropertyType.INTEGER
@@ -79,6 +81,17 @@ def _display_settings() -> list[ConfigProperty]:
         ConfigProperty(
             "full_refresh_every", INTEGER, dependency="fast_refresh", min_value=1
         ),
+        *(ConfigProperty(icon.setting, BOOLEAN) for icon in icons.Icon),
+        ConfigProperty(
+            "icons_position",
+            INTEGER,
+            possible=Position.values(),
+            cross_check=CrossCheck(
+                icons.check_corner, icons.CORNER_CHECK_ENTRIES, warning=True
+            ),
+        ),
+        ConfigProperty("icons_size", INTEGER, min_value=icons.MIN_SIZE),
+        ConfigProperty("max_partial_refreshes", INTEGER, min_value=1),
         ConfigProperty("tty", INTEGER, min_value=0, **hdmi),
         ConfigProperty("slide_interval", INTEGER, min_value=180),
         ConfigProperty("interval_mult", BOOLEAN),

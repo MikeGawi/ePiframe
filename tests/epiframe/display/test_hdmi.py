@@ -26,7 +26,7 @@ def test_show_runs_viewer(tmp_path: Path, mocker: MockerFixture) -> None:
     display = HdmiDisplay("/usr/bin/fbi", 2)
     display.show(tmp_path / "photo.bmp")
 
-    assert display.capabilities == {Capability.FULL}
+    assert display.capabilities == {Capability.FULL, Capability.PARTIAL}
     assert run.call_args.args[0] == ["pkill", "-KILL", "-x", "fbi"]
     assert popen.call_args.args[0] == [
         "/usr/bin/fbi",
@@ -37,6 +37,16 @@ def test_show_runs_viewer(tmp_path: Path, mocker: MockerFixture) -> None:
         str(tmp_path / "photo.bmp"),
     ]
     assert popen.call_args.kwargs["start_new_session"] is True
+
+
+def test_partial_refresh_is_a_new_image(tmp_path: Path, mocker: MockerFixture) -> None:
+    show = mocker.patch.object(HdmiDisplay, "show")
+
+    HdmiDisplay("/usr/bin/fbi", 2).show_partial(
+        tmp_path / "new.png", tmp_path / "old.png"
+    )
+
+    show.assert_called_once_with(tmp_path / "new.png")
 
 
 def test_show_with_real_process(tmp_path: Path) -> None:

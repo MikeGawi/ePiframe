@@ -10,18 +10,24 @@ from pathlib import Path
 from unittest.mock import MagicMock, create_autospec
 
 import pytest
+from PIL import Image
 
 from epiframe.config import paths
 from epiframe.config.property import ValueSource
 from epiframe.display.base import Capability, Display, DisplayError
 from epiframe.display.controller import (
+    FRAME_FILE,
     NO_SPI,
+    SHOWN_FILE,
     DisplayController,
-    RefreshCounter,
+    DisplayState,
+    StateFile,
     display_lock,
 )
 from epiframe.display.factory import create_display
+from epiframe.display.icons import Icon, IconSettings, draw_icons
 from epiframe.display.system import spi_enabled
+from epiframe.processing.orientation import Orientation, Position
 
 MakeController = Callable[..., DisplayController]
 
@@ -32,6 +38,15 @@ class Config:
             "display_type": display_type,
             "fast_refresh": "0",
             "full_refresh_every": "3",
+            "busy_icon": "0",
+            "offline_icon": "0",
+            "error_icon": "0",
+            "icons_position": "1",
+            "icons_size": "16",
+            "max_partial_refreshes": "3",
+            "horizontal": "1",
+            "turned": "0",
+            "rotation": "90",
         } | values
 
     def get(self, name: str) -> str:
@@ -171,7 +186,12 @@ def test_default_files(
     controller.show(Path("photo.bmp"))
 
     assert (tmp_path / "default.lock").exists()
-    assert json.loads((tmp_path / "default.json").read_text()) == {"fast_refreshes": 0}
+    assert json.loads((tmp_path / "default.json").read_text()) == {
+        "fast_refreshes": 0,
+        "partial_refreshes": 0,
+        "icons": [],
+        "shown": [],
+    }
 
 
 # -------------------------------------------------------------- fast refresh
@@ -197,7 +217,7 @@ def test_every_nth_refresh_is_a_full_one(
         controller.show(Path("photo.bmp"))
 
     assert fast_requests == [True, True, False, True, True, False, True]
-    assert RefreshCounter(state_file).read() == 1
+    assert StateFile(state_file).read().fast_refreshes == 1
 
 
 def test_always_full_refresh(
@@ -215,12 +235,12 @@ def test_counter_survives_restarts(
     make_controller: MakeController, fast_requests: list[bool], state_file: Path
 ) -> None:
     state_file.parent.mkdir()
-    RefreshCounter(state_file).save(2)  # e.g. by another process
+    StateFile(state_file).save(DisplayState(fast_refreshes=2))  # another process
 
     make_controller(fast_refresh="1", full_refresh_every="3").show(Path("a.bmp"))
 
     assert fast_requests == [False]
-    assert RefreshCounter(state_file).read() == 0
+    assert StateFile(state_file).read().fast_refreshes == 0
 
 
 def test_display_without_fast_refresh_is_not_counted(
@@ -230,7 +250,7 @@ def test_display_without_fast_refresh_is_not_counted(
 
     make_controller(fast_refresh="1").show(Path("photo.bmp"))
 
-    assert RefreshCounter(state_file).read() == 0
+    assert StateFile(state_file).read().fast_refreshes == 0
 
 
 def test_failed_refresh_is_not_counted(
@@ -252,19 +272,30 @@ def test_failed_refresh_is_not_counted(
         '{"other": 1}',
         '{"fast_refreshes": "2"}',
         '{"fast_refreshes": -1}',
+        '{"icons": "busy"}',
+        '{"shown": [1]}',
     ],
 )
 def test_broken_state_file(tmp_path: Path, content: str) -> None:
     path = tmp_path / "display.json"
     path.write_text(content)
 
-    assert RefreshCounter(path).read() == 0
+    assert StateFile(path).read() == DisplayState()
+
+
+def test_unknown_icons_are_ignored(tmp_path: Path) -> None:
+    path = tmp_path / "display.json"
+    path.write_text('{"icons": ["busy", "clock"], "partial_refreshes": 2}')
+
+    assert StateFile(path).read() == DisplayState(
+        partial_refreshes=2, icons=frozenset({Icon.BUSY})
+    )
 
 
 def test_state_file_that_cant_be_saved(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-    RefreshCounter(tmp_path / "missing" / "display.json").save(1)
+    StateFile(tmp_path / "missing" / "display.json").save(DisplayState())
 
     assert caplog.messages[0].startswith("Can't save the display state ")
 
@@ -336,3 +367,224 @@ def test_lock_file_without_write_access(lock_file: Path) -> None:
 
     with display_lock(lock_file, timeout=0):
         pass
+
+
+# ---------------------------------------------------------------- status icons
+
+ICONS_ON = {"busy_icon": "1", "offline_icon": "1", "error_icon": "1"}
+SETTINGS = IconSettings(frozenset(Icon), Position.TOP_RIGHT, 16, Orientation())
+
+
+@pytest.fixture
+def photo(tmp_path: Path) -> Path:
+    path = tmp_path / "photo.bmp"
+    Image.new("1", (120, 60), 1).save(path)
+    return path
+
+
+@pytest.fixture
+def partial_display(display: MagicMock) -> MagicMock:
+    display.capabilities = frozenset({Capability.FULL, Capability.PARTIAL})
+    return display
+
+
+def image_of(path: Path) -> list[int]:
+    with Image.open(path) as image:
+        return list(image.convert("1").tobytes())
+
+
+def expected(photo: Path, icons: set[Icon]) -> list[int]:
+    with Image.open(photo) as image:
+        return list(draw_icons(image, icons, SETTINGS).convert("1").tobytes())
+
+
+def test_photo_with_icons(
+    make_controller: MakeController,
+    display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    state_file.parent.mkdir()
+    StateFile(state_file).save(DisplayState(icons=frozenset(Icon)))
+
+    make_controller(**ICONS_ON).show(photo)
+
+    shown = state_file.with_name(SHOWN_FILE)
+    display.show.assert_called_once_with(shown)
+    # a new photo ends the busy icon and the error; offline stays
+    assert image_of(shown) == expected(photo, {Icon.OFFLINE})
+    assert image_of(state_file.with_name(FRAME_FILE)) == image_of(photo)
+    state = StateFile(state_file).read()
+    assert state.icons == state.shown == {Icon.OFFLINE}
+
+
+def test_photo_without_icons_removes_the_old_copies(
+    make_controller: MakeController,
+    display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    make_controller(**ICONS_ON).show(photo)
+
+    make_controller().show(photo)
+
+    display.show.assert_called_with(photo)
+    assert not state_file.with_name(FRAME_FILE).exists()
+    assert not state_file.with_name(SHOWN_FILE).exists()
+
+
+def test_icons_disabled(
+    make_controller: MakeController, display: MagicMock, state_file: Path
+) -> None:
+    make_controller(spi=False).change_icons(on=[Icon.BUSY])
+
+    assert not state_file.exists()
+    display.show_partial.assert_not_called()
+
+
+def test_icons_need_spi(make_controller: MakeController) -> None:
+    with pytest.raises(DisplayError, match=re.escape(NO_SPI)):
+        make_controller(spi=False, **ICONS_ON).change_icons(on=[Icon.BUSY])
+
+
+def test_icon_with_partial_refresh(
+    make_controller: MakeController,
+    partial_display: MagicMock,
+    photo: Path,
+    state_file: Path,
+    fast_requests: list[bool],
+) -> None:
+    controller = make_controller(**ICONS_ON)
+    controller.show(photo)
+    shown = state_file.with_name(SHOWN_FILE)
+    before = image_of(shown)
+    new_images: list[list[int]] = []
+    old_images: list[list[int]] = []
+
+    def show_partial(new: Path, old: Path) -> None:
+        new_images.append(image_of(new))
+        old_images.append(image_of(old))
+
+    partial_display.show_partial.side_effect = show_partial
+
+    controller.change_icons(on=[Icon.BUSY])
+
+    assert new_images == [expected(photo, {Icon.BUSY})]
+    assert old_images == [before]
+    assert image_of(shown) == expected(photo, {Icon.BUSY})
+    assert fast_requests == [False, False]
+    state = StateFile(state_file).read()
+    assert state.shown == state.icons == {Icon.BUSY}
+    assert state.partial_refreshes == 1
+    # kept: HDMI's fbi reads it after it starts
+    assert image_of(state_file.with_name("display_next.png")) == expected(
+        photo, {Icon.BUSY}
+    )
+
+
+def test_busy_becomes_error(
+    make_controller: MakeController,
+    partial_display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    controller = make_controller(**ICONS_ON)
+    controller.show(photo)
+    controller.change_icons(on=[Icon.BUSY])
+
+    controller.change_icons(on=[Icon.ERROR], off=[Icon.BUSY])
+
+    assert partial_display.show_partial.call_count == 2
+    shown = state_file.with_name(SHOWN_FILE)
+    assert image_of(shown) == expected(photo, {Icon.ERROR})
+
+
+def test_no_change_no_refresh(
+    make_controller: MakeController, partial_display: MagicMock, photo: Path
+) -> None:
+    controller = make_controller(**ICONS_ON)
+    controller.show(photo)
+
+    controller.change_icons(off=[Icon.ERROR])  # not shown anyway
+
+    partial_display.show_partial.assert_not_called()
+
+
+def test_icon_not_enabled_is_remembered(
+    make_controller: MakeController,
+    partial_display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    controller = make_controller(busy_icon="1")
+    controller.show(photo)
+
+    controller.change_icons(on=[Icon.OFFLINE])
+
+    partial_display.show_partial.assert_not_called()
+    state = StateFile(state_file).read()
+    assert state.icons == {Icon.OFFLINE}
+    assert state.shown == set()
+
+
+def test_no_photo_shown_yet(
+    make_controller: MakeController, partial_display: MagicMock, state_file: Path
+) -> None:
+    make_controller(**ICONS_ON).change_icons(on=[Icon.OFFLINE])
+
+    partial_display.show_partial.assert_not_called()
+    assert StateFile(state_file).read().icons == {Icon.OFFLINE}
+
+
+def test_display_without_partial_refresh_gets_icons_with_the_photo(
+    make_controller: MakeController,
+    display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    controller = make_controller(**ICONS_ON)
+    controller.show(photo)
+
+    controller.change_icons(on=[Icon.OFFLINE])
+    display.show_partial.assert_not_called()
+    controller.show(photo)
+
+    assert image_of(state_file.with_name(SHOWN_FILE)) == expected(photo, {Icon.OFFLINE})
+
+
+def test_full_refresh_after_max_partial_refreshes(
+    make_controller: MakeController,
+    partial_display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    controller = make_controller(max_partial_refreshes="2", **ICONS_ON)
+    controller.show(photo)
+
+    for _ in range(3):
+        controller.change_icons(on=[Icon.OFFLINE])
+        controller.change_icons(off=[Icon.OFFLINE])
+
+    # partial, partial, full, partial, partial, full
+    assert partial_display.show_partial.call_count == 4
+    assert partial_display.show.call_count == 1 + 2
+    assert StateFile(state_file).read().partial_refreshes == 0
+
+
+def test_failed_partial_refresh(
+    make_controller: MakeController,
+    partial_display: MagicMock,
+    photo: Path,
+    state_file: Path,
+) -> None:
+    controller = make_controller(**ICONS_ON)
+    controller.show(photo)
+    before = image_of(state_file.with_name(SHOWN_FILE))
+    partial_display.show_partial.side_effect = OSError("SPI transfer failed")
+
+    with pytest.raises(OSError, match="SPI transfer failed"):
+        controller.change_icons(on=[Icon.BUSY])
+
+    assert image_of(state_file.with_name(SHOWN_FILE)) == before
+    assert not state_file.with_name("display_next.png").exists()
+    assert StateFile(state_file).read().shown == set()

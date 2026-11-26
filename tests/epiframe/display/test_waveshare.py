@@ -1,5 +1,8 @@
 import importlib
+import json
 import logging
+import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -9,11 +12,19 @@ from PIL import Image
 from epiframe.display.base import Capability, DisplayError
 from epiframe.display.options import ColorMode
 from epiframe.display.waveshare import (
+    ALIASES,
+    INIT_ARGUMENTS,
     INIT_FAILED,
     NO_FAST,
+    NO_FAST_WITH_ICONS,
+    NO_PARTIAL,
+    PARTIAL_DRIVERS,
+    PartialRecipe,
+    Style,
     WaveshareDisplay,
     WaveshareDriver,
 )
+from tests.epiframe.display.helpers import ASSETS
 
 
 class FakeEpd:
@@ -53,6 +64,8 @@ class Epd7in5V2(FakeEpd):
 
 class Epd2in13V2(FakeEpd):
     """Partial refresh through ``init(mode)`` + ``displayPartial``."""
+
+    FULL_UPDATE = 0
 
     def displayPartial(self) -> None: ...
 
@@ -99,18 +112,20 @@ def photo(tmp_path: Path) -> Path:
 
 
 @pytest.mark.parametrize(
-    ("epd", "capabilities"),
+    ("epd", "name", "capabilities"),
     [
-        (FakeEpd(), {Capability.FULL}),
-        (Epd7in5V2(), set(Capability)),
-        (Epd2in13V2(), {Capability.FULL, Capability.PARTIAL}),
-        (Epd1in02(), {Capability.FULL}),
-        (Epd3in7(), set()),
+        (FakeEpd(), "", {Capability.FULL}),
+        (Epd7in5V2(), "epd7in5_V2", set(Capability)),
+        # partial refresh only with a recipe for the driver
+        (Epd7in5V2(), "", set(Capability) - {Capability.PARTIAL}),
+        (Epd2in13V2(), "epd2in13_V2", {Capability.FULL}),  # no displayPartBaseImage
+        (Epd1in02(), "epd1in02", {Capability.FULL}),
+        (Epd3in7(), "", set()),
     ],
-    ids=["basic", "7in5_V2", "2in13_V2", "1in02", "3in7"],
+    ids=["basic", "7in5_V2", "unknown name", "2in13_V2", "1in02", "3in7"],
 )
-def test_capabilities(epd: object, capabilities: set[Capability]) -> None:
-    assert WaveshareDriver(epd).capabilities == capabilities
+def test_capabilities(epd: object, name: str, capabilities: set[Capability]) -> None:
+    assert WaveshareDriver(epd, name=name).capabilities == capabilities
 
 
 def test_attribute_that_is_not_a_method_is_ignored() -> None:
@@ -225,7 +240,7 @@ def test_missing_photo(tmp_path: Path) -> None:
 
 
 def test_load_from_library(library: Path, photo: Path) -> None:
-    display = WaveshareDisplay.load("epdfake", ColorMode.BW, True, library)
+    display = WaveshareDisplay.load("epdfake", ColorMode.BW, library, clear=True)
     display.show(photo)
 
     assert epdconfig().CALLS == ["init", "Clear", ("display", "RGB"), "sleep"]
@@ -346,3 +361,332 @@ def test_load_fast(library: Path, photo: Path) -> None:
     )
 
     assert display._fast is False  # the fake driver has no init_fast
+
+
+def test_load_icons(library: Path) -> None:
+    display = WaveshareDisplay.load("epdfake", ColorMode.BW, library, icons=True)
+
+    assert display._base is False  # no partial refresh
+
+
+# ---------------------------------------------------------- partial refresh
+
+
+class PartialEpd(FastEpd):
+    """Partial refresh of the whole frame (like epd2in9_V3)."""
+
+    width = 2  # in the panel's own orientation
+    height = 8
+    PART_UPDATE = "part-lut"
+
+    def init_part(self, *arguments: object) -> int:
+        self.calls.append(("init_part", *arguments))
+        return self.init_result
+
+    def display_Base(self, *buffers: str) -> None:
+        self.calls.append(("display_Base", *buffers))
+
+    def display_Partial(self, *arguments: object) -> None:
+        self.calls.append(("display_Partial", *arguments))
+
+
+@pytest.fixture
+def partial_driver(monkeypatch: pytest.MonkeyPatch) -> Callable[..., WaveshareDriver]:
+    """A ``PartialEpd`` driver with the given recipe."""
+
+    def make(recipe: PartialRecipe, epd: PartialEpd | None = None) -> WaveshareDriver:
+        monkeypatch.setitem(PARTIAL_DRIVERS, "epdtest", recipe)
+        return WaveshareDriver(epd or PartialEpd(), name="epdtest")
+
+    return make
+
+
+@pytest.fixture
+def frames(tmp_path: Path) -> tuple[Path, Path]:
+    """The new and the previous image."""
+    new, old = tmp_path / "new.png", tmp_path / "old.png"
+    Image.new("RGB", (8, 2), "black").save(new)
+    Image.new("RGB", (8, 2), "white").save(old)
+    return new, old
+
+
+def test_partial_whole_frame(
+    partial_driver: Callable[..., WaveshareDriver], frames: tuple[Path, Path]
+) -> None:
+    driver = partial_driver(PartialRecipe(Style.FRAME, "init_partial"))
+    epd = driver._epd
+    assert isinstance(epd, PartialEpd)
+
+    WaveshareDisplay(driver, ColorMode.BW).show_partial(*frames)
+
+    assert epd.calls == [
+        ("init_part",),
+        ("display_Partial", "buffer-RGB-(0, 0, 0)"),
+        "sleep",
+    ]
+
+
+def test_partial_window_is_the_whole_panel(
+    partial_driver: Callable[..., WaveshareDriver], frames: tuple[Path, Path]
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(PartialRecipe(Style.WINDOW), epd)
+
+    WaveshareDisplay(driver, ColorMode.BW).show_partial(*frames)
+
+    assert epd.calls == [
+        "init",
+        ("display_Partial", "buffer-RGB-(0, 0, 0)", 0, 0, 2, 8),
+        "sleep",
+    ]
+
+
+def test_partial_old_and_new(
+    partial_driver: Callable[..., WaveshareDriver], frames: tuple[Path, Path]
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(
+        PartialRecipe(Style.OLD_NEW, "init_partial", ("PART_UPDATE", 1)), epd
+    )
+
+    WaveshareDisplay(driver, ColorMode.BW).show_partial(*frames)
+
+    assert epd.calls == [
+        ("init_part", "part-lut", 1),  # attribute names become the attributes
+        ("display_Partial", "buffer-RGB-(255, 255, 255)", "buffer-RGB-(0, 0, 0)"),
+        "sleep",
+    ]
+
+
+def test_partial_on_three_colors_sends_black_only(
+    partial_driver: Callable[..., WaveshareDriver], frames: tuple[Path, Path]
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(PartialRecipe(Style.FRAME), epd)
+
+    WaveshareDisplay(driver, ColorMode.BWR).show_partial(*frames)
+
+    assert len(epd.calls[1]) == 2  # display_Partial(black buffer)
+
+
+def test_partial_init_failed(
+    partial_driver: Callable[..., WaveshareDriver], frames: tuple[Path, Path]
+) -> None:
+    epd = PartialEpd()
+    epd.init_result = INIT_FAILED
+
+    with pytest.raises(DisplayError, match="initialization failed"):
+        WaveshareDisplay(
+            partial_driver(PartialRecipe(Style.FRAME), epd), ColorMode.BW
+        ).show_partial(*frames)
+    assert epd.calls == ["init"]
+
+
+def test_partial_interrupted_releases_gpio(
+    partial_driver: Callable[..., WaveshareDriver], frames: tuple[Path, Path]
+) -> None:
+    released: list[bool] = []
+
+    class Interrupted(PartialEpd):
+        def display_Partial(self, *arguments: object) -> None:
+            raise KeyboardInterrupt
+
+    driver = partial_driver(PartialRecipe(Style.FRAME), Interrupted())
+    driver._module_exit = lambda: released.append(True)
+
+    with pytest.raises(KeyboardInterrupt):
+        WaveshareDisplay(driver, ColorMode.BW).show_partial(*frames)
+    assert released == [True]
+
+
+def test_no_partial_refresh(frames: tuple[Path, Path]) -> None:
+    with pytest.raises(DisplayError, match=re.escape(NO_PARTIAL)):
+        WaveshareDisplay(WaveshareDriver(FakeEpd()), ColorMode.BW).show_partial(*frames)
+
+
+def test_recipe_without_its_methods(monkeypatch: pytest.MonkeyPatch) -> None:
+    # e.g. an older library: the partial refresh is not offered
+    monkeypatch.setitem(
+        PARTIAL_DRIVERS,
+        "epdtest",
+        PartialRecipe(Style.FRAME, "init_partial", base=True),
+    )
+
+    assert WaveshareDriver(Epd2in13V2(), name="epdtest").partial is None
+
+
+def test_icons_use_the_base_refresh(
+    partial_driver: Callable[..., WaveshareDriver], photo: Path
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(PartialRecipe(Style.FRAME, base=True), epd)
+
+    WaveshareDisplay(driver, ColorMode.BW, icons=True).show(photo)
+
+    assert epd.calls == ["init", ("display_Base", "buffer-RGB-(255, 0, 0)"), "sleep"]
+
+
+def test_no_base_refresh_without_icons(
+    partial_driver: Callable[..., WaveshareDriver], photo: Path
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(PartialRecipe(Style.FRAME, base=True), epd)
+
+    WaveshareDisplay(driver, ColorMode.BW).show(photo)
+
+    assert epd.calls[1][0] == "display"
+
+
+def test_icons_need_the_standard_refresh(
+    partial_driver: Callable[..., WaveshareDriver],
+    photo: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(PartialRecipe(Style.FRAME, base=True), epd)
+
+    WaveshareDisplay(driver, ColorMode.BW, fast=True, icons=True).show(photo)
+
+    assert epd.calls[0] == "init"
+    assert caplog.messages == [NO_FAST_WITH_ICONS]
+
+
+def test_icons_dont_stop_the_fast_refresh_without_base(
+    partial_driver: Callable[..., WaveshareDriver], photo: Path
+) -> None:
+    epd = PartialEpd()
+    driver = partial_driver(PartialRecipe(Style.WINDOW), epd)
+
+    WaveshareDisplay(driver, ColorMode.BW, fast=True, icons=True).show(photo)
+
+    assert epd.calls[0] == "init_fast"
+
+
+def test_init_arguments_for_the_full_refresh(
+    monkeypatch: pytest.MonkeyPatch, photo: Path
+) -> None:
+    class LutEpd(FakeEpd):
+        lut_full_update = "full-lut"
+
+        def init(self, *arguments: object) -> int:
+            self.calls.append(("init", *arguments))
+            return 0
+
+    monkeypatch.setitem(INIT_ARGUMENTS, "epdtest", ("lut_full_update", 0))
+    epd = LutEpd()
+
+    WaveshareDisplay(WaveshareDriver(epd, name="epdtest"), ColorMode.BW).show(photo)
+
+    assert epd.calls[0] == ("init", "full-lut", 0)
+
+
+def test_missing_argument_attribute(
+    monkeypatch: pytest.MonkeyPatch, photo: Path
+) -> None:
+    monkeypatch.setitem(INIT_ARGUMENTS, "epdtest", ("lut_full_update",))
+    display = WaveshareDisplay(WaveshareDriver(FakeEpd(), name="epdtest"), ColorMode.BW)
+
+    with pytest.raises(DisplayError, match="no lut_full_update attribute"):
+        display.show(photo)
+
+
+def test_driver_name_from_module(library: Path) -> None:
+    display = WaveshareDisplay.load("epdfake", ColorMode.BW, library)
+
+    assert display._driver.size == (0, 0)  # the fake has no width/height
+
+
+# ------------------------------------------- recorded real drivers (d28b3c4)
+
+RECORDED: dict[str, Any] = json.loads((ASSETS / "waveshare_drivers.json").read_text())[
+    "drivers"
+]
+
+
+class RecordedEpd:
+    """An ``EPD`` with the methods (signatures) and attributes of a real driver."""
+
+    width = 8
+    height = 2
+
+    def __init__(self, name: str) -> None:
+        self.calls: list[tuple[object, ...]] = []
+        record = RECORDED[name]
+        for attribute in record["attributes"]:
+            if attribute not in ("width", "height"):
+                setattr(self, attribute, f"<{attribute}>")
+        for method, signature in record["methods"].items():
+            setattr(self, method, self._method(method, signature))
+
+    def _method(self, name: str, signature: dict[str, Any]) -> Callable[..., object]:
+        def method(*arguments: object) -> object:
+            count = len(arguments)
+            if not signature["required"] <= count <= len(signature["parameters"]):
+                raise TypeError(f"{name}{tuple(signature['parameters'])} got {count}")
+            self.calls.append((name, *arguments))
+            return "buffer" if name.startswith("getbuffer") else 0
+
+        return method
+
+
+def recorded_display(
+    name: str, **options: bool
+) -> tuple[WaveshareDisplay, RecordedEpd]:
+    epd = RecordedEpd(name)
+    # 3-color panels take two planes (black, color)
+    planes = RECORDED[name]["methods"]["display"]["required"]
+    color = ColorMode.BWR if planes == 2 else ColorMode.BW
+    return WaveshareDisplay(WaveshareDriver(epd, name=name), color, **options), epd
+
+
+def test_recipes_and_init_arguments_name_real_drivers() -> None:
+    for name in [*PARTIAL_DRIVERS, *INIT_ARGUMENTS]:
+        assert name in RECORDED
+    for name, arguments in INIT_ARGUMENTS.items():
+        for argument in arguments:
+            assert isinstance(argument, int) or argument in RECORDED[name]["attributes"]
+
+
+def test_drivers_with_partial_refresh_have_a_recipe() -> None:
+    partial_names = set(ALIASES["display_partial"])
+    with_method = {
+        name
+        for name, record in RECORDED.items()
+        if partial_names & set(record["methods"])
+    }
+
+    # left out on purpose (see PARTIAL_DRIVERS)
+    assert with_method - set(PARTIAL_DRIVERS) == {"epd4in2", "epd7in5b_V2"}
+
+
+@pytest.mark.parametrize(
+    "name",
+    sorted(
+        name
+        for name in RECORDED
+        if Capability.FULL in WaveshareDriver(RecordedEpd(name), name=name).capabilities
+    ),
+)
+def test_full_refresh_of_real_drivers(name: str, photo: Path) -> None:
+    display, epd = recorded_display(name)
+
+    display.show(photo)  # every call fits the real signature
+
+    assert epd.calls[-1] == ("sleep",) or epd.calls[-1] == ("Sleep",)
+
+
+@pytest.mark.parametrize("name", sorted(PARTIAL_DRIVERS))
+def test_partial_refresh_of_real_drivers(
+    name: str, photo: Path, frames: tuple[Path, Path]
+) -> None:
+    display, epd = recorded_display(name, icons=True)
+
+    assert Capability.PARTIAL in display.capabilities
+    display.show(photo)
+    display.show_partial(*frames)
+
+    methods = [call[0] for call in epd.calls]
+    recipe = PARTIAL_DRIVERS[name]
+    base = {"display_Base", "displayPartBaseImage"} & set(methods)
+    assert bool(base) == recipe.base
+    assert set(methods) & set(ALIASES["display_partial"])

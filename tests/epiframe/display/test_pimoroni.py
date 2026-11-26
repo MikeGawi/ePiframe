@@ -113,6 +113,13 @@ def test_show_black_white_red(library: Path, photo: Path) -> None:
     assert calls() == [("set_image", "P", None), ("show",)]
 
 
+def test_no_partial_refresh(library: Path, photo: Path) -> None:
+    display = PimoroniDisplay.load("what", ColorMode.BW, directory=library)
+
+    with pytest.raises(DisplayError, match="no partial refresh"):
+        display.show_partial(photo, photo)
+
+
 @pytest.mark.parametrize("name", sorted(MULTICOLOR - BLENDED))
 @pytest.mark.parametrize("color", list(ColorMode))
 def test_multicolor_gets_rgb_photo(

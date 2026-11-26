@@ -157,6 +157,10 @@ class PimoroniDisplay:
             saturation=saturation,
         )
 
+    def show_partial(self, path: Path | str, previous: Path | str) -> None:
+        # set_region() of the newest Spectra 6 drivers is untested: not used yet
+        raise DisplayError("The display has no partial refresh!")
+
     def show(self, path: Path | str) -> None:
         if self._clear:
             self._inky.set_border(

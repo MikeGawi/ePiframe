@@ -10,7 +10,12 @@ stops cleanly on SIGTERM or Ctrl+C. Its threads:
   process never touches it);
 - the WebUI / REST API server and the statistics recorder;
 - the Telegram bot;
+- the internet connection check for the offline status icon;
 - the service threads of the plugins (``Plugin.service_thread``).
+
+The status icons (:mod:`epiframe.display.icons`): busy while an update runs,
+error after a failed one (until a photo is shown), offline while the internet
+connection check fails.
 
 The WebUI, statistics and bot threads check the configuration every minute: they
 start once enabled, and a failed start (e.g. the port is taken) is tried again a
@@ -34,7 +39,9 @@ from epiframe.bot.telegram import TelegramBot
 from epiframe.config import paths
 from epiframe.config.property import ConfigError
 from epiframe.core.logs import get_logger, setup_logging
+from epiframe.core.network import check_internet
 from epiframe.display.controller import DisplayController
+from epiframe.display.icons import Icon
 from epiframe.plugins.base import Plugin
 from epiframe.service.frame import Frame, Trigger
 from epiframe.service.refresh import Refresher
@@ -47,11 +54,17 @@ from epiframe.web.app import WebUI
 RETRY = 60  # seconds between the checks / start attempts of the WebUI and the bot
 WEB_POLL = 0.5  # seconds: how fast the WebUI server notices the stop
 STOP_TIMEOUT = 10  # seconds to wait for the threads when stopping
+NETWORK_CHECK = 60  # seconds between the internet connection checks
+NETWORK_TIMEOUT = 10  # seconds
+# answers with an empty page (HTTP 204), made for connection checks
+NETWORK_URL = "https://connectivitycheck.gstatic.com/generate_204"
 
 STARTED = PREFIX + "STARTED"
 STOPPED = PREFIX + "STOPPED"
 WEB_START = PREFIX + "Starting ePiframe WebUI server"
 BOT_START = PREFIX + "Starting Telegram Bot"
+OFFLINE = "No internet connection!"
+ONLINE = "The internet connection is back"
 
 log = get_logger("service")
 
@@ -98,6 +111,7 @@ class Service:
         )
         self.threads: list[threading.Thread] = []
         self.bot: TelegramBot | None = None
+        self.online: bool | None = None  # unknown until checked
 
     def trigger(self, trigger: Trigger) -> None:
         self.scheduler.trigger(trigger)
@@ -107,20 +121,34 @@ class Service:
     def start_update(self, arguments: Sequence[str]) -> None:
         """Run the update (``epiframe prepare``) with ``arguments`` and show the
         photo; an update that hangs is stopped after the slide interval."""
+        self.icons(on=(Icon.BUSY,))
         self.updated(self.refresher.run(arguments, self.frame.slide_interval))
 
     def updated(self, code: int | None) -> None:
         """Show the photo prepared by the update that ended with exit ``code``."""
         if code != 0:
-            return  # not started, failed or stopped (logged)
+            self.failed()  # not started, failed or stopped (logged)
+            return
         photo = self.frame.current_file()
         if photo is None:
             log.error("Error sending photo to display: no converted photo!")
+            self.failed()
             return
         try:
-            self.display.show(photo)
+            self.display.show(photo)  # ends the busy icon and the error
         except Exception as error:  # a vendor driver must not end the service
             log.error(f"Error sending photo to display: {error}")
+            self.failed()
+
+    def failed(self) -> None:
+        self.icons(on=(Icon.ERROR,), off=(Icon.BUSY,))
+
+    def icons(self, on: Sequence[Icon] = (), off: Sequence[Icon] = ()) -> None:
+        """Turn status icons on and off (errors are only logged)."""
+        try:
+            self.display.change_icons(on, off)
+        except Exception as error:
+            log.error(f"Error showing the status icons: {error}")
 
     # ----------------------------------------------------------- start / stop
 
@@ -138,6 +166,7 @@ class Service:
             self._spawn("web", lambda: self._repeat(self.serve_web, "WebUI"))
         if self.parts.telegram:
             self._spawn("telegram", lambda: self._repeat(self.run_bot, "Telegram Bot"))
+        self._spawn("network", self.watch_network)
         for plugin in self.frame.plugins.with_hook("service_thread"):
             self._spawn(f"plugin {plugin.folder}", self._plugin_target(plugin))
 
@@ -203,6 +232,33 @@ class Service:
         self.bot = TelegramBot(self.frame)
         if not self.stopping.is_set():
             self.bot.start()
+
+    def watch_network(self) -> None:
+        """Check the internet connection every :data:`NETWORK_CHECK` seconds
+        (if the offline icon is enabled) until the stop."""
+        while not self.stopping.is_set():
+            try:
+                self.check_network()
+            except Exception as error:
+                log.error(f"Error checking the internet connection! {error}")
+            self.stopping.wait(NETWORK_CHECK)
+
+    def check_network(self) -> None:
+        """Turn the offline icon on or off when the connection changes."""
+        self.frame.refresh()
+        if not self.frame.config.getint(Icon.OFFLINE.setting):
+            self.online = None  # checked again once enabled
+            return
+        error = check_internet(NETWORK_URL, NETWORK_TIMEOUT)
+        if (error is None) == self.online:
+            return
+        self.online = error is None
+        if self.online:
+            log.info(ONLINE)
+            self.icons(off=(Icon.OFFLINE,))
+        else:
+            log.warning(f"{OFFLINE} {error}")
+            self.icons(on=(Icon.OFFLINE,))
 
     def record_stats(self) -> None:
         """Take a statistics sample every :data:`SAMPLE_INTERVAL` seconds (if the

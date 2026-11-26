@@ -145,6 +145,40 @@ fast_refresh=0
 # Default: 10
 full_refresh_every=10
 
+# Show a busy icon (hourglass) while the photo changes.
+# The icons are drawn on the photo with a partial refresh: Waveshare panels whose
+# driver has it (e.g. epd7in5_V2, epd2in13_V4, epd4in2_V2) and HDMI.
+; Other displays (Pimoroni) only get the offline and error icons with the next photo.
+# Default: 0 (disabled)
+busy_icon=0
+
+# Show an icon (crossed Wi-Fi) while there is no internet connection.
+; The service checks the connection every minute.
+# Default: 0 (disabled)
+offline_icon=0
+
+# Show an icon (exclamation mark) when the last photo change failed,
+# until the next one succeeds.
+# Default: 0 (disabled)
+error_icon=0
+
+# Corner of the status icons (in a row from the corner): 0 left-top, 1 right-top,
+# 2 left-bottom, 3 right-bottom.
+; Use another corner than the weather stamp (position in [Weather]) and plugins.
+# Default: 1 (right-top corner)
+icons_position=1
+
+# Size of the status icons in pixels.
+# Value >= 16.
+# Default: 32
+icons_size=32
+
+# The status icons: after this many partial refreshes in a row, the next icon
+# change uses a full refresh to clear the ghosting the partial ones leave.
+# Value >= 1.
+# Default: 10
+max_partial_refreshes=10
+
 # Number of terminal (virtual console) used for HDMI/Composite display.
 # This option wrongly set may hang or corrupt terminals.
 # The default set will work on X and non-X environments.

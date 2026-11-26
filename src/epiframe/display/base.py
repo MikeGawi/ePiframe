@@ -26,3 +26,7 @@ class Display(Protocol):
 
     def show(self, path: Path | str) -> None:
         """Show the image file at ``path``."""
+
+    def show_partial(self, path: Path | str, previous: Path | str) -> None:
+        """Show the image file at ``path`` with a partial refresh (only with
+        :attr:`Capability.PARTIAL`); ``previous`` is the image shown now."""
