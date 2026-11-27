@@ -461,12 +461,19 @@ function python_modules {
 	echo "${modules[@]}"
 }
 
+# the import of lgpio creates its notification pipe (.lgd-nfy*) in the current
+# folder, so the check runs in an empty folder of the user (the installer may be
+# started anywhere, dpkg runs postinst in /)
 function check_python_modules {
-	local modules
+	local modules folder
 	read -r -a modules <<< "$(python_modules)"
-	as_user "$INSTALL_DIR/.venv/bin/python" -c \
+	folder=$(as_user mktemp -d) || return 1
+	(cd "$folder" && as_user "$INSTALL_DIR/.venv/bin/python" -c \
 		'import importlib, sys; [importlib.import_module(name) for name in sys.argv[1:]]' \
-		"${modules[@]}"
+		"${modules[@]}")
+	local result=$?
+	rm -rf "$folder"
+	return $result
 }
 
 function install_python_environment {

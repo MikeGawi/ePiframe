@@ -285,6 +285,29 @@ def test_python_modules(bash: Bash) -> None:
     assert "lgpio" not in modules
 
 
+@pytest.mark.parametrize("code", [0, 3])
+def test_check_python_modules_runs_in_an_empty_folder(
+    bash: Bash, tmp_path: Path, code: int
+) -> None:
+    # like lgpio: a file in the current folder (fails where it can't write)
+    python = tmp_path / ".venv" / "bin" / "python"
+    python.parent.mkdir(parents=True)
+    python.write_text(
+        f"#!/bin/sh\npwd > {tmp_path}/folder\nls -A >> {tmp_path}/folder\n"
+        f'touch .lgd-nfy0\necho "$@" > {tmp_path}/arguments\nexit {code}\n'
+    )
+    python.chmod(0o755)
+
+    result = bash(f"{AS_USER} HARDWARE=1; INSTALL_DIR={tmp_path}; check_python_modules")
+
+    folder, *content = (tmp_path / "folder").read_text().splitlines()
+    assert result.returncode == code
+    assert content == []
+    assert not Path(folder).exists()
+    assert Path(folder) != Path.cwd()
+    assert "lgpio" in (tmp_path / "arguments").read_text().split()
+
+
 def test_python_modules_are_importable_in_the_dev_environment() -> None:
     modules = run_bash("HARDWARE=0; python_modules").stdout.split()
 

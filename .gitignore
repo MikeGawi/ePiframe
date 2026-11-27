@@ -154,6 +154,8 @@ dmypy.json
 # src/epiframe/config/config.default, --update keeps backups)
 /config.cfg
 /backup/
+# notification pipes lgpio creates in the current folder (the frame folder)
+/.lgd-nfy*
 /junit.xml
 /badges/
 /logs/
