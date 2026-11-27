@@ -56,3 +56,32 @@ def test_directories_from_variables(monkeypatch: pytest.MonkeyPatch) -> None:
     assert paths.USERS_DB_FILE == "/var/lib/epiframe/users.db"
     assert paths.LIBRARY_DIR == "/opt/epiframe/lib"
     assert paths.PLUGINS_DIR == "/var/lib/epiframe/plugins"
+
+
+@pytest.mark.parametrize(
+    ("caller", "path", "expected"),
+    [
+        ("/home/pi", "a.jpg", "/home/pi/a.jpg"),
+        ("/home/pi", "photos/../a.jpg", "/home/pi/photos/../a.jpg"),
+        ("/home/pi", "/srv/photos/a.jpg", "/srv/photos/a.jpg"),
+        # not started by the epiframe command: relative to the current folder
+        (None, "a.jpg", "a.jpg"),
+        ("", "a.jpg", "a.jpg"),
+    ],
+)
+def test_caller_path(
+    monkeypatch: pytest.MonkeyPatch, caller: str | None, path: str, expected: str
+) -> None:
+    if caller is None:
+        monkeypatch.delenv(paths.CALLER_DIR_ENV, raising=False)
+    else:
+        monkeypatch.setenv(paths.CALLER_DIR_ENV, caller)
+
+    assert paths.caller_path(path) == Path(expected)
+
+
+def test_caller_path_expands_the_home_folder(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(paths.CALLER_DIR_ENV, "/var/lib/epiframe")
+    monkeypatch.setenv("HOME", "/home/pi")
+
+    assert paths.caller_path(Path("~/a.jpg")) == Path("/home/pi/a.jpg")

@@ -14,5 +14,9 @@ This is a place to install ePiframe plugins.
   again. The packages must fit the versions ePiframe uses (*uv.lock*), otherwise nothing is
   installed and the error is shown. Never use `sudo pip3 install`: ePiframe doesn't see the
   system Python packages.
+* ePiframe installed from the DEB package keeps the plugins in */var/lib/epiframe/plugins*
+  (clone them as the `epiframe` user: `sudo -u epiframe git clone ...`). The packages of a
+  plugin's *requirements.txt* are installed with `sudo dpkg-reconfigure epiframe` (prebuilt
+  wheels only, nothing is built as root).
 
 Go to https://github.com/MikeGawi/ePiframe_plugin to find something for You!

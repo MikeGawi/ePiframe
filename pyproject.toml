@@ -117,8 +117,8 @@ max-complexity = 5
 "tests/**" = ["S101", "PLR0913", "PLR0915"]
 # smoke tests start ePiframe processes with fixed arguments
 "tests/smoke/**" = ["S603"]
-# install.sh tests run bash and git (from PATH) with fixed arguments
-"tests/scripts/test_install.py" = ["S603", "S607"]
+# the shell script tests run bash, git and dpkg (from PATH) with fixed arguments
+"tests/scripts/test_{install,build_deb,deb_package}.py" = ["S603", "S607"]
 # plugins installed by the user (1.x style code is skipped by the plugin manager)
 "plugins/**" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "E501"]
 "tests/{test_*,conftest}.py" = ["UP", "B", "SIM", "PL", "RUF", "S", "I", "PT", "E501"]

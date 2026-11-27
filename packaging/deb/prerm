@@ -1,0 +1,23 @@
+#!/bin/sh
+# ePiframe DEB package: runs before dpkg removes or replaces the files.
+set -e
+
+SERVICE="ePiframe.service"
+
+case "$1" in
+	remove | deconfigure)
+		if [ -d /run/systemd/system ]; then
+			systemctl stop "$SERVICE" || true
+		fi
+		systemctl disable --quiet "$SERVICE" || true
+		;;
+esac
+
+# bytecode compiled by postinst (dpkg doesn't know these files); the venv stays
+# for upgrades
+if [ -d /opt/epiframe ]; then
+	find /opt/epiframe -path /opt/epiframe/.venv -prune -o -type d -name __pycache__ \
+		-exec rm -rf {} +
+fi
+
+exit 0

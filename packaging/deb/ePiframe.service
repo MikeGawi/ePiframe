@@ -1,0 +1,24 @@
+[Unit]
+Description=ePiframe Daemon
+Wants=network-online.target
+After=network.target network-online.target
+
+; the DEB package's service: the epiframe system user (member of the video, tty,
+; spi, gpio and i2c groups), the FHS layout set by the environment variables below
+[Service]
+User=epiframe
+# the service runs in the foreground and stops cleanly on SIGTERM
+Type=simple
+Environment=EPIFRAME_CONFIG_DIR=/etc/epiframe
+Environment=EPIFRAME_DATA_DIR=/var/lib/epiframe
+Environment=EPIFRAME_PLUGINS_DIR=/var/lib/epiframe/plugins
+ExecStart=/opt/epiframe/.venv/bin/epiframe service
+# the relative paths of config.cfg (photos, logs, databases) are in the data folder
+WorkingDirectory=/var/lib/epiframe
+# the Telegram bot may take a long poll (20 s) to stop
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

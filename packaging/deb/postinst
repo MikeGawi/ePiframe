@@ -1,0 +1,178 @@
+#!/bin/bash
+# ePiframe DEB package: configures ePiframe after dpkg unpacked it.
+#
+# The code (with the display libraries) is in /opt/epiframe. This script creates
+# the epiframe system user and its folders (/etc/epiframe, /var/lib/epiframe), the
+# Python environment (/opt/epiframe/.venv from uv.lock with the system Python; uv
+# and the packages are downloaded, so it needs the internet), installs the
+# plugins' packages, enables SPI/I2C on a Raspberry Pi and enables the service.
+# It reuses the functions of install.sh, which is part of the package.
+#
+# Run it again with: sudo dpkg-reconfigure epiframe (e.g. after adding a plugin
+# with a requirements.txt, or after a Python upgrade of the system).
+#
+# The script can be sourced (tests call its functions); it only runs main when executed.
+
+# shellcheck source=install.sh
+source "${EPIFRAME_INSTALLER:-/opt/epiframe/install.sh}" || exit 1
+
+PACKAGE_DIR="/opt/epiframe"
+SERVICE_USER="epiframe"
+CONFIG_DIR="/etc/epiframe"
+DATA_DIR="/var/lib/epiframe"
+CACHE_DIR="/var/cache/epiframe"
+MODEL_FILE="/proc/device-tree/model"
+MISSING_LIBRARIES=""
+
+# ------------------------------------------------------------------------ system
+
+function is_raspberry_pi {
+	[[ -r $MODEL_FILE && $(tr -d '\0' < "$MODEL_FILE") == *"Raspberry Pi"* ]]
+}
+
+function create_user {
+	id -u "$SERVICE_USER" > /dev/null 2>&1 && return 0
+	adduser --system --group --quiet --home "$DATA_DIR" --no-create-home "$SERVICE_USER"
+}
+
+# the configuration is written by ePiframe (WebUI, new entries) next to the file,
+# so its folder belongs to the service user
+function create_folders {
+	install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0750 "$CONFIG_DIR" "$DATA_DIR" \
+		&& install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0755 "$DATA_DIR/plugins" \
+		&& install -d -m 0755 "$CACHE_DIR" "$BIN_DIR"
+}
+
+function create_frame_config {
+	[[ -f $CONFIG_DIR/config.cfg ]] && return 0
+	install -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0600 \
+		"$PACKAGE_DIR/$DEFAULT_CONFIG" "$CONFIG_DIR/config.cfg"
+}
+
+# ------------------------------------------------------------------ Python venv
+
+# the apt packages the installed piwheels wheels need, one per line
+function wheel_libraries {
+	"$PACKAGE_DIR/.venv/bin/python" "$PACKAGE_DIR/scripts/piwheels_apt.py"
+}
+
+function package_installed {
+	[[ $(dpkg-query -W -f '${db:Status-Status}' "$1" 2> /dev/null) == installed ]]
+}
+
+# replaces install.sh's version: apt can't run while dpkg configures a package, so
+# the missing libraries are only reported (the package Depends on the usual ones)
+function install_wheel_libraries {
+	local packages package missing=()
+	if ! packages=$(wheel_libraries 2>> "$LOG"); then
+		warn "Can't read the system libraries the piwheels packages need, the check below will tell if one is missing"
+		return 0
+	fi
+	for package in $packages; do
+		package_installed "$package" || missing+=("$package")
+	done
+	(( ${#missing[@]} )) || return 0
+	MISSING_LIBRARIES="${missing[*]}"
+	warn "The Python packages need system libraries that are not installed: $MISSING_LIBRARIES"
+	warn "Install them with: sudo apt install $MISSING_LIBRARIES, then: sudo dpkg --configure -a"
+}
+
+function compile_code {
+	"$PACKAGE_DIR/.venv/bin/python" -m compileall -q "$PACKAGE_DIR/src" "$PACKAGE_DIR/lib"
+}
+
+# ----------------------------------------------------------------------- service
+
+function systemd_running {
+	[[ -d /run/systemd/system ]]
+}
+
+# setup_service PREVIOUS_VERSION: enable the service on the first installation
+# (an administrator may disable it later), restart a running one on upgrades
+function setup_service {
+	if systemd_running; then
+		systemctl daemon-reload || return 1
+	fi
+	if [[ -z $1 ]]; then
+		systemctl enable --quiet "$SERVICE"
+	elif systemd_running; then
+		systemctl try-restart "$SERVICE"
+	fi
+}
+
+function check_other_installation {
+	if [[ -f $UNIT_FILE ]]; then
+		warn "$UNIT_FILE (ePiframe installed with install.sh) replaces the service of this package, remove it with: sudo ./install.sh --uninstall"
+	fi
+	if [[ -f $COMMAND_FILE ]]; then
+		warn "$COMMAND_FILE (ePiframe installed with install.sh) comes before /usr/bin/epiframe on the PATH, remove it with: sudo ./install.sh --uninstall"
+	fi
+	return 0
+}
+
+function show_package_next_steps {
+	header "Next steps"
+	if (( REBOOT_NEEDED )); then
+		info "1. Connect the display and reboot (SPI/I2C were enabled)"
+	else
+		info "1. Connect the display"
+	fi
+	info "2. Coming from ePiframe 1.x? Copy its config.cfg into $CONFIG_DIR and misc/users.db into $DATA_DIR (owner $SERVICE_USER)"
+	info "3. Configure ePiframe in $CONFIG_DIR/config.cfg (the photo source at least)"
+	info "4. Check it with: epiframe check-config"
+	info "   Google Drive: epiframe setup-drive, WebUI users: epiframe users"
+	info "5. Test it without the display: epiframe test, with the display: epiframe test-display"
+	info "6. Start it: sudo systemctl start ePiframe (it starts on boot too)"
+	info "Photos, logs and plugins are in $DATA_DIR, files given to epiframe commands are relative to it"
+	info "After adding a plugin with a requirements.txt: sudo dpkg-reconfigure epiframe"
+}
+
+# ------------------------------------------------------------------------ actions
+
+# configure PREVIOUS_VERSION (empty on the first installation)
+function configure {
+	local previous=$1
+	INSTALL_DIR=$PACKAGE_DIR
+	EPI_USER=$SERVICE_USER
+	BIN_DIR="$PACKAGE_DIR/bin"
+	PLUGINS_DIR="$DATA_DIR/plugins"
+	# the plugins folder belongs to the service user, root installs their packages:
+	# wheels only, no build scripts run as root
+	PLUGIN_UV_OPTIONS=(--no-build)
+	export UV_CACHE_DIR="$CACHE_DIR/uv"
+	HARDWARE=0
+	is_raspberry_pi && HARDWARE=1
+	prepare_log
+	header "Configuring ePiframe (log: $LOG)"
+	step "Creating the $SERVICE_USER user" create_user
+	step "Adding it to the device groups" add_user_groups
+	step "Creating the folders" create_folders
+	step "Creating config.cfg" create_frame_config
+	install_uv
+	install_python_environment
+	enable_interfaces
+	header "Installing the ePiframe service"
+	step "Compiling the Python code" compile_code
+	step "Setting up $SERVICE" setup_service "$previous"
+	check_other_installation
+	[[ -n $previous ]] || show_package_next_steps
+	rm -f "$LOG"
+}
+
+# install.sh runs everything as the frame user; the package's code, venv and uv
+# belong to root
+function as_user {
+	"$@"
+}
+
+function main {
+	case ${1:-} in
+		configure) configure "${2:-}" ;;
+		abort-upgrade | abort-remove | abort-deconfigure) ;;
+		*) die "postinst called with an unknown argument: ${1:-}" ;;
+	esac
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+	main "$@"
+fi

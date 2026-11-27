@@ -30,7 +30,9 @@ repos:
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
-        # all severities (the 2.0 installer is fully clean)
+        # all severities (the 2.0 installer is fully clean); follow the sourced
+        # install.sh (scripts/build_deb.sh, packaging/deb/postinst)
+        args: [--external-sources]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.3

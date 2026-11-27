@@ -1,0 +1,23 @@
+#!/bin/sh
+# ePiframe DEB package: runs after dpkg removed the files.
+#
+# remove: the generated files in /opt/epiframe (venv, uv) go, the configuration
+# and the data stay; purge: /etc/epiframe, /var/lib/epiframe (photos, logs,
+# plugins, users) and /var/cache/epiframe go too. The epiframe user stays.
+set -e
+
+case "$1" in
+	remove | purge)
+		rm -rf /opt/epiframe/.venv /opt/epiframe/bin
+		rmdir --ignore-fail-on-non-empty /opt/epiframe 2> /dev/null || true
+		if [ -d /run/systemd/system ]; then
+			systemctl daemon-reload || true
+		fi
+		;;
+esac
+
+if [ "$1" = purge ]; then
+	rm -rf /etc/epiframe /var/lib/epiframe /var/cache/epiframe
+fi
+
+exit 0

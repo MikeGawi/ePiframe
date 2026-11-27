@@ -60,6 +60,10 @@ HARDWARE=1
 REBOOT_NEEDED=0
 LOG="/dev/null"
 UV=""
+# the plugins folder (default: plugins in the installation folder) and extra options
+# of the plugin packages' uv pip install (the DEB package sets both)
+PLUGINS_DIR=""
+PLUGIN_UV_OPTIONS=()
 
 if [[ -t 1 ]]; then
 	BOLD=$'\033[1;37m'
@@ -408,7 +412,7 @@ function install_wheel_libraries {
 # the requirements.txt files of the installed plugins
 function plugin_requirements {
 	local file
-	for file in "$INSTALL_DIR"/plugins/*/requirements.txt; do
+	for file in "${PLUGINS_DIR:-$INSTALL_DIR/plugins}"/*/requirements.txt; do
 		[[ -f $file ]] && echo "$file"
 	done
 	return 0
@@ -437,7 +441,8 @@ function install_plugin_packages {
 		--no-emit-project --quiet --output-file "$constraints" \
 		&& as_user env UV_PYTHON_DOWNLOADS=never UV_COMPILE_BYTECODE=1 \
 			"$UV" pip install --python "$INSTALL_DIR/.venv/bin/python" \
-			--constraint "$constraints" "${options[@]}" "${requirements[@]}"
+			--constraint "$constraints" "${options[@]}" "${PLUGIN_UV_OPTIONS[@]}" \
+			"${requirements[@]}"
 	local result=$?
 	rm -f "$constraints"
 	return $result
@@ -596,10 +601,11 @@ function command_script {
 #!/bin/sh
 # ePiframe (install.sh): runs the frame's epiframe command in its folder (the paths
 # in config.cfg are relative to it) and as its user (files created by root would
-# lock the service out)
+# lock the service out); file arguments stay relative to the current folder
 if [ "\$(id -u)" -eq 0 ] && [ "$1" != root ]; then
 	exec runuser -u '$1' -- "\$0" "\$@"
 fi
+export EPIFRAME_CALLER_DIR="\$PWD"
 cd '$2' || exit 1
 exec '$2/.venv/bin/epiframe' "\$@"
 EOF

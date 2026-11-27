@@ -7,9 +7,9 @@ works and saves the settings.
 
 import json
 from collections.abc import Callable
-from pathlib import Path
 
 from epiframe.config.base import ConfigBase
+from epiframe.config.paths import caller_path
 from epiframe.core.console import Ask, Say, ask_yes
 from epiframe.sources.drive import Drive, DriveClient, folder_ids
 from epiframe.sources.drive_setup import (
@@ -114,7 +114,7 @@ class ConsoleSetup:
     def _key_content(self, answer: str) -> str:
         answer = answer.strip()
         if not answer.startswith("{"):
-            return Path(answer).expanduser().read_text()
+            return caller_path(answer).read_text()
         lines = [answer]
         while not self._complete(lines) and len(lines) < MAX_PASTED_LINES:
             lines.append(self.ask(""))

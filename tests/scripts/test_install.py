@@ -379,7 +379,7 @@ def test_command_script_runs_epiframe_in_its_folder(bash: Bash, tmp_path: Path) 
     frame = tmp_path / "frame"
     (frame / ".venv" / "bin").mkdir(parents=True)
     epiframe = frame / ".venv" / "bin" / "epiframe"
-    epiframe.write_text('#!/bin/sh\necho "$(pwd) $*"\n')
+    epiframe.write_text('#!/bin/sh\necho "$(pwd) $EPIFRAME_CALLER_DIR $*"\n')
     epiframe.chmod(0o755)
     command = tmp_path / "epiframe"
     command.write_text(bash(f"command_script {getpass.getuser()} {frame}").stdout)
@@ -394,7 +394,8 @@ def test_command_script_runs_epiframe_in_its_folder(bash: Bash, tmp_path: Path) 
         cwd=tmp_path,
     )
 
-    assert result.stdout == f"{frame} test --no-skip\n"
+    # file arguments are resolved against the folder the command started in
+    assert result.stdout == f"{frame} {tmp_path} test --no-skip\n"
 
 
 def test_user_groups_only_existing(bash: Bash) -> None:
@@ -705,3 +706,30 @@ def test_run_plugins_without_requirements(bash: Bash, checkout: Path) -> None:
 
     assert result.returncode == 0
     assert "No plugin has a requirements.txt" in result.stdout
+
+
+def test_plugin_requirements_in_another_folder(bash: Bash, frame: Path) -> None:
+    # the DEB package keeps the plugins in its data folder
+    result = bash(
+        f"INSTALL_DIR=/opt/epiframe; PLUGINS_DIR={frame}/plugins; plugin_requirements"
+    )
+
+    assert result.stdout == f"{frame}/plugins/weather_extra/requirements.txt\n"
+
+
+def test_install_plugin_packages_with_extra_options(
+    bash: Bash, frame: Path, fake_uv: Path
+) -> None:
+    calls = frame / "calls"
+
+    result = bash(
+        f"{AS_USER} function machine {{ echo aarch64; }}; INSTALL_DIR={frame};"
+        f" PLUGIN_UV_OPTIONS=(--no-build); UV={fake_uv}; install_plugin_packages",
+        env={"CALLS": str(calls)},
+    )
+
+    assert result.returncode == 0
+    install = calls.read_text().splitlines()[1]
+    assert install.endswith(
+        f"--no-build --requirement {frame}/plugins/weather_extra/requirements.txt"
+    )

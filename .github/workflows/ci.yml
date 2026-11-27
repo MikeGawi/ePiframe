@@ -73,6 +73,19 @@ jobs:
       - run: uv sync --locked
       - run: uv run --frozen pytest -m smoke
 
+  deb:
+    name: DEB packages (armhf, arm64, amd64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the packages
+        run: scripts/build_deb.sh --out dist
+      - name: Upload the packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: deb-packages
+          path: dist/*.deb
+
   badges:
     name: Publish badges
     if: ${{ !cancelled() && github.event_name == 'push' }}
