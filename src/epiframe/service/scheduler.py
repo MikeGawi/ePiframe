@@ -6,8 +6,9 @@ change within the working hours; out of them it turns the HDMI screen off and
 checks again every :data:`IDLE_CHECK` seconds. Photo change requests
 (:class:`~epiframe.service.frame.Trigger`) from the WebUI, the bot or the API
 come from other threads; they only wake the scheduler, so the photo changes are
-always started by its thread, one at a time (1.x ran them in the caller's
-thread).
+always run by its thread, one at a time (1.x ran them in the caller's thread).
+A request that comes while a photo change runs waits for it and runs right
+after it (1.x stopped the running one; several requests count as one).
 """
 
 import threading
@@ -131,7 +132,7 @@ class PhotoScheduler:
             self._sleep_checks = 0
             log.info(STARTING)
             self.frame.power_display(True)
-            self.start_refresh(trigger.arguments if trigger else ())
+            self.start_refresh((trigger or Trigger.NEXT_PHOTO).arguments)
             return True
         self.frame.power_display(False)
         if self._sleep_checks == 0:

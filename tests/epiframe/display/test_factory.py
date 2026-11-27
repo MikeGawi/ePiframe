@@ -18,6 +18,9 @@ DEFAULTS = {
     "fbi_bin_path": "/usr/bin/fbi",
     "background_color": "black",
     "pimoroni_saturation": "0.5",
+    "busy_icon": "0",
+    "offline_icon": "0",
+    "error_icon": "0",
 }
 
 
@@ -52,6 +55,39 @@ def test_waveshare() -> None:
     assert isinstance(display, WaveshareDisplay)
     assert display._color == "BW+Red"
     assert display._clear is True
+    assert display._fast is False
+    assert display._base is False
+
+
+def test_waveshare_with_icons(library: Path) -> None:
+    # a driver with the partial refresh that needs display_Base
+    (library / "waveshare_epd" / "epd2in9_V3.py").write_text(
+        "from .epdfake import EPD as Base\n\n\n"
+        "class EPD(Base):\n"
+        "    def display_Base(self, buffer):\n"
+        "        pass\n\n"
+        "    def display_Partial(self, buffer):\n"
+        "        pass\n"
+    )
+
+    display = create_display(Config(display="epd2in9_V3", error_icon="1"))
+
+    assert isinstance(display, WaveshareDisplay)
+    assert display._base is True
+
+
+def test_waveshare_fast_refresh(library: Path) -> None:
+    (library / "waveshare_epd" / "epdfast.py").write_text(
+        "from .epdfake import EPD as Base\n\n\n"
+        "class EPD(Base):\n"
+        "    def init_fast(self):\n"
+        "        return 0\n"
+    )
+
+    display = create_display(Config(display="epdfast"), fast=True)
+
+    assert isinstance(display, WaveshareDisplay)
+    assert display._fast is True
 
 
 @pytest.mark.parametrize("epaper_type", ["Pimoroni", "pimoroni"])

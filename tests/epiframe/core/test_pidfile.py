@@ -51,9 +51,9 @@ def test_remove(pid_file: PidFile) -> None:
 
 def test_process_command(tmp_path: Path) -> None:
     (tmp_path / "42").mkdir()
-    (tmp_path / "42" / "cmdline").write_bytes(b"python3\0./ePiframe.py\0--test\0")
+    (tmp_path / "42" / "cmdline").write_bytes(b"python3\0-P\0-m\0epiframe\0test\0")
 
-    assert process_command(42, tmp_path) == "python3 ./ePiframe.py --test"
+    assert process_command(42, tmp_path) == "python3 -P -m epiframe test"
     assert process_command(43, tmp_path) is None
 
 

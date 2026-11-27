@@ -12,6 +12,7 @@ from pytest_mock import MockerFixture
 from epiframe.processing import imagemagick
 from epiframe.processing.imagemagick import (
     CONVERT_OPTIONS,
+    GRAY4_DITHERING,
     ROTATIONS,
     ConvertSettings,
     ImageMagick,
@@ -88,6 +89,37 @@ def test_settings_from_config() -> None:
         bilevel=False,
     )
     assert ConvertSettings.from_config(config, hdmi=False).bilevel
+
+
+@pytest.mark.parametrize(("hdmi", "grays"), [(False, True), (True, False)])
+def test_settings_for_four_grays(hdmi: bool, grays: bool) -> None:
+    config = Config(CASES_1X[0]["config"] | {"epaper_color": "4 grays"})
+
+    settings = ConvertSettings.from_config(config, hdmi=hdmi)
+
+    assert settings.grays is grays
+    assert not settings.bilevel
+
+
+@pytest.mark.parametrize("option", CONVERT_OPTIONS)
+@pytest.mark.parametrize("invert", [False, True])
+def test_four_gray_arguments(option: str, invert: bool) -> None:
+    settings = ConvertSettings(
+        80, 48, option=option, invert=invert, bilevel=False, grays=True
+    )
+
+    arguments = convert_arguments("in", "out.bmp", settings, (120, 60))
+
+    reduce = ["-colorspace", "Gray", *GRAY4_DITHERING[option]]
+    reduce += ["-negate"] if invert else []
+    start = arguments.index("-colorspace")
+    assert arguments[start : start + len(reduce)] == reduce
+    assert arguments[start + len(reduce) : start + len(reduce) + 2] == [
+        "-background",
+        "white",
+    ]
+    end = arguments.index("-write")
+    assert arguments[end - 2 : end] == ["-type", "Palette"]
 
 
 def test_arguments_with_spaces_in_paths() -> None:
@@ -234,6 +266,7 @@ def test_convert(run: Any) -> None:
         (ConvertSettings(80, 48), "1"),
         (ConvertSettings(80, 48, background="photo", rotation=90), "1"),
         (ConvertSettings(80, 48, bilevel=False, colors=8, background="crop"), "P"),
+        (ConvertSettings(80, 48, bilevel=False, grays=True), "P"),
     ],
 )
 def test_real_conversion(tmp_path: Path, settings: ConvertSettings, mode: str) -> None:
@@ -253,6 +286,22 @@ def test_real_conversion(tmp_path: Path, settings: ConvertSettings, mode: str) -
     assert Path(thumbnails.converted).exists()
     assert magick.size(str(source)) == (120, 60)
     assert magick.image_format(str(source)) == "JPEG"
+
+
+@needs_imagemagick
+@pytest.mark.parametrize("option", CONVERT_OPTIONS)
+def test_real_four_grays(tmp_path: Path, option: str) -> None:
+    source = tmp_path / "gradient.png"
+    Image.linear_gradient("L").resize((120, 60)).convert("RGB").save(source)
+    settings = ConvertSettings(80, 48, option=option, bilevel=False, grays=True)
+
+    ImageMagick(str(CONVERT)).convert(str(source), str(tmp_path / "out.bmp"), settings)
+
+    with Image.open(tmp_path / "out.bmp") as image:
+        levels = set(image.convert("L").tobytes())
+    # the evenly spaced grays of the 4-gray buffer (white: the background)
+    assert levels <= {0, 85, 170, 255}
+    assert len(levels) >= 3
 
 
 @needs_imagemagick

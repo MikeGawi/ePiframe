@@ -41,6 +41,15 @@ DITHERING: dict[str, tuple[str, ...]] = {
     "6": ("-colors", "2", "+dither"),
 }
 CONVERT_OPTIONS = tuple(DITHERING)
+# the same presets for 4-gray e-Paper: 4 evenly spaced grays (0, 85, 170, 255)
+GRAY4_DITHERING: dict[str, tuple[str, ...]] = {
+    "1": ("-dither", "FloydSteinberg", "-posterize", "4"),
+    "2": ("-dither", "FloydSteinberg", "-posterize", "4"),
+    "3": ("-dither", "FloydSteinberg", "-posterize", "4"),
+    "4": ("-ordered-dither", "o4x4,4"),
+    "5": ("+dither", "-posterize", "4"),
+    "6": ("+dither", "-posterize", "4"),
+}
 DEFAULT_OPTION = "1"
 
 
@@ -74,6 +83,7 @@ class ConvertSettings:
     contrast: int = 0
     colors: int | None = None  # color limit (HDMI)
     bilevel: bool = True  # black & white e-Paper: dithered to two colors
+    grays: bool = False  # 4-gray e-Paper: dithered to four grays
 
     @classmethod
     def from_config(cls, config: Settings, hdmi: bool) -> Self:
@@ -92,8 +102,8 @@ class ConvertSettings:
             brightness=flag("brightness"),
             contrast=flag("contrast"),
             colors=flag("colors_num") if hdmi and config.get("colors_num") else None,
-            bilevel=not hdmi
-            and config.get("epaper_color").lower() == ColorMode.BW.lower(),
+            bilevel=not hdmi and _color(config) == ColorMode.BW.lower(),
+            grays=not hdmi and _color(config) == ColorMode.GRAY4.lower(),
         )
 
     @property
@@ -105,6 +115,10 @@ class ConvertSettings:
         """Color of the empty area (none is left by a photo background or a crop)."""
         filled = self.background in (Background.PHOTO, Background.CROP)
         return Background.WHITE if filled else self.background
+
+
+def _color(config: Settings) -> str:
+    return config.get("epaper_color").lower()
 
 
 def _option(value: str) -> str:
@@ -189,6 +203,9 @@ def _colors(settings: ConvertSettings) -> tuple[list[str], list[str]]:
     negate = ["-negate"] if settings.invert else []
     if settings.bilevel:
         return [*DITHERING[settings.option], *negate], ["-type", "bilevel"]
+    if settings.grays:
+        reduce = ["-colorspace", "Gray", *GRAY4_DITHERING[settings.option]]
+        return [*reduce, *negate], ["-type", "Palette"]
     colors = ["-colors", str(settings.colors)] if settings.colors else []
     return negate, colors
 

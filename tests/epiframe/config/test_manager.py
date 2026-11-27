@@ -5,7 +5,7 @@ import pytest
 
 from epiframe.config import paths
 from epiframe.config.manager import ConfigManager
-from epiframe.config.property import ConfigError, PropertyType
+from epiframe.config.property import ConfigError, ConfigWarning, PropertyType
 
 ASSETS = Path(__file__).with_name("assets")
 CONFIG_V1 = ASSETS / "config_v1.cfg"
@@ -122,6 +122,18 @@ def test_invalid_value_is_reported(config_file: Path) -> None:
         ConfigError, match="web_port configuration entry should be <= 65535"
     ):
         config.validate("web_port")
+
+
+def test_icons_in_the_weather_stamp_corner_warn(config_file: Path) -> None:
+    config = ConfigManager(config_file, DEFAULT)
+    config.set("show_weather", "1")
+    config.set("position", "1")
+    config.set("icons_position", "1")
+    config.validate("icons_position")  # no icons enabled: no warning
+    config.set("error_icon", "1")
+
+    with pytest.raises(ConfigWarning, match="same corner as the weather stamp"):
+        config.validate("icons_position")
 
 
 def test_1x_config_is_upgraded(config_file: Path) -> None:

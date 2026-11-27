@@ -37,7 +37,8 @@ COMMAND_TIMEOUT = 10
 class HdmiDisplay:
     """Shows photos with ``fbi`` on virtual terminal ``tty``."""
 
-    capabilities = frozenset({Capability.FULL})
+    # a "partial refresh" (the status icons) is a new image like any other
+    capabilities = frozenset({Capability.FULL, Capability.PARTIAL})
 
     def __init__(self, viewer: str, tty: int):
         self._viewer = viewer
@@ -65,6 +66,9 @@ class HdmiDisplay:
             )
         except (OSError, subprocess.SubprocessError) as error:
             raise DisplayError(f"Can't start {self._viewer}: {error}") from error
+
+    def show_partial(self, path: Path | str, previous: Path | str) -> None:
+        self.show(path)
 
 
 class HdmiPower:

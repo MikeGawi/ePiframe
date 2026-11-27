@@ -258,13 +258,19 @@ def test_service(
 
 @pytest.mark.parametrize(
     ("arguments", "mode"),
-    [([], Mode.SHOW), (["test"], Mode.TEST), (["test", "--no-skip"], Mode.NO_SKIP)],
+    [
+        ([], Mode.SHOW),
+        (["test"], Mode.PREPARE),
+        (["test", "--no-skip"], Mode.NO_SKIP),
+        # the service's update: the service shows the photo
+        (Trigger.NEXT_PHOTO.arguments, Mode.PREPARE),
+    ],
 )
 @pytest.mark.usefixtures("plugins")
 def test_update(
     update: MagicMock,
     capsys: pytest.CaptureFixture[str],
-    arguments: list[str],
+    arguments: list[str] | tuple[str, ...],
     mode: Mode,
 ) -> None:
     def run() -> None:
@@ -330,11 +336,16 @@ def test_update_needs_a_valid_config(update: MagicMock, frame_folder: Path) -> N
         (["test-display"], "test_display", (None,)),
         (["test-display", "b.bmp"], "test_display", (Path("b.bmp"),)),
         (["redisplay"], "redisplay", ()),
+        # the service's redisplay: convert only, the service shows the photo
+        (Trigger.REDISPLAY.arguments, "test_convert", ()),
     ],
 )
 @pytest.mark.usefixtures("plugins")
 def test_file_commands(
-    commands: MagicMock, arguments: list[str], method: str, expected: tuple[object]
+    commands: MagicMock,
+    arguments: list[str] | tuple[str, ...],
+    method: str,
+    expected: tuple[object],
 ) -> None:
     def run(*args: object) -> None:
         assert Path("pid").exists()

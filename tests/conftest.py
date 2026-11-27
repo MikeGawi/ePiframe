@@ -4,6 +4,8 @@ import shutil
 
 import pytest
 import requests_mock
+
+from epiframe.config import paths
 from tests.helpers.helpers import remove_file
 from tests.helpers.plugins import ORDER_FILE
 
@@ -12,6 +14,26 @@ from tests.helpers.plugins import ORDER_FILE
 def requests_mocker():
     with requests_mock.mock(real_http=True) as mocker:
         yield mocker
+
+
+@pytest.fixture(scope="session")
+def display_folder(tmp_path_factory):
+    return tmp_path_factory.mktemp("display")
+
+
+@pytest.fixture(autouse=True)
+def display_files(display_folder, monkeypatch):
+    """Tests that show photos use display files of their own (not ``misc/``).
+
+    Per test: ``test_paths.py`` reloads ``paths`` (back to the real values).
+    """
+    monkeypatch.setattr(
+        paths, "DISPLAY_LOCK_FILE", str(display_folder / "display.lock")
+    )
+    monkeypatch.setattr(
+        paths, "DISPLAY_STATE_FILE", str(display_folder / "display.json")
+    )
+    return display_folder
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -2,18 +2,17 @@
 
 The conversion: auto-orientation of the original, plugins' ``preprocess_photo``
 (on a copy), ImageMagick, plugins' ``postprocess_photo`` and the weather stamp.
+The photo is shown through the :class:`~epiframe.display.controller.DisplayController`
+(manual commands; the service shows the photos of its updates itself).
 """
 
 import shutil
-from collections.abc import Callable
 from pathlib import Path
 
 from epiframe.config.property import ValueSource
 from epiframe.core.logs import get_logger
-from epiframe.display.base import Display
-from epiframe.display.factory import create_display
+from epiframe.display.controller import DisplayController
 from epiframe.display.options import DisplayType
-from epiframe.display.system import spi_enabled
 from epiframe.photos.model import Photo
 from epiframe.plugins.base import PhotoFile
 from epiframe.plugins.manager import PluginManager
@@ -28,11 +27,8 @@ from epiframe.weather.openweather import fetch_weather
 from epiframe.weather.stamp import StampSettings, draw_stamp
 
 WORK_PREFIX = "pre_"  # the copy of the original edited by the plugins
-NO_SPI = "SPI is not enabled! The e-Paper display needs it (raspi-config)."
 
 log = get_logger("update")
-
-DisplayFactory = Callable[[ValueSource], Display]
 
 
 class Pipeline:
@@ -43,14 +39,12 @@ class Pipeline:
         config: ValueSource,
         plugins: PluginManager,
         magick: ImageMagick,
-        display_factory: DisplayFactory = create_display,
-        spi_check: Callable[[], bool] = spi_enabled,
+        display: DisplayController | None = None,
     ) -> None:
         self.config = config
         self.plugins = plugins
         self.magick = magick
-        self.display_factory = display_factory
-        self.spi_check = spi_check
+        self.display = display or DisplayController(lambda: self.config)
 
     @property
     def target(self) -> Path:
@@ -164,10 +158,7 @@ class Pipeline:
 
     def show(self, file: Path) -> None:
         """Send ``file`` to the display; raise ``UpdateError`` on failure."""
-        if not self.hdmi and not self.spi_check():
-            raise UpdateError(NO_SPI)
-        log.info("Sending to display...")
         try:
-            self.display_factory(self.config).show(file)
+            self.display.show(file)
         except Exception as error:
             raise UpdateError(f"Error sending photo to display: {error}") from error

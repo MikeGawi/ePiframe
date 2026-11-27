@@ -14,6 +14,7 @@ from PIL import Image
 from epiframe.config import paths
 from epiframe.config.manager import ConfigManager
 from epiframe.display.base import Display
+from epiframe.display.controller import DisplayController
 from epiframe.plugins.base import Plugin
 from epiframe.plugins.manager import PluginManager
 from epiframe.processing.imagemagick import ImageMagick
@@ -100,13 +101,15 @@ def make_pipeline(
     """The pipeline of the configuration with ``entries``."""
 
     def make(*, spi: bool = True, **entries: str) -> Pipeline:
-        return Pipeline(
-            make_config(**entries),
-            plugins,
-            magick,
-            display_factory=lambda settings: display,
+        config = make_config(**entries)
+        controller = DisplayController(
+            lambda: config,
+            factory=lambda settings, fast: display,
             spi_check=lambda: spi,
+            lock_file=Path("display.lock"),
+            state_file=Path("display.json"),
         )
+        return Pipeline(config, plugins, magick, controller)
 
     return make
 

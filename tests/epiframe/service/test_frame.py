@@ -29,8 +29,8 @@ TOKEN = "1:abc"  # noqa: S105 (fake)
 
 
 def test_trigger_arguments() -> None:
-    assert Trigger.NEXT_PHOTO.arguments == ()
-    assert Trigger.REDISPLAY.arguments == ("redisplay",)
+    assert Trigger.NEXT_PHOTO.arguments == ("prepare",)
+    assert Trigger.REDISPLAY.arguments == ("prepare", "--again")
     assert all(Trigger)  # members are true: the service checks "if trigger"
 
 

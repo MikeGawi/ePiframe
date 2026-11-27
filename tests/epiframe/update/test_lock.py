@@ -1,9 +1,13 @@
 import os
 import signal
+import threading
+import time
 from pathlib import Path
 
 import pytest
 
+from epiframe.config import paths
+from epiframe.display.controller import display_lock
 from epiframe.update.lock import is_update, stop_previous, update_lock
 
 OTHER_PID = 4242
@@ -15,7 +19,7 @@ OTHER_PID = 4242
         "python3 ./ePiframe.py",
         "/usr/bin/python3 /home/pi/ePiframe/ePiframe.py test",
         "/opt/epiframe/venv/bin/python /opt/epiframe/venv/bin/epiframe",
-        "/usr/bin/python3 -P -m epiframe redisplay",
+        "/usr/bin/python3 -P -m epiframe prepare",
     ],
 )
 def test_is_update(command: str) -> None:
@@ -58,6 +62,30 @@ def test_previous_update_is_stopped(
 
     assert kills == [(OTHER_PID, signal.SIGKILL)]
     assert f"Stopping previous ePiframe run (PID {OTHER_PID})" in caplog.text
+
+
+def test_previous_update_is_not_stopped_while_it_refreshes(
+    tmp_path: Path, kills: list[tuple[int, int]]
+) -> None:
+    write_command(tmp_path, OTHER_PID, "python3", "./ePiframe.py")
+    refreshing = threading.Event()
+    done = threading.Event()
+
+    def other_refresh() -> None:
+        with display_lock(paths.DISPLAY_LOCK_FILE):
+            refreshing.set()
+            time.sleep(0.3)
+            done.set()
+
+    thread = threading.Thread(target=other_refresh)
+    thread.start()
+    assert refreshing.wait(10)
+
+    stop_previous(OTHER_PID, tmp_path)
+    thread.join(10)
+
+    assert done.is_set()  # it was stopped after the refresh
+    assert kills == [(OTHER_PID, signal.SIGKILL)]
 
 
 @pytest.mark.parametrize("pid", [OTHER_PID, os.getpid()])

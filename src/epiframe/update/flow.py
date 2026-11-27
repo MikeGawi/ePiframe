@@ -25,7 +25,7 @@ class Mode(Enum):
     """What the update does with the photo."""
 
     SHOW = "show"  # mark it shown, show it
-    TEST = "test"  # mark it shown, don't show it
+    PREPARE = "prepare"  # mark it shown, don't show it (test; the service shows it)
     NO_SKIP = "no-skip"  # leave the index and the display time alone, don't show it
 
 

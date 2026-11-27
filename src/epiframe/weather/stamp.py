@@ -2,12 +2,13 @@
 
 import math
 from dataclasses import dataclass
-from enum import IntEnum, StrEnum
+from enum import StrEnum
 from pathlib import Path
 from typing import Protocol, Self
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
+from epiframe.processing.orientation import Orientation, Position
 from epiframe.weather.openweather import Units, Weather, WeatherError
 
 FONTS = Path(__file__).with_name("fonts")
@@ -42,27 +43,6 @@ ICONS = {
 }
 
 
-class Position(IntEnum):
-    """Corner of the stamp (``position`` setting)."""
-
-    TOP_LEFT = 0
-    TOP_RIGHT = 1
-    BOTTOM_LEFT = 2
-    BOTTOM_RIGHT = 3
-
-    @classmethod
-    def values(cls) -> list[int]:
-        return [member.value for member in cls]
-
-    @property
-    def right(self) -> bool:
-        return self in (Position.TOP_RIGHT, Position.BOTTOM_RIGHT)
-
-    @property
-    def bottom(self) -> bool:
-        return self in (Position.BOTTOM_LEFT, Position.BOTTOM_RIGHT)
-
-
 class FontColor(StrEnum):
     """Color of the stamp (``font_color`` setting); the outline has the other one."""
 
@@ -91,6 +71,7 @@ class StampSettings:
     position: Position
     horizontal: bool = True
     rotation: int = 90  # of a vertical frame: 90 or 270
+    turned: bool = False  # a horizontal frame mounted upside down
 
     @classmethod
     def from_config(cls, config: Settings) -> Self:
@@ -100,7 +81,12 @@ class StampSettings:
             position=Position(config.getint("position")),
             horizontal=bool(config.getint("horizontal")),
             rotation=config.getint("rotation"),
+            turned=Orientation.from_config(config).turned,
         )
+
+    @property
+    def orientation(self) -> Orientation:
+        return Orientation(self.horizontal, self.turned, self.rotation)
 
 
 def round_half_up(value: float) -> int:
@@ -119,16 +105,6 @@ def temperature_text(temperature: float, units: str) -> str:
     return f"{degrees}{DEGREES}{'C' if Units.is_metric(units) else 'F'}"
 
 
-def _upright(image: Image.Image, settings: StampSettings, back: bool) -> Image.Image:
-    # a vertical frame: the photo is stored turned, draw on the upright photo
-    if settings.horizontal:
-        return image
-    turn_left = (settings.rotation == 90) != back
-    return image.transpose(
-        Image.Transpose.ROTATE_90 if turn_left else Image.Transpose.ROTATE_270
-    )
-
-
 def draw_stamp(
     path: Path | str, weather: Weather, units: str, settings: StampSettings
 ) -> None:
@@ -138,7 +114,7 @@ def draw_stamp(
     except KeyError:
         raise WeatherError(f"Unknown weather icon {weather.icon!r}") from None
     with Image.open(path) as source:
-        image = _upright(source.copy(), settings, back=False)
+        image = settings.orientation.upright(source)
     draw = ImageDraw.Draw(image)
     icon_font = ImageFont.truetype(str(WEATHER_FONT), settings.font_size)
     text_font = ImageFont.truetype(str(TEXT_FONT), settings.font_size)
@@ -165,4 +141,4 @@ def draw_stamp(
             stroke_width=STROKE_WIDTH,
             stroke_fill=outline,
         )
-    _upright(image, settings, back=True).save(path)
+    settings.orientation.stored(image).save(path)

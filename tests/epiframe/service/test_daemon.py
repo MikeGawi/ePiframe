@@ -10,7 +10,7 @@ from functools import partial
 from pathlib import Path
 from types import FrameType
 from typing import Any
-from unittest.mock import MagicMock, create_autospec
+from unittest.mock import MagicMock, call, create_autospec
 
 import pytest
 import requests
@@ -18,11 +18,16 @@ import requests
 from epiframe.bot.telegram import TelegramBot
 from epiframe.config import paths
 from epiframe.core.logs import get_logger, setup_logging
+from epiframe.display.controller import DisplayController
 from epiframe.display.hdmi import HdmiPower
+from epiframe.display.icons import Icon
 from epiframe.plugins.base import Plugin
 from epiframe.service import daemon
 from epiframe.service.daemon import (
     BOT_START,
+    NETWORK_URL,
+    OFFLINE,
+    ONLINE,
     PARTS,
     STARTED,
     STOPPED,
@@ -55,11 +60,18 @@ def refresher() -> MagicMock:
 
 
 @pytest.fixture
+def display() -> MagicMock:
+    mock: MagicMock = create_autospec(DisplayController, instance=True)
+    return mock
+
+
+@pytest.fixture
 def make_service(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     plugins: MagicMock,
     refresher: MagicMock,
+    display: MagicMock,
 ) -> Iterator[MakeService]:
     monkeypatch.chdir(tmp_path)  # relative paths of the default config
     monkeypatch.setattr(paths, "USERS_DB_FILE", str(tmp_path / "users.db"))
@@ -76,7 +88,13 @@ def make_service(
             plugins_dir=tmp_path / "plugins",
             hdmi=create_autospec(HdmiPower, instance=True),
         )
-        service = Service(parts, config, refresher=refresher, frame_factory=factory)
+        service = Service(
+            parts,
+            config,
+            refresher=refresher,
+            display=display,
+            frame_factory=factory,
+        )
         services.append(service)
         return service
 
@@ -136,7 +154,10 @@ def test_default_config_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
     service = Service(frame_factory=factory)
 
     assert frames == [(service.trigger, str(tmp_path / "config.cfg"))]
-    assert isinstance(service.scheduler.start_refresh, type(Refresher().start))
+    assert isinstance(service.refresher, Refresher)
+    assert isinstance(service.display, DisplayController)
+    assert service.display.settings() is service.frame.config
+    assert service.scheduler.start_refresh == service.start_update
 
 
 def test_frame_triggers_go_to_the_scheduler(make_service: MakeService) -> None:
@@ -145,6 +166,152 @@ def test_frame_triggers_go_to_the_scheduler(make_service: MakeService) -> None:
     service.frame.redisplay()
 
     assert service.scheduler.wait(0) == (False, Trigger.REDISPLAY)
+
+
+# -------------------------------------------------------------- photo change
+
+
+def test_start_update(
+    make_service: MakeService, refresher: MagicMock, display: MagicMock, tmp_path: Path
+) -> None:
+    service = make_service(slide_interval="600")
+    refresher.run.return_value = 0
+    (tmp_path / "photo.bmp").write_bytes(b"BM")
+
+    service.start_update(("prepare", "--again"))
+
+    # a hanging update is stopped after the slide interval
+    refresher.run.assert_called_once_with(("prepare", "--again"), 600)
+    display.change_icons.assert_called_once_with((Icon.BUSY,), ())
+    display.show.assert_called_once_with(Path("photo.bmp"))
+
+
+def test_prepared_photo_is_shown(
+    make_service: MakeService, display: MagicMock, tmp_path: Path
+) -> None:
+    service = make_service()
+    (tmp_path / "photo.bmp").write_bytes(b"BM")
+
+    service.updated(0)
+
+    display.show.assert_called_once_with(Path("photo.bmp"))
+
+
+def test_failed_update_shows_nothing(
+    make_service: MakeService, display: MagicMock, tmp_path: Path
+) -> None:
+    service = make_service()
+    (tmp_path / "photo.bmp").write_bytes(b"BM")  # the previous photo
+
+    service.updated(1)
+    service.updated(None)  # not started
+
+    display.show.assert_not_called()
+    # the busy icon becomes the error icon
+    assert display.change_icons.call_args_list == [
+        call((Icon.ERROR,), (Icon.BUSY,)),
+        call((Icon.ERROR,), (Icon.BUSY,)),
+    ]
+
+
+def test_no_prepared_photo(
+    make_service: MakeService, display: MagicMock, caplog: pytest.LogCaptureFixture
+) -> None:
+    make_service().updated(0)
+
+    display.show.assert_not_called()
+    display.change_icons.assert_called_once_with((Icon.ERROR,), (Icon.BUSY,))
+    assert messages(caplog) == ["Error sending photo to display: no converted photo!"]
+
+
+def test_display_error_doesnt_end_the_service(
+    make_service: MakeService,
+    display: MagicMock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    service = make_service()
+    (tmp_path / "photo.bmp").write_bytes(b"BM")
+    display.show.side_effect = OSError("GPIO busy")
+    display.change_icons.side_effect = OSError("GPIO still busy")
+
+    service.updated(0)
+
+    display.change_icons.assert_called_once_with((Icon.ERROR,), (Icon.BUSY,))
+    assert messages(caplog) == [
+        "Error sending photo to display: GPIO busy",
+        "Error showing the status icons: GPIO still busy",
+    ]
+
+
+# ------------------------------------------------------------------- network
+
+
+@pytest.fixture
+def connection(monkeypatch: pytest.MonkeyPatch) -> list[str | None]:
+    """Results of the next internet checks (``None``: connected)."""
+    results: list[str | None] = []
+
+    def check(url: str, timeout: float) -> str | None:
+        assert url == NETWORK_URL
+        return results.pop(0)
+
+    monkeypatch.setattr(daemon, "check_internet", check)
+    return results
+
+
+def test_offline_icon_follows_the_connection(
+    make_service: MakeService,
+    display: MagicMock,
+    connection: list[str | None],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    service = make_service(offline_icon="1")
+    connection.extend([None, None, "timed out", "timed out", None])
+
+    for _ in range(5):
+        service.check_network()
+
+    # only the changes (the first check: the icon state is unknown)
+    assert display.change_icons.call_args_list == [
+        call((), (Icon.OFFLINE,)),
+        call((Icon.OFFLINE,), ()),
+        call((), (Icon.OFFLINE,)),
+    ]
+    assert messages(caplog) == [ONLINE, f"{OFFLINE} timed out", ONLINE]
+
+
+def test_no_check_without_the_offline_icon(
+    make_service: MakeService, display: MagicMock, connection: list[str | None]
+) -> None:
+    service = make_service(offline_icon="0")
+    service.online = False
+
+    service.check_network()  # no result in connection: not called
+
+    assert online(service) is None  # checked again once enabled
+    display.change_icons.assert_not_called()
+
+
+def online(service: Service) -> bool | None:
+    return service.online
+
+
+def test_network_check_error_is_logged(
+    make_service: MakeService,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    service = make_service()
+
+    def broken() -> None:
+        service.stop()
+        raise ValueError("broken config")
+
+    monkeypatch.setattr(service, "check_network", broken)
+    service.watch_network()
+
+    assert messages(caplog) == ["Error checking the internet connection! broken config"]
 
 
 # --------------------------------------------------------------- run and stop
@@ -164,14 +331,15 @@ def test_run_serves_the_webui_until_stopped(
         # WEB_START is logged before the server binds its socket: wait for the port
         wait_until(lambda: listening(port))
         answer = requests.get(f"http://127.0.0.1:{port}/api/action=next", timeout=10)
-        wait_until(lambda: refresher.start.called)
+        wait_until(lambda: refresher.run.called)
     finally:
         service.stop()
         runner.join(timeout=30)
 
     assert not runner.is_alive()
     assert answer.json() == {"status": "OK"}
-    refresher.start.assert_called_once_with(())
+    refresher.run.assert_called_once_with(("prepare",), service.frame.slide_interval)
+    refresher.stop.assert_called_once_with()  # at the stop
     assert messages(caplog)[0] == STARTED
     assert WEB_START in messages(caplog)
     assert messages(caplog)[-1] == STOPPED
@@ -180,6 +348,7 @@ def test_run_serves_the_webui_until_stopped(
         "stats",
         "web",
         "telegram",
+        "network",
     ]
     assert not any(thread.is_alive() for thread in service.threads)
     # the first statistics sample is written when the service stops
@@ -193,7 +362,11 @@ def test_only_the_bot(make_service: MakeService) -> None:
     service.start()
     service.shutdown()
 
-    assert [thread.name for thread in service.threads] == ["scheduler", "telegram"]
+    assert [thread.name for thread in service.threads] == [
+        "scheduler",
+        "telegram",
+        "network",
+    ]
 
 
 def test_webui_start_is_retried(

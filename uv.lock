@@ -836,7 +836,7 @@ wheels = [
 
 [[package]]
 name = "epiframe"
-version = "2.0.0a2"
+version = "2.0.0a3"
 source = { editable = "." }
 dependencies = [
     { name = "cffi", version = "2.1.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'armv6l' and platform_machine != 'armv7l'" },

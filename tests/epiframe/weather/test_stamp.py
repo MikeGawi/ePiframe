@@ -1,19 +1,20 @@
 import hashlib
 import json
 import math
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 import pytest
 from PIL import Image
 
+from epiframe.processing.orientation import Position
 from epiframe.weather.openweather import Weather, WeatherError
 from epiframe.weather.stamp import (
     ICONS,
     TEXT_FONT,
     WEATHER_FONT,
     FontColor,
-    Position,
     StampSettings,
     draw_stamp,
     round_half_up,
@@ -172,9 +173,44 @@ def test_font_colors() -> None:
 
 def test_settings_from_config() -> None:
     config = Config(
-        font="24", font_color="black", position="3", horizontal="0", rotation="270"
+        font="24",
+        font_color="black",
+        position="3",
+        horizontal="0",
+        rotation="270",
+        turned="1",
     )
 
+    # turned is for horizontal frames only
     assert StampSettings.from_config(config) == StampSettings(
         24, FontColor.BLACK, Position.BOTTOM_RIGHT, horizontal=False, rotation=270
     )
+
+
+def test_settings_of_a_turned_frame() -> None:
+    config = Config(
+        font="24",
+        font_color="black",
+        position="0",
+        horizontal="1",
+        rotation="90",
+        turned="1",
+    )
+
+    assert StampSettings.from_config(config).turned is True
+
+
+def test_turned_frame_gets_the_stamp_upside_down(tmp_path: Path) -> None:
+    # the photo of a frame mounted upside down is stored turned by 180 degrees:
+    # the stamp must be too (1.x drew it upright in the wrong corner)
+    normal, turned = tmp_path / "normal.bmp", tmp_path / "turned.bmp"
+    base_image("RGB").save(normal)
+    base_image("RGB").rotate(180).save(turned)
+    weather = Weather(21.0, "01d")
+    settings = StampSettings(20, FontColor.WHITE, Position.TOP_LEFT)
+
+    draw_stamp(normal, weather, "metric", settings)
+    draw_stamp(turned, weather, "metric", replace(settings, turned=True))
+
+    with Image.open(normal) as upright, Image.open(turned) as stored:
+        assert stored.rotate(180).tobytes() == upright.tobytes()

@@ -85,6 +85,11 @@ def test_seven_colors_not_supported(library: Path, case: dict[str, Any]) -> None
         PimoroniDisplay.load(case["display"], ColorMode.C7, directory=library)
 
 
+def test_four_grays_not_supported(library: Path) -> None:
+    with pytest.raises(DisplayError, match="doesn't support 4 grays"):
+        PimoroniDisplay.load("what", ColorMode.GRAY4, directory=library)
+
+
 @pytest.mark.parametrize(
     ("color", "palette"),
     [
@@ -111,6 +116,13 @@ def test_show_black_white_red(library: Path, photo: Path) -> None:
     assert display.capabilities == {Capability.FULL}
     # reduced by ePiframe, no saturation
     assert calls() == [("set_image", "P", None), ("show",)]
+
+
+def test_no_partial_refresh(library: Path, photo: Path) -> None:
+    display = PimoroniDisplay.load("what", ColorMode.BW, directory=library)
+
+    with pytest.raises(DisplayError, match="no partial refresh"):
+        display.show_partial(photo, photo)
 
 
 @pytest.mark.parametrize("name", sorted(MULTICOLOR - BLENDED))

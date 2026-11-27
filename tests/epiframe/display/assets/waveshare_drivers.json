@@ -1,0 +1,3223 @@
+{
+ "_source": "waveshareteam/e-Paper d28b3c4, class EPD of every driver (methods known to ALIASES)",
+ "drivers": {
+  "epd13in3b": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "display_Base": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd13in3k": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "LUT_DATA_4Gray",
+    "Lut_Partial",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Base": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_4GRAY": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Part": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd1in02": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_b",
+    "lut_b1",
+    "lut_w",
+    "lut_w1",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "DisplayPartial": {
+     "parameters": [
+      "old_Image",
+      "Image"
+     ],
+     "required": 2
+    },
+    "Init": {
+     "parameters": [],
+     "required": 0
+    },
+    "Partial_Init": {
+     "parameters": [],
+     "required": 0
+    },
+    "Sleep": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    }
+   }
+  },
+  "epd1in54": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_full_update",
+    "lut_partial_update",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "lut"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd1in54_V2": {
+   "attributes": [
+    "WF_Full_1IN54",
+    "WF_PARTIAL_1IN54_0",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPart": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartBaseImage": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "isPartial"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd1in54b": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_b",
+    "lut_g1",
+    "lut_g2",
+    "lut_red0",
+    "lut_red1",
+    "lut_vcom0",
+    "lut_vcom1",
+    "lut_w",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "redimage"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd1in54b_V2": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "redimage"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd1in54c": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "yellowimage"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd1in64g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_full_update",
+    "lut_partial_update",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "lut"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13_V2": {
+   "attributes": [
+    "FULL_UPDATE",
+    "PART_UPDATE",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_full_update",
+    "lut_partial_update",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartBaseImage": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartial": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "update"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13_V3": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_full_update",
+    "lut_partial_update",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartBaseImage": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartial": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13_V4": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartBaseImage": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "displayPartial": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_fast": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13b_V3": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13b_V4": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13bc": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13d": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_bb",
+    "lut_bb1",
+    "lut_bw",
+    "lut_bw1",
+    "lut_vcom1",
+    "lut_vcomDC",
+    "lut_wb",
+    "lut_wb1",
+    "lut_ww",
+    "lut_ww1",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "DisplayPartial": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in13g": {
+   "attributes": [
+    "BLACK",
+    "Gate_BITS",
+    "RED",
+    "Source_BITS",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in15b": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in15g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in36g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in66": {
+   "attributes": [
+    "WF_PARTIAL",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "mode"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in66b": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "Blackimage",
+      "Redimage"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in66g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in7": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "gray_lut_bb",
+    "gray_lut_bw",
+    "gray_lut_vcom",
+    "gray_lut_wb",
+    "gray_lut_ww",
+    "height",
+    "lut_bb",
+    "lut_bw",
+    "lut_vcom_dc",
+    "lut_wb",
+    "lut_ww",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "Init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in7_V2": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "LUT_DATA_4Gray",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "Init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Base": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Fast": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in7b": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_bb",
+    "lut_bw",
+    "lut_vcom_dc",
+    "lut_wb",
+    "lut_ww",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in7b_V2": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_full_update",
+    "lut_partial_update",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "lut"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9_V2": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "Gray4",
+    "WF_FULL",
+    "WF_PARTIAL_2IN9",
+    "WS_20_30",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "Init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Base": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9_V3": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "Init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Base": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Fast": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9b_V3": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9b_V4": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "display_Base": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "display_Fast": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9bc": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "blackimage",
+      "ryimage"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd2in9d": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_bb1",
+    "lut_bw1",
+    "lut_vcom1",
+    "lut_wb1",
+    "lut_ww1",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "DisplayPartial": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd3in0g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd3in52": {
+   "attributes": [
+    "BLACK",
+    "Chessboard",
+    "Crosstalk",
+    "Flag",
+    "Frame",
+    "Gate_Line",
+    "Image",
+    "LEFT_BLACK_RIGHT_WHITE",
+    "Source_Line",
+    "UP_BLACK_DOWN_WHITE",
+    "WHITE",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_R20_DU",
+    "lut_R20_GC",
+    "lut_R21_DU",
+    "lut_R21_GC",
+    "lut_R22_DU",
+    "lut_R22_GC",
+    "lut_R23_DU",
+    "lut_R23_GC",
+    "lut_R24_DU",
+    "lut_R24_GC",
+    "lut_bb",
+    "lut_bw",
+    "lut_vcom",
+    "lut_wb",
+    "lut_ww",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd3in7": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_1Gray_A2",
+    "lut_1Gray_DU",
+    "lut_1Gray_GC",
+    "lut_4Gray_GC",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color",
+      "mode"
+     ],
+     "required": 2
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [
+      "mode"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in01f": {
+   "attributes": [
+    "BLACK",
+    "BLUE",
+    "GREEN",
+    "ORANGE",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in2": {
+   "attributes": [
+    "DATA",
+    "EPD_4IN2_4Gray_lut_bb",
+    "EPD_4IN2_4Gray_lut_bw",
+    "EPD_4IN2_4Gray_lut_vcom",
+    "EPD_4IN2_4Gray_lut_wb",
+    "EPD_4IN2_4Gray_lut_ww",
+    "EPD_4IN2_Partial_lut_bb1",
+    "EPD_4IN2_Partial_lut_bw1",
+    "EPD_4IN2_Partial_lut_vcom1",
+    "EPD_4IN2_Partial_lut_wb1",
+    "EPD_4IN2_Partial_lut_ww1",
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "lut_bb",
+    "lut_bw",
+    "lut_vcom0",
+    "lut_wb",
+    "lut_ww",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "EPD_4IN2_PartialDisplay": {
+     "parameters": [
+      "X_start",
+      "Y_start",
+      "X_end",
+      "Y_end",
+      "Image"
+     ],
+     "required": 5
+    },
+    "Init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Partial": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in26": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "LUT_DATA_4Gray",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Base": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Fast": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_4GRAY": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in2_V2": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "LUT_ALL",
+    "Seconds_1S",
+    "Seconds_1_5S",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "Init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Fast": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_fast": {
+     "parameters": [
+      "mode"
+     ],
+     "required": 1
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in2b_V2": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "flag",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in2b_V2_old": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "flag",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in2bc": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd4in37g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in65f": {
+   "attributes": [
+    "BLACK",
+    "BLUE",
+    "GREEN",
+    "ORANGE",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in79": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "LUT_DATA_4Gray",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Base": {
+     "parameters": [
+      "imageblack"
+     ],
+     "required": 1
+    },
+    "display_Fast": {
+     "parameters": [
+      "imageblack"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Partial": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in79b": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in79g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in83": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in83_V2": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Fast": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_4GRAY": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Part": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in83b_V2": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd5in83bc": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in3e": {
+   "attributes": [
+    "BLACK",
+    "BLUE",
+    "GREEN",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in3f": {
+   "attributes": [
+    "BLACK",
+    "BLUE",
+    "GREEN",
+    "ORANGE",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in3g": {
+   "attributes": [
+    "BLACK",
+    "RED",
+    "WHITE",
+    "YELLOW",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [
+      "color"
+     ],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5_HD": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5_V2": {
+   "attributes": [
+    "GRAY1",
+    "GRAY2",
+    "GRAY3",
+    "GRAY4",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "getbuffer_4Gray": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_4Gray": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_part": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5_V2_old": {
+   "attributes": [
+    "LUT_BB_7IN5_V2",
+    "LUT_BW_7IN5_V2",
+    "LUT_VCOM_7IN5_V2",
+    "LUT_WB_7IN5_V2",
+    "LUT_WW_7IN5_V2",
+    "Lut_all_fresh",
+    "Lut_partial",
+    "Voltage_Frame_7IN5_V2",
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_part": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5b_HD": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5b_V2": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "partFlag",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "display_Partial": {
+     "parameters": [
+      "Image",
+      "Xstart",
+      "Ystart",
+      "Xend",
+      "Yend"
+     ],
+     "required": 5
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_Fast": {
+     "parameters": [],
+     "required": 0
+    },
+    "init_part": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5b_V2_old": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  },
+  "epd7in5bc": {
+   "attributes": [
+    "busy_pin",
+    "cs_pin",
+    "dc_pin",
+    "height",
+    "reset_pin",
+    "width"
+   ],
+   "methods": {
+    "Clear": {
+     "parameters": [],
+     "required": 0
+    },
+    "display": {
+     "parameters": [
+      "imageblack",
+      "imagered"
+     ],
+     "required": 2
+    },
+    "getbuffer": {
+     "parameters": [
+      "image"
+     ],
+     "required": 1
+    },
+    "init": {
+     "parameters": [],
+     "required": 0
+    },
+    "sleep": {
+     "parameters": [],
+     "required": 0
+    }
+   }
+  }
+ }
+}

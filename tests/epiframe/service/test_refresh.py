@@ -2,24 +2,28 @@ import logging
 import subprocess
 import sys
 import threading
+import time
 from pathlib import Path
-from typing import ClassVar
 
 import pytest
 
 from epiframe.core.logs import CONSOLE_ONLY_ENV
 from epiframe.service import refresh
-from epiframe.service.refresh import Refresher, copy_output
+from epiframe.service.refresh import Refresher, copy_output, stop
 
 SCRIPT = f"""
-import os, sys
+import os, sys, time
 print("2026-11-25 12:00:00 : Getting next photo...")
 print("console only:", os.environ.get("{CONSOLE_ONLY_ENV}"))
 print("arguments:", sys.argv[1:])
 print("Traceback (most recent call last):", file=sys.stderr)
+try:
+    time.sleep(float(os.environ.get("SLEEP", "0")))
+except KeyboardInterrupt:
+    print("cleaned up")
+    sys.exit(130)
 sys.exit(int(os.environ.get("EXIT_CODE", "0")))
 """
-
 
 MODULE = "fake_update"
 
@@ -38,30 +42,8 @@ def info(caplog: pytest.LogCaptureFixture) -> None:
     caplog.set_level(logging.INFO, logger="epiframe")
 
 
-class RecordedThread(threading.Thread):
-    started: ClassVar[list[threading.Thread]] = []
-
-    def start(self) -> None:
-        RecordedThread.started.append(self)
-        super().start()
-
-
-@pytest.fixture(autouse=True)
-def threads(monkeypatch: pytest.MonkeyPatch) -> list[threading.Thread]:
-    RecordedThread.started = []
-    monkeypatch.setattr(refresh, "Thread", RecordedThread)
-    return RecordedThread.started
-
-
-def wait_for_end(
-    process: subprocess.Popen[str] | None, threads: list[threading.Thread]
-) -> None:
-    """Wait until the output thread has logged everything."""
-    assert process is not None
-    (thread,) = threads
-    thread.join(timeout=30)
-    assert not thread.is_alive()
-    assert thread.daemon
+def messages(caplog: pytest.LogCaptureFixture) -> list[str]:
+    return [record.getMessage() for record in caplog.records]
 
 
 def test_defaults() -> None:
@@ -75,48 +57,99 @@ def test_command() -> None:
     refresher = Refresher("python3")
 
     # -P: the working directory is not on the import path
-    assert refresher.command(("redisplay",)) == [
+    assert refresher.command(("prepare",)) == [
         "python3",
         "-P",
         "-m",
         "epiframe",
-        "redisplay",
+        "prepare",
     ]
 
 
-def test_output_goes_to_the_log(
-    caplog: pytest.LogCaptureFixture, threads: list[threading.Thread]
-) -> None:
-    process = Refresher(module=MODULE).start(["redisplay"])
-    wait_for_end(process, threads)
+def test_output_goes_to_the_log(caplog: pytest.LogCaptureFixture) -> None:
+    code = Refresher(module=MODULE).run(["prepare"])
 
-    messages = [record.getMessage() for record in caplog.records]
-    assert messages == [
+    assert code == 0
+    # all lines are logged before run returns
+    assert messages(caplog) == [
         "2026-11-25 12:00:00 : Getting next photo...",
         "console only: 1",
-        "arguments: ['redisplay']",
+        "arguments: ['prepare']",
         "Traceback (most recent call last):",
     ]
     assert {record.name for record in caplog.records} == {"epiframe.service"}
 
 
 def test_exit_code_is_logged(
-    monkeypatch: pytest.MonkeyPatch,
-    caplog: pytest.LogCaptureFixture,
-    threads: list[threading.Thread],
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
     monkeypatch.setenv("EXIT_CODE", "3")
 
-    wait_for_end(Refresher(module=MODULE).start(), threads)
+    assert Refresher(module=MODULE).run() == 3
 
     assert caplog.records[-1].levelno == logging.WARNING
     assert caplog.records[-1].getMessage() == "ePiframe update ended with exit code 3"
 
 
-def test_start_failure(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-    process = Refresher(str(tmp_path / "no-python")).start()
+def test_hanging_update_is_stopped(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("SLEEP", "60")
 
-    assert process is None
+    code = Refresher(module=MODULE).run(timeout=2)
+
+    assert code == 130  # SIGINT: it could clean up
+    assert "ePiframe update still running after 2 seconds: stopping it" in messages(
+        caplog
+    )
+    assert "cleaned up" in messages(caplog)
+
+
+def test_stop_kills_after_the_grace_period() -> None:
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            "-c",
+            "import signal, time; signal.signal(signal.SIGINT, signal.SIG_IGN); "
+            "print('ready', flush=True); time.sleep(60)",
+        ],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    assert process.stdout is not None
+    assert process.stdout.readline() == "ready\n"
+
+    assert stop(process, grace=0.2) == -9
+    process.stdout.close()
+
+
+def test_stop_from_another_thread(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SLEEP", "60")
+    refresher = Refresher(module=MODULE)
+    codes: list[int | None] = []
+    runner = threading.Thread(target=lambda: codes.append(refresher.run()))
+    runner.start()
+    deadline = time.monotonic() + 30
+    while refresher._process is None:
+        assert time.monotonic() < deadline
+        time.sleep(0.01)
+    time.sleep(0.5)  # the child installs its SIGINT handler
+
+    refresher.stop()
+    runner.join(30)
+
+    assert codes == [130]
+    assert refresher._process is None
+
+
+def test_stop_without_update() -> None:
+    Refresher().stop()  # nothing to stop
+
+
+def test_start_failure(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    code = Refresher(str(tmp_path / "no-python")).run()
+
+    assert code is None
     assert "Can't start the ePiframe update: " in caplog.text
 
 
@@ -127,5 +160,5 @@ def test_copy_output_without_pipe(caplog: pytest.LogCaptureFixture) -> None:
 
     copy_output(process)
 
-    assert process.returncode == 0
+    assert process.wait() == 0
     assert caplog.records == []

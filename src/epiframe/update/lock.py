@@ -1,7 +1,9 @@
 """PID file of a running update (``pid_file`` setting).
 
 While the file exists the WebUI and the Telegram bot show "Busy". A new update
-stops a previous one that still runs (hangs, e.g. on a stuck display driver).
+started by hand stops a previous one that still runs (hangs); it takes the
+display lock first, so a process is never stopped in the middle of a refresh
+(the service runs its updates one at a time and stops a hanging one itself).
 """
 
 import os
@@ -10,8 +12,10 @@ from collections.abc import Iterator
 from contextlib import contextmanager, suppress
 from pathlib import Path
 
+from epiframe.config import paths
 from epiframe.core.logs import get_logger
 from epiframe.core.pidfile import PROC_DIR, PidFile, process_command
+from epiframe.display.controller import display_lock
 
 # how an update is started: ePiframe.py, the epiframe console script, python -m epiframe
 UPDATE_NAMES = frozenset({"ePiframe.py", "epiframe"})
@@ -34,7 +38,7 @@ def stop_previous(pid: int, proc_dir: Path = PROC_DIR) -> None:
     if pid == os.getpid() or command is None or not is_update(command):
         return
     log.warning(f"Warning! Stopping previous ePiframe run (PID {pid})")
-    with suppress(OSError):
+    with display_lock(paths.DISPLAY_LOCK_FILE), suppress(OSError):
         os.kill(pid, signal.SIGKILL)
 
 

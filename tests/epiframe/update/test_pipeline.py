@@ -9,8 +9,7 @@ import requests_mock
 from PIL import Image
 
 from epiframe.config.manager import ConfigManager
-from epiframe.display.factory import create_display
-from epiframe.display.system import spi_enabled
+from epiframe.display.controller import NO_SPI, DisplayController
 from epiframe.photos.model import Photo
 from epiframe.plugins.base import PhotoFile
 from epiframe.processing.imagemagick import (
@@ -19,7 +18,7 @@ from epiframe.processing.imagemagick import (
     Thumbnails,
 )
 from epiframe.update import UpdateError
-from epiframe.update.pipeline import NO_SPI, WORK_PREFIX, Pipeline
+from epiframe.update.pipeline import WORK_PREFIX, Pipeline
 from epiframe.weather.openweather import API_URL
 from tests.epiframe.update.conftest import add_photo, make_plugin
 
@@ -35,8 +34,8 @@ def original(tmp_path: Path) -> Path:
 def test_defaults(config: ConfigManager, plugins: MagicMock, magick: MagicMock) -> None:
     pipeline = Pipeline(config, plugins, magick)
 
-    assert pipeline.display_factory is create_display
-    assert pipeline.spi_check is spi_enabled
+    assert isinstance(pipeline.display, DisplayController)
+    assert pipeline.display.settings() is config
     assert pipeline.target == Path("photo.bmp")
     assert not pipeline.hdmi
 
