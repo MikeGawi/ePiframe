@@ -86,6 +86,70 @@ jobs:
           name: deb-packages
           path: dist/*.deb
 
+  install:
+    name: install.sh on a clean runner (install, update, uninstall)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # install.sh clones a branch or tag: the tested commit as a local branch,
+      # this checkout as the repository
+      - name: Branch of the tested commit
+        run: git switch -c ci-install
+      - name: Install
+        run: sudo ./install.sh --yes --no-hardware --repo "$GITHUB_WORKSPACE" --branch ci-install
+      - name: Smoke test
+        run: sudo scripts/smoke_install.sh
+      - name: Update to a new commit of the branch
+        run: |
+          git -c user.name=CI -c user.email=ci@localhost commit -q --allow-empty -m "CI update test"
+          sudo ./install.sh --update --yes --no-hardware
+          test "$(git -C ~/ePiframe rev-parse HEAD)" = "$(git rev-parse HEAD)"
+          systemctl is-active ePiframe
+      - name: Smoke test after the update
+        run: sudo scripts/smoke_install.sh
+      - name: Uninstall
+        run: |
+          sudo ./install.sh --uninstall
+          test ! -e /etc/systemd/system/ePiframe.service
+          test ! -e /usr/local/bin/epiframe
+          sudo test ! -e /etc/sudoers.d/epiframe
+          test -d ~/ePiframe/.venv
+
+  deb-install:
+    name: DEB package on a clean runner (install, upgrade, purge)
+    needs: deb
+    runs-on: ubuntu-latest
+    steps:
+      # the smoke test script
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: deb-packages
+          path: dist
+      - name: Install the amd64 package
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ./dist/epiframe_*_amd64.deb
+      - name: Smoke test
+        run: sudo scripts/smoke_install.sh
+      - name: Reinstall (postinst of an upgrade)
+        run: |
+          sudo systemctl start ePiframe
+          sudo apt-get install -y --reinstall ./dist/epiframe_*_amd64.deb
+          systemctl is-active ePiframe
+      - name: Smoke test after the reinstallation
+        run: sudo scripts/smoke_install.sh
+      - name: Purge
+        run: |
+          sudo apt-get purge -y epiframe
+          test ! -e /opt/epiframe
+          test ! -e /etc/epiframe
+          test ! -e /var/lib/epiframe
+          test ! -e /var/cache/epiframe
+          test ! -e /usr/lib/systemd/system/ePiframe.service
+          test ! -e /usr/bin/epiframe
+          sudo test ! -e /etc/sudoers.d/epiframe
+
   badges:
     name: Publish badges
     if: ${{ !cancelled() && github.event_name == 'push' }}
