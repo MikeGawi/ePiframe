@@ -372,6 +372,22 @@ def test_convert(commands: MagicMock, capsys: pytest.CaptureFixture[str]) -> Non
     assert "Converted to out/a.bmp" in output(capsys)
 
 
+@pytest.mark.usefixtures("plugins")
+def test_file_arguments_relative_to_the_caller(
+    commands: MagicMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # the epiframe command runs in the frame folder and passes where it started
+    monkeypatch.setenv(paths.CALLER_DIR_ENV, "/home/pi")
+
+    assert cli.main(["convert", "a.jpg", "/srv/out"]) == 0
+    assert cli.main(["test-display", "b.bmp"]) == 0
+
+    commands.return_value.convert.assert_called_once_with(
+        Path("/home/pi/a.jpg"), Path("/srv/out")
+    )
+    commands.return_value.test_display.assert_called_once_with(Path("/home/pi/b.bmp"))
+
+
 def test_main_module_import_runs_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
     main = MagicMock()
     monkeypatch.setattr(cli, "main", main)

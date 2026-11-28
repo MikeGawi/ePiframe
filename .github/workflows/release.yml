@@ -1,0 +1,29 @@
+name: Release
+
+# attaches the DEB packages to a published GitHub release
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  deb:
+    name: DEB packages for the release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - name: Build the packages (the tag must match the pyproject.toml version)
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: scripts/build_deb.sh --check-tag "$TAG" --out dist
+      - name: Attach them to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" dist/*.deb --clobber

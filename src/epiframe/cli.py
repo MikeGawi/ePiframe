@@ -10,12 +10,12 @@ import argparse
 import time
 from collections.abc import Callable, Sequence
 from functools import partial
-from pathlib import Path
 
 from epiframe.bot.console import TelegramTest
 from epiframe.config import paths
 from epiframe.config.base import ConfigBase
 from epiframe.config.manager import ConfigManager
+from epiframe.config.paths import caller_path
 from epiframe.config.property import ConfigError
 from epiframe.core.logs import format_duration, get_logger, setup_logging
 from epiframe.display.base import DisplayError
@@ -224,7 +224,7 @@ def _frame_parsers(
         ("test-display", "show FILE (default: the converted photo) on the display"),
     ):
         parser = commands.add_parser(name, help=help_text)
-        parser.add_argument("file", nargs="?", type=Path, metavar="FILE")
+        parser.add_argument("file", nargs="?", type=caller_path, metavar="FILE")
         parser.set_defaults(handler=partial(frame_command, file_command, True))
     commands.add_parser(
         "redisplay", help="convert and show the original photo again"
@@ -234,9 +234,12 @@ def _frame_parsers(
         help="convert SOURCE to a BMP file for the display (photos converted in "
         "advance, see the 'convert' setting)",
     )
-    convert.add_argument("source", type=Path, metavar="SOURCE")
+    convert.add_argument("source", type=caller_path, metavar="SOURCE")
     convert.add_argument(
-        "target", type=Path, metavar="TARGET", help="file or folder (SOURCE name)"
+        "target",
+        type=caller_path,
+        metavar="TARGET",
+        help="file or folder (SOURCE name)",
     )
     # works on any files: not an update of the frame, no PID file
     convert.set_defaults(handler=partial(frame_command, file_command, False))

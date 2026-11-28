@@ -30,8 +30,9 @@ repos:
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
-        # 1.x install.sh only has info-level findings; the Phase 4 installer must be fully clean
-        args: [--severity=warning]
+        # all severities (the 2.0 installer is fully clean); follow the sourced
+        # install.sh (scripts/build_deb.sh, packaging/deb/postinst)
+        args: [--external-sources]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.3

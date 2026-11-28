@@ -1,0 +1,17 @@
+#!/bin/sh
+# ePiframe (DEB package): runs ePiframe as the epiframe user, in its data folder
+# (the relative paths of config.cfg are relative to it) and with the FHS layout of
+# the package; other users go through sudo. File arguments stay relative to the
+# current folder (the epiframe user must be able to read them).
+if [ "$(id -un)" != epiframe ]; then
+	if [ "$(id -u)" -eq 0 ]; then
+		exec runuser -u epiframe -- "$0" "$@"
+	fi
+	exec sudo -u epiframe -- "$0" "$@"
+fi
+export EPIFRAME_CONFIG_DIR=/etc/epiframe
+export EPIFRAME_DATA_DIR=/var/lib/epiframe
+export EPIFRAME_PLUGINS_DIR=/var/lib/epiframe/plugins
+export EPIFRAME_CALLER_DIR="$PWD"
+cd /var/lib/epiframe || exit 1
+exec /opt/epiframe/.venv/bin/epiframe "$@"

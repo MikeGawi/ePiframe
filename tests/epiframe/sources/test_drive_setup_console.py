@@ -78,6 +78,22 @@ def test_setup(
     assert "Google Drive source enabled" in console.output
 
 
+def test_setup_key_path_relative_to_the_caller(
+    config: ConfigManager,
+    fake: FakeDrive,
+    downloaded: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # the epiframe command runs in the frame folder and passes where it started
+    monkeypatch.setenv(paths.CALLER_DIR_ENV, str(downloaded.parent))
+
+    code, _ = run(config, fake, "n", downloaded.name, ROOT)
+
+    assert code == 0
+    assert (tmp_path / "drive_key.json").read_text() == downloaded.read_text()
+
+
 def test_setup_shows_the_steps(
     config: ConfigManager, fake: FakeDrive, downloaded: Path
 ) -> None:

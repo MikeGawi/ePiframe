@@ -8,5 +8,15 @@ This is a place to install ePiframe plugins.
 * The execution order is kept in *order.cfg* (created on the first run with new plugins,
   can be changed in the WebUI *Plugins - Execution Order* menu).
 * Plugins can be kept in another folder set by the `EPIFRAME_PLUGINS_DIR` environment variable.
+* A plugin that needs Python packages lists them in a *requirements.txt* file in its folder
+  (pip format). Install them into the ePiframe environment with `sudo ./install.sh --plugins`
+  (in the ePiframe folder) and restart the service; `./install.sh --update` installs them
+  again. The packages must fit the versions ePiframe uses (*uv.lock*), otherwise nothing is
+  installed and the error is shown. Never use `sudo pip3 install`: ePiframe doesn't see the
+  system Python packages.
+* ePiframe installed from the DEB package keeps the plugins in */var/lib/epiframe/plugins*
+  (clone them as the `epiframe` user: `sudo -u epiframe git clone ...`). The packages of a
+  plugin's *requirements.txt* are installed with `sudo dpkg-reconfigure epiframe` (prebuilt
+  wheels only, nothing is built as root).
 
 Go to https://github.com/MikeGawi/ePiframe_plugin to find something for You!
