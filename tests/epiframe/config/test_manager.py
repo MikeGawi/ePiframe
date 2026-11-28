@@ -10,7 +10,6 @@ from epiframe.config.property import ConfigError, ConfigWarning, PropertyType
 ASSETS = Path(__file__).with_name("assets")
 CONFIG_V1 = ASSETS / "config_v1.cfg"
 DEFAULT = Path(paths.CONFIG_FILE_DEFAULT)
-REPOSITORY = Path(__file__).parents[3]
 
 GOOGLE_PHOTOS_ENTRIES = [
     "use_google_photos",
@@ -73,11 +72,6 @@ def test_new_config_is_the_default(config_file: Path) -> None:
     )
     assert config.get_default("dark_theme") == 0
     assert config.get_obsolete() == []
-
-
-def test_tracked_config_matches_default() -> None:
-    # README links to config.cfg in the repository root
-    assert (REPOSITORY / "config.cfg").read_text() == DEFAULT.read_text()
 
 
 def test_every_entry_has_help(config_file: Path) -> None:

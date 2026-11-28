@@ -2,8 +2,11 @@
 
 A plugin is a folder in ``plugins/`` with ``_plugin.py`` defining ``class
 Plugin(epiframe.plugins.base.Plugin)``, a ``config.cfg`` and its default
-``default/config.default``. Every hook is optional; ePiframe calls only the ones
-the plugin overrides:
+``default/config.default``. Python packages the plugin needs (other than
+ePiframe's own) are listed in an optional ``requirements.txt`` there, installed
+into the ePiframe venv with ``sudo ./install.sh --plugins`` (within the versions
+of ``uv.lock``). Every hook is optional; ePiframe calls only the ones the plugin
+overrides:
 
 - :meth:`Plugin.settings` — the validated configuration entries;
 - :meth:`Plugin.source_photos` / :meth:`Plugin.fetch_photo` — a photo source;

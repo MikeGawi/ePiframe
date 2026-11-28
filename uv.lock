@@ -592,6 +592,18 @@ wheels = [
 ]
 
 [[package]]
+name = "colorzero"
+version = "2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "setuptools", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b3/ca/688824a06e8c4d04c7d2fd2af2d8da27bed51af20ee5f094154e1d680334/colorzero-2.0.tar.gz", hash = "sha256:e7d5a5c26cd0dc37b164ebefc609f388de24f8593b659191e12d85f8f9d5eb58", size = 25382, upload-time = "2021-03-15T23:42:23.261Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/a6/ddd0f130e44a7593ac6c55aa93f6e256d2270fd88e9d1b64ab7f22ab8fde/colorzero-2.0-py2.py3-none-any.whl", hash = "sha256:0e60d743a6b8071498a56465f7719c96a5e92928f858bab1be2a0d606c9aa0f8", size = 26573, upload-time = "2021-03-15T23:42:21.757Z" },
+]
+
+[[package]]
 name = "coverage"
 version = "7.17.4"
 source = { registry = "https://pypi.org/simple" }
@@ -847,6 +859,12 @@ dependencies = [
     { name = "flask-login" },
     { name = "flask-wtf" },
     { name = "google-auth", extra = ["requests"] },
+    { name = "gpiod", version = "2.6.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'aarch64'" },
+    { name = "gpiod", version = "2.6.0", source = { registry = "https://www.piwheels.org/simple" }, marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
+    { name = "gpiodevice", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
+    { name = "gpiozero", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
+    { name = "lgpio", version = "0.2.2.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'aarch64'" },
+    { name = "lgpio", version = "0.2.2.0", source = { registry = "https://www.piwheels.org/simple" }, marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' and platform_machine != 'armv6l' and platform_machine != 'armv7l'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://www.piwheels.org/simple" }, marker = "(python_full_version < '3.12' and platform_machine == 'armv6l') or (python_full_version < '3.12' and platform_machine == 'armv7l')" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://www.piwheels.org/simple" }, marker = "(python_full_version >= '3.12' and platform_machine == 'armv6l') or (python_full_version >= '3.12' and platform_machine == 'armv7l')" },
@@ -855,6 +873,7 @@ dependencies = [
     { name = "pillow", version = "13.0.0", source = { registry = "https://www.piwheels.org/simple" }, marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
     { name = "pytelegrambotapi" },
     { name = "requests" },
+    { name = "smbus2", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
     { name = "spidev", version = "3.8", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'aarch64'" },
     { name = "spidev", version = "3.8", source = { registry = "https://www.piwheels.org/simple" }, marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
     { name = "werkzeug" },
@@ -894,12 +913,19 @@ requires-dist = [
     { name = "flask-login", specifier = ">=0.6.3" },
     { name = "flask-wtf", specifier = ">=1.2" },
     { name = "google-auth", extras = ["requests"], specifier = ">=2.40" },
+    { name = "gpiod", marker = "platform_machine == 'aarch64'", specifier = ">=2.1" },
+    { name = "gpiod", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=2.1", index = "https://www.piwheels.org/simple" },
+    { name = "gpiodevice", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=0.1.0" },
+    { name = "gpiozero", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=2.0.1" },
+    { name = "lgpio", marker = "platform_machine == 'aarch64'", specifier = ">=0.2.2" },
+    { name = "lgpio", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=0.2.2", index = "https://www.piwheels.org/simple" },
     { name = "numpy", marker = "platform_machine != 'armv6l' and platform_machine != 'armv7l'", specifier = ">=1.26" },
     { name = "numpy", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=1.26", index = "https://www.piwheels.org/simple" },
     { name = "pillow", marker = "platform_machine != 'armv6l' and platform_machine != 'armv7l'", specifier = ">=11" },
     { name = "pillow", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=11", index = "https://www.piwheels.org/simple" },
     { name = "pytelegrambotapi", specifier = ">=4.30" },
     { name = "requests", specifier = ">=2.32" },
+    { name = "smbus2", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=0.5" },
     { name = "spidev", marker = "platform_machine == 'aarch64'", specifier = ">=3.6" },
     { name = "spidev", marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'", specifier = ">=3.6", index = "https://www.piwheels.org/simple" },
     { name = "werkzeug", specifier = ">=3.1" },
@@ -1140,6 +1166,76 @@ requests = [
 ]
 
 [[package]]
+name = "gpiod"
+version = "2.6.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.15' and platform_machine == 'aarch64'",
+    "python_full_version == '3.14.*' and platform_machine == 'aarch64'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'aarch64'",
+    "python_full_version < '3.12' and platform_machine == 'aarch64'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ae/09/caeafe129570269e85f93f429ac5eb7e15c513b2b788996ee68c640c3fd6/gpiod-2.6.0.tar.gz", hash = "sha256:1076f0384c63fdb9e4438508c511378c57b4236c6b43b65ad609d0dafdfcfd7d", size = 75806, upload-time = "2026-11-04T09:21:54.776Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2d/56/efae555832c6a841785c57cd71475f1c1a4ac14459add9e7efdd686ec227/gpiod-2.6.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:22cb1098eb70b0dfff1f87987b10438804f98297f1928003c6a55d0493fffe29", size = 114337, upload-time = "2026-11-04T09:21:14.985Z" },
+    { url = "https://files.pythonhosted.org/packages/45/de/42b67f2066cf4a409fa8732cf055c9795d5490b946fdb172c6da272efc47/gpiod-2.6.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:7aeee4a60e56ac78cddcb7a96ab0d55e2f0046d0dd59a3a43d52ddd7decef0c1", size = 112120, upload-time = "2026-11-04T09:21:17.446Z" },
+    { url = "https://files.pythonhosted.org/packages/42/9e/cd5fca172148a2a0cdc24f0d1327c1bae73d29d7a0b2d4dc74d41dcc3948/gpiod-2.6.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:8237134cd35b2d70e49d31b19dd106bb9846672961002c1e9f3e21f155122a1d", size = 113779, upload-time = "2026-11-04T09:21:20Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/f4/247a84248898fe32e2634f588f77232dee4089d8502b29692b173983db42/gpiod-2.6.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:9ca2602b6bc0c20b99ac3a148bb3664e0f51a68d8d469844cb0a38c8cb09eadc", size = 112310, upload-time = "2026-11-04T09:21:22.477Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/2f/fee0932a197ab56d683591a765df9662932a2103a75018e7b6b20d4f6b00/gpiod-2.6.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:816a518972875bb93fe807c2e2d9edd831af2b25bbb61f2a147ec0144774f3fe", size = 113504, upload-time = "2026-11-04T09:21:25.024Z" },
+    { url = "https://files.pythonhosted.org/packages/73/2b/cf0b9582aa3c0c4fffb9082beff51930a2879b0228e6b726cb4b49605bbf/gpiod-2.6.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:4dd7bcf884f288e9db6c5c59eee32bd95e2b34838868e2dc4aeb89a79d16dcea", size = 112502, upload-time = "2026-11-04T09:21:28.094Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/d9/a82e4d42549ddd28a338a012b8001492b44107fbc77839b8b162e7fab641/gpiod-2.6.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0c2437610e3347d902f9ef1a69cfbb16ec941bfb04fb9a55514e99b717adbaa8", size = 114081, upload-time = "2026-11-04T09:21:31.166Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/26/edc98f784579732b3f9a7ceaab8ad43d95d529cc64b709cea98f31dc80e8/gpiod-2.6.0-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:d5e9d358ee5bba8a5c9b87b8a09966bf222029220098bcb96f11850457d70496", size = 112921, upload-time = "2026-11-04T09:21:34.237Z" },
+    { url = "https://files.pythonhosted.org/packages/26/11/b85a036f206d3aa2cfb37a08b9a8c65f4d99c26c530fd6c4b7b54a5665b5/gpiod-2.6.0-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:b142aca31e87318ede617b70c2fa8c6b66b4fe73b1f88e56870aeabfb486e082", size = 120660, upload-time = "2026-11-04T09:21:37.313Z" },
+    { url = "https://files.pythonhosted.org/packages/18/e1/dd8ad8ef05a07b00bbf6dee55ff15ef60acbadaadf048d304698fd1a5b70/gpiod-2.6.0-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:9a8f725a72e4b56d0aae7afd5576616e816050bc6156099f79eec1402621fb84", size = 118890, upload-time = "2026-11-04T09:21:40.385Z" },
+    { url = "https://files.pythonhosted.org/packages/49/c1/ee5f6b1a03bdce3439834ad8756723b9edf219c23b99b56d33d192cb1e1a/gpiod-2.6.0-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:7dce4198abbbbff0d16ac436e28e914e385ee11d9617b3977747e581d517f321", size = 115627, upload-time = "2026-11-04T09:21:43.456Z" },
+    { url = "https://files.pythonhosted.org/packages/06/35/3175b2f0937ea0763807529dce42c54dd88c2d13b9a508137a59278155d5/gpiod-2.6.0-cp315-cp315-musllinux_1_2_aarch64.whl", hash = "sha256:26c10386a07af58fc0d6876c8514fbd8d6eacdb879a3e0b37f0ba185d3128d39", size = 114073, upload-time = "2026-11-04T09:21:46.652Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/cf/a1dd417012daf77c06c4303258d9c5c818a8a4eaceb765e0d4d4c43bec9c/gpiod-2.6.0-cp315-cp315t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:dd0bd6ad024786aa6eaa3741a9febe6dae89f46aa695dbde80ed85b4dd4337bf", size = 122067, upload-time = "2026-11-04T09:21:49.196Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/c6/285942790c9b785dd2d0b04e67d1125be7cf0fa3a265ae750abe111c1242/gpiod-2.6.0-cp315-cp315t-musllinux_1_2_aarch64.whl", hash = "sha256:0ad21da92b2715c643af2bb5785a5e3730f748c082a9328becfb6ba6bfb371cb", size = 120101, upload-time = "2026-11-04T09:21:52.013Z" },
+]
+
+[[package]]
+name = "gpiod"
+version = "2.6.0"
+source = { registry = "https://www.piwheels.org/simple" }
+resolution-markers = [
+    "(python_full_version >= '3.15' and platform_machine == 'armv6l') or (python_full_version >= '3.15' and platform_machine == 'armv7l')",
+    "(python_full_version == '3.14.*' and platform_machine == 'armv6l') or (python_full_version == '3.14.*' and platform_machine == 'armv7l')",
+    "(python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'armv6l') or (python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'armv7l')",
+    "(python_full_version < '3.12' and platform_machine == 'armv6l') or (python_full_version < '3.12' and platform_machine == 'armv7l')",
+]
+wheels = [
+    { url = "https://www.piwheels.org/simple/gpiod/gpiod-2.6.0-cp311-cp311-linux_armv6l.whl", hash = "sha256:720a1c9cbfd2190e3ae1dc14eaca0dda6e57dade54d46ba4cd4f08ad956e0b3d" },
+    { url = "https://www.piwheels.org/simple/gpiod/gpiod-2.6.0-cp311-cp311-linux_armv7l.whl", hash = "sha256:720a1c9cbfd2190e3ae1dc14eaca0dda6e57dade54d46ba4cd4f08ad956e0b3d" },
+    { url = "https://www.piwheels.org/simple/gpiod/gpiod-2.6.0-cp313-cp313-linux_armv6l.whl", hash = "sha256:bdce377f92a08b640ae7964abd19f48de872f51946a51f1cec746e474a4cdc45" },
+    { url = "https://www.piwheels.org/simple/gpiod/gpiod-2.6.0-cp313-cp313-linux_armv7l.whl", hash = "sha256:bdce377f92a08b640ae7964abd19f48de872f51946a51f1cec746e474a4cdc45" },
+]
+
+[[package]]
+name = "gpiodevice"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "gpiod", version = "2.6.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'aarch64'" },
+    { name = "gpiod", version = "2.6.0", source = { registry = "https://www.piwheels.org/simple" }, marker = "platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8c/5a/919e85d28bd761a53bfaec4e54eac217b216895473993fd0ee249a1f1ccc/gpiodevice-0.1.0.tar.gz", hash = "sha256:823185e2230aba7a015f00b9f8045840f8f9253d2d58c76950065f446eb417b2", size = 19303, upload-time = "2026-08-25T14:24:30.374Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6e/b0/18437d9b784086b70ff9503c18e8b51d6905d382f3c695f9b3c70f85e91d/gpiodevice-0.1.0-py3-none-any.whl", hash = "sha256:4d1716ebed3068dd233e9851612773cbdf7a194289b8ea0aaf712f2fe90b1adb", size = 12705, upload-time = "2026-08-25T14:24:29.26Z" },
+]
+
+[[package]]
+name = "gpiozero"
+version = "2.0.1.post3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorzero", marker = "platform_machine == 'aarch64' or platform_machine == 'armv6l' or platform_machine == 'armv7l'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/67/63/864a3c36842cf7b05808aadf906763a024a1b13f2a4c8144e3163de91255/gpiozero-2.0.1.post3.tar.gz", hash = "sha256:745feab6df463ac2e9de10c67e2dd9f396e668ba4e281e92381d6c460100a8f7", size = 168403, upload-time = "2026-07-27T10:03:32.628Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/cb/ec5917b454b2e82874769a348dc74cfcec5b447bf1061c827edea9702451/gpiozero-2.0.1.post3-py3-none-any.whl", hash = "sha256:d491734803a9bc6036602e6b8bbd73fb25c33da88de0fcd11a40e890b8bc2d3b", size = 151465, upload-time = "2026-07-27T10:03:31.195Z" },
+]
+
+[[package]]
 name = "identify"
 version = "2.6.20"
 source = { registry = "https://pypi.org/simple" }
@@ -1185,6 +1281,39 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
+]
+
+[[package]]
+name = "lgpio"
+version = "0.2.2.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.15' and platform_machine == 'aarch64'",
+    "python_full_version == '3.14.*' and platform_machine == 'aarch64'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'aarch64'",
+    "python_full_version < '3.12' and platform_machine == 'aarch64'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/56/33/26ec2e8049eaa2f077bf23a12dc61ca559fbfa7bea0516bf263d657ae275/lgpio-0.2.2.0.tar.gz", hash = "sha256:11372e653b200f76a0b3ef8a23a0735c85ec678a9f8550b9893151ed0f863fff", size = 90087, upload-time = "2024-03-29T21:59:55.901Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/53/e57a22fe815fc68d0991655c1105b8ed872a68491d32e4e0e7d10ffb5c4d/lgpio-0.2.2.0-cp311-cp311-manylinux_2_34_aarch64.whl", hash = "sha256:a2f71fb95b149d8ac82c7c6bae70f054f6dc42a006ad35c90c7d8e54921fbcf4", size = 364848, upload-time = "2024-04-01T22:49:45.889Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/1c/becd00f66d2c65feed9a668ff9d91732394cb6baba7bec505d55de0e30c9/lgpio-0.2.2.0-cp312-cp312-manylinux_2_34_aarch64.whl", hash = "sha256:d907db79292c721c605af08187385ddb3b7af09907e1ffca56cf0cd6558ace0a", size = 366058, upload-time = "2024-04-01T22:49:47.615Z" },
+]
+
+[[package]]
+name = "lgpio"
+version = "0.2.2.0"
+source = { registry = "https://www.piwheels.org/simple" }
+resolution-markers = [
+    "(python_full_version >= '3.15' and platform_machine == 'armv6l') or (python_full_version >= '3.15' and platform_machine == 'armv7l')",
+    "(python_full_version == '3.14.*' and platform_machine == 'armv6l') or (python_full_version == '3.14.*' and platform_machine == 'armv7l')",
+    "(python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'armv6l') or (python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'armv7l')",
+    "(python_full_version < '3.12' and platform_machine == 'armv6l') or (python_full_version < '3.12' and platform_machine == 'armv7l')",
+]
+wheels = [
+    { url = "https://www.piwheels.org/simple/lgpio/lgpio-0.2.2.0-cp311-cp311-linux_armv6l.whl", hash = "sha256:2860e533e6e498b10d953d4b1fec4650e9af61991be11650c41a44d6fdafa08b" },
+    { url = "https://www.piwheels.org/simple/lgpio/lgpio-0.2.2.0-cp311-cp311-linux_armv7l.whl", hash = "sha256:2860e533e6e498b10d953d4b1fec4650e9af61991be11650c41a44d6fdafa08b" },
+    { url = "https://www.piwheels.org/simple/lgpio/lgpio-0.2.2.0-cp313-cp313-linux_armv6l.whl", hash = "sha256:88c48db5e18271ef6b1435c5ee5c7712d9a2c16bfd4119cd8d4222c1a0c761bd" },
+    { url = "https://www.piwheels.org/simple/lgpio/lgpio-0.2.2.0-cp313-cp313-linux_armv7l.whl", hash = "sha256:88c48db5e18271ef6b1435c5ee5c7712d9a2c16bfd4119cd8d4222c1a0c761bd" },
 ]
 
 [[package]]
@@ -2429,6 +2558,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "smbus2"
+version = "0.6.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/37/b3f7b501502c4915ba3819d1dc277bf3f5fae4a9d067caa4f502aaddd889/smbus2-0.6.1.tar.gz", hash = "sha256:2b043372abf8f6029a632c3aab36b641c5d5872b1cbad599fc68e17ac4fd90a5", size = 17274, upload-time = "2026-04-09T20:37:54.821Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/f2/c78a68bd739ac8fc608747cff73a4db3b19f3135658ed4e64374f6425cbf/smbus2-0.6.1-py2.py3-none-any.whl", hash = "sha256:650feeb27ca0ed58b07db4c10201c2a662c41305b7bf6e5fab9d888056f48180", size = 11767, upload-time = "2026-04-09T20:37:53.728Z" },
 ]
 
 [[package]]
