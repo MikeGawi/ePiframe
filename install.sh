@@ -275,8 +275,13 @@ function check_python {
 
 # ----------------------------------------------------------------- system packages
 
+# apt-get that retries failed downloads (a mirror that doesn't answer for a while)
+function apt_get {
+	DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 "$@"
+}
+
 function apt_install {
-	DEBIAN_FRONTEND=noninteractive apt-get install -y -q "$@"
+	apt_get install -y -q "$@"
 }
 
 function apt_packages {
@@ -292,7 +297,7 @@ function install_system_packages {
 	header "Installing system packages"
 	local packages
 	read -r -a packages <<< "$(apt_packages)"
-	step "Updating the package lists" apt-get update -q
+	step "Updating the package lists" apt_get update -q
 	step "Installing ${#packages[@]} packages" apt_install "${packages[@]}"
 	step "Checking Python and SQLite" check_python
 }

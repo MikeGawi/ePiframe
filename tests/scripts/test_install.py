@@ -278,6 +278,18 @@ def test_apt_packages(
     assert ("liblgpio-dev" in packages) is build
 
 
+def test_apt_get_retries_downloads(bash: Bash) -> None:
+    result = bash(
+        'function apt-get { echo "$DEBIAN_FRONTEND $*"; };'
+        " apt_get update -q; apt_install git curl"
+    )
+
+    assert result.stdout.splitlines() == [
+        "noninteractive -o Acquire::Retries=3 update -q",
+        "noninteractive -o Acquire::Retries=3 install -y -q git curl",
+    ]
+
+
 def test_python_modules(bash: Bash) -> None:
     assert "lgpio" in bash("HARDWARE=1; python_modules").stdout.split()
     modules = bash("HARDWARE=0; python_modules").stdout.split()
